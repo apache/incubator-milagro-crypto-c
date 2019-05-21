@@ -208,3 +208,14 @@ To format the code (please use this command before submitting any pull request):
 ```
 make format
 ```
+
+## Contributors ##
+
+The following people have contributed to milagro-crypto-c
+
+- Mike Scott
+- Kealan McCusker
+- Alessandro Budroni
+- Samuele Andreoli
+
+Please add yourself here if you make or have made a contribution.
