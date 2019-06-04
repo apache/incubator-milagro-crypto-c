@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-/* test driver and function exerciser for ECDH/ECIES/ECDSA API Functions */
+/* An example of using multiple curves in an executible */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +43,7 @@ int ecdh_ED25519(csprng *RNG)
     // Note salt must be big enough to include an appended word
     // Note ECIES ciphertext C must be big enough to include at least 1 appended block
     // Recall EFS_ED25519 is field size in bytes. So EFS_ED25519=32 for 256-bit curve
-    char s0[2*EGS_ED25519],s1[EGS_ED25519],w0[2*EFS_ED25519+1],w1[2*EFS_ED25519+1],z0[EFS_ED25519],z1[EFS_ED25519],key[EAS_ED25519],salt[40],pw[40];
+    char s0[2*EGS_ED25519],s1[EGS_ED25519],w0[2*EFS_ED25519+1],w1[2*EFS_ED25519+1],z0[EFS_ED25519],z1[EFS_ED25519],key[AESKEY_ED25519],salt[40],pw[40];
     octet S0= {0,sizeof(s0),s0};
     octet S1= {0,sizeof(s1),s1};
     octet W0= {0,sizeof(w0),w0};
@@ -64,7 +64,7 @@ int ecdh_ED25519(csprng *RNG)
 
     // private key S0 of size EGS_ED25519 bytes derived from Password and Salt
 
-    PBKDF2(HASH_TYPE_ECC_ED25519,&PW,&SALT,1000,EGS_ED25519,&S0);
+    PBKDF2(HASH_TYPE_ED25519,&PW,&SALT,1000,EGS_ED25519,&S0);
 
     printf("Alices private key= 0x");
     OCT_output(&S0);
@@ -106,7 +106,7 @@ int ecdh_ED25519(csprng *RNG)
         return 0;
     }
 
-    KDF2(HASH_TYPE_ECC_ED25519,&Z0,NULL,EAS_ED25519,&KEY);
+    KDF2(HASH_TYPE_ED25519,&Z0,NULL,AESKEY_ED25519,&KEY);
 
     printf("Alice's DH Key=  0x");
     OCT_output(&KEY);
@@ -140,7 +140,7 @@ int ecdh_ED25519(csprng *RNG)
     M.len=17;
     for (i=0; i<=16; i++) M.val[i]=i;
 
-    ECP_ED25519_ECIES_ENCRYPT(HASH_TYPE_ECC_ED25519,&P1,&P2,RNG,&W1,&M,12,&V,&C,&T);
+    ECP_ED25519_ECIES_ENCRYPT(HASH_TYPE_ED25519,&P1,&P2,RNG,&W1,&M,12,&V,&C,&T);
 
     printf("Ciphertext= \n");
     printf("V= 0x");
@@ -150,7 +150,7 @@ int ecdh_ED25519(csprng *RNG)
     printf("T= 0x");
     OCT_output(&T);
 
-    if (!ECP_ED25519_ECIES_DECRYPT(HASH_TYPE_ECC_ED25519,&P1,&P2,&V,&C,&T,&S1,&M))
+    if (!ECP_ED25519_ECIES_DECRYPT(HASH_TYPE_ED25519,&P1,&P2,&V,&C,&T,&S1,&M))
     {
         printf("*** ECIES Decryption Failed\n");
         return 0;
@@ -163,7 +163,7 @@ int ecdh_ED25519(csprng *RNG)
 
     printf("Testing ECDSA\n");
 
-    if (ECP_ED25519_SP_DSA(HASH_TYPE_ECC_ED25519,RNG,NULL,&S0,&M,&CS,&DS)!=0)
+    if (ECP_ED25519_SP_DSA(HASH_TYPE_ED25519,RNG,NULL,&S0,&M,&CS,&DS)!=0)
     {
         printf("***ECDSA Signature Failed\n");
         return 0;
@@ -174,7 +174,7 @@ int ecdh_ED25519(csprng *RNG)
     printf("Signature D = 0x");
     OCT_output(&DS);
 
-    if (ECP_ED25519_VP_DSA(HASH_TYPE_ECC_ED25519,&W0,&M,&CS,&DS)!=0)
+    if (ECP_ED25519_VP_DSA(HASH_TYPE_ED25519,&W0,&M,&CS,&DS)!=0)
     {
         printf("***ECDSA Verification Failed\n");
         return 0;
@@ -199,7 +199,7 @@ int ecdh_NIST256(csprng *RNG)
     // Note salt must be big enough to include an appended word
     // Note ECIES ciphertext C must be big enough to include at least 1 appended block
     // Recall EFS_NIST256 is field size in bytes. So EFS_NIST256=32 for 256-bit curve
-    char s0[2*EGS_NIST256],s1[EGS_NIST256],w0[2*EFS_NIST256+1],w1[2*EFS_NIST256+1],z0[EFS_NIST256],z1[EFS_NIST256],key[EAS_NIST256],salt[40],pw[40];
+    char s0[2*EGS_NIST256],s1[EGS_NIST256],w0[2*EFS_NIST256+1],w1[2*EFS_NIST256+1],z0[EFS_NIST256],z1[EFS_NIST256],key[AESKEY_NIST256],salt[40],pw[40];
     octet S0= {0,sizeof(s0),s0};
     octet S1= {0,sizeof(s1),s1};
     octet W0= {0,sizeof(w0),w0};
@@ -220,7 +220,7 @@ int ecdh_NIST256(csprng *RNG)
 
     // private key S0 of size EGS_NIST256 bytes derived from Password and Salt
 
-    PBKDF2(HASH_TYPE_ECC_NIST256,&PW,&SALT,1000,EGS_NIST256,&S0);
+    PBKDF2(HASH_TYPE_NIST256,&PW,&SALT,1000,EGS_NIST256,&S0);
 
     printf("Alices private key= 0x");
     OCT_output(&S0);
@@ -262,7 +262,7 @@ int ecdh_NIST256(csprng *RNG)
         return 0;
     }
 
-    KDF2(HASH_TYPE_ECC_NIST256,&Z0,NULL,EAS_NIST256,&KEY);
+    KDF2(HASH_TYPE_NIST256,&Z0,NULL,AESKEY_NIST256,&KEY);
 
     printf("Alice's DH Key=  0x");
     OCT_output(&KEY);
@@ -296,7 +296,7 @@ int ecdh_NIST256(csprng *RNG)
     M.len=17;
     for (i=0; i<=16; i++) M.val[i]=i;
 
-    ECP_NIST256_ECIES_ENCRYPT(HASH_TYPE_ECC_NIST256,&P1,&P2,RNG,&W1,&M,12,&V,&C,&T);
+    ECP_NIST256_ECIES_ENCRYPT(HASH_TYPE_NIST256,&P1,&P2,RNG,&W1,&M,12,&V,&C,&T);
 
     printf("Ciphertext= \n");
     printf("V= 0x");
@@ -306,7 +306,7 @@ int ecdh_NIST256(csprng *RNG)
     printf("T= 0x");
     OCT_output(&T);
 
-    if (!ECP_NIST256_ECIES_DECRYPT(HASH_TYPE_ECC_NIST256,&P1,&P2,&V,&C,&T,&S1,&M))
+    if (!ECP_NIST256_ECIES_DECRYPT(HASH_TYPE_NIST256,&P1,&P2,&V,&C,&T,&S1,&M))
     {
         printf("*** ECIES Decryption Failed\n");
         return 0;
@@ -319,7 +319,7 @@ int ecdh_NIST256(csprng *RNG)
 
     printf("Testing ECDSA\n");
 
-    if (ECP_NIST256_SP_DSA(HASH_TYPE_ECC_NIST256,RNG,NULL,&S0,&M,&CS,&DS)!=0)
+    if (ECP_NIST256_SP_DSA(HASH_TYPE_NIST256,RNG,NULL,&S0,&M,&CS,&DS)!=0)
     {
         printf("***ECDSA Signature Failed\n");
         return 0;
@@ -330,7 +330,7 @@ int ecdh_NIST256(csprng *RNG)
     printf("Signature D = 0x");
     OCT_output(&DS);
 
-    if (ECP_NIST256_VP_DSA(HASH_TYPE_ECC_NIST256,&W0,&M,&CS,&DS)!=0)
+    if (ECP_NIST256_VP_DSA(HASH_TYPE_NIST256,&W0,&M,&CS,&DS)!=0)
     {
         printf("***ECDSA Verification Failed\n");
         return 0;
@@ -354,7 +354,7 @@ int ecdh_GOLDILOCKS(csprng *RNG)
     // Note salt must be big enough to include an appended word
     // Note ECIES ciphertext C must be big enough to include at least 1 appended block
     // Recall EFS_GOLDILOCKS is field size in bytes. So EFS_GOLDILOCKS=32 for 256-bit curve
-    char s0[2*EGS_GOLDILOCKS],s1[EGS_GOLDILOCKS],w0[2*EFS_GOLDILOCKS+1],w1[2*EFS_GOLDILOCKS+1],z0[EFS_GOLDILOCKS],z1[EFS_GOLDILOCKS],key[EAS_GOLDILOCKS],salt[40],pw[40];
+    char s0[2*EGS_GOLDILOCKS],s1[EGS_GOLDILOCKS],w0[2*EFS_GOLDILOCKS+1],w1[2*EFS_GOLDILOCKS+1],z0[EFS_GOLDILOCKS],z1[EFS_GOLDILOCKS],key[AESKEY_GOLDILOCKS],salt[40],pw[40];
     octet S0= {0,sizeof(s0),s0};
     octet S1= {0,sizeof(s1),s1};
     octet W0= {0,sizeof(w0),w0};
@@ -375,7 +375,7 @@ int ecdh_GOLDILOCKS(csprng *RNG)
 
     // private key S0 of size EGS_GOLDILOCKS bytes derived from Password and Salt
 
-    PBKDF2(HASH_TYPE_ECC_GOLDILOCKS,&PW,&SALT,1000,EGS_GOLDILOCKS,&S0);
+    PBKDF2(HASH_TYPE_GOLDILOCKS,&PW,&SALT,1000,EGS_GOLDILOCKS,&S0);
 
     printf("Alices private key= 0x");
     OCT_output(&S0);
@@ -417,7 +417,7 @@ int ecdh_GOLDILOCKS(csprng *RNG)
         return 0;
     }
 
-    KDF2(HASH_TYPE_ECC_GOLDILOCKS,&Z0,NULL,EAS_GOLDILOCKS,&KEY);
+    KDF2(HASH_TYPE_GOLDILOCKS,&Z0,NULL,AESKEY_GOLDILOCKS,&KEY);
 
     printf("Alice's DH Key=  0x");
     OCT_output(&KEY);
@@ -451,7 +451,7 @@ int ecdh_GOLDILOCKS(csprng *RNG)
     M.len=17;
     for (i=0; i<=16; i++) M.val[i]=i;
 
-    ECP_GOLDILOCKS_ECIES_ENCRYPT(HASH_TYPE_ECC_GOLDILOCKS,&P1,&P2,RNG,&W1,&M,12,&V,&C,&T);
+    ECP_GOLDILOCKS_ECIES_ENCRYPT(HASH_TYPE_GOLDILOCKS,&P1,&P2,RNG,&W1,&M,12,&V,&C,&T);
 
     printf("Ciphertext= \n");
     printf("V= 0x");
@@ -461,7 +461,7 @@ int ecdh_GOLDILOCKS(csprng *RNG)
     printf("T= 0x");
     OCT_output(&T);
 
-    if (!ECP_GOLDILOCKS_ECIES_DECRYPT(HASH_TYPE_ECC_GOLDILOCKS,&P1,&P2,&V,&C,&T,&S1,&M))
+    if (!ECP_GOLDILOCKS_ECIES_DECRYPT(HASH_TYPE_GOLDILOCKS,&P1,&P2,&V,&C,&T,&S1,&M))
     {
         printf("*** ECIES Decryption Failed\n");
         return 0;
@@ -474,7 +474,7 @@ int ecdh_GOLDILOCKS(csprng *RNG)
 
     printf("Testing ECDSA\n");
 
-    if (ECP_GOLDILOCKS_SP_DSA(HASH_TYPE_ECC_GOLDILOCKS,RNG,NULL,&S0,&M,&CS,&DS)!=0)
+    if (ECP_GOLDILOCKS_SP_DSA(HASH_TYPE_GOLDILOCKS,RNG,NULL,&S0,&M,&CS,&DS)!=0)
     {
         printf("***ECDSA Signature Failed\n");
         return 0;
@@ -485,7 +485,7 @@ int ecdh_GOLDILOCKS(csprng *RNG)
     printf("Signature D = 0x");
     OCT_output(&DS);
 
-    if (ECP_GOLDILOCKS_VP_DSA(HASH_TYPE_ECC_GOLDILOCKS,&W0,&M,&CS,&DS)!=0)
+    if (ECP_GOLDILOCKS_VP_DSA(HASH_TYPE_GOLDILOCKS,&W0,&M,&CS,&DS)!=0)
     {
         printf("***ECDSA Verification Failed\n");
         return 0;
@@ -558,7 +558,7 @@ int mpin_BN254CX(csprng *RNG)
 
     // Create Client Identity
     OCT_jstring(&CLIENT_ID,"testUser@miracl.com");
-    HASH_ID(HASH_TYPE_MPIN_BN254CX,&CLIENT_ID,&HCID);  // Either Client or TA calculates Hash(ID) - you decide!
+    HASH_ID(HASH_TYPE_BN254CX,&CLIENT_ID,&HCID);  // Either Client or TA calculates Hash(ID) - you decide!
 
     printf("Client ID Hash= ");
     OCT_output(&HCID);
@@ -581,7 +581,7 @@ int mpin_BN254CX(csprng *RNG)
     // Client extracts PIN from secret to create Token
     pin=1234;
     printf("Client extracts PIN= %d\n",pin);
-    MPIN_BN254CX_EXTRACT_PIN(HASH_TYPE_MPIN_BN254CX,&CLIENT_ID,pin,&TOKEN);
+    MPIN_BN254CX_EXTRACT_PIN(HASH_TYPE_BN254CX,&CLIENT_ID,pin,&TOKEN);
     printf("Client Token= ");
     OCT_output(&TOKEN);
 
@@ -593,7 +593,7 @@ int mpin_BN254CX(csprng *RNG)
     // Client gets "Time Permit" from DTA
     printf("Client gets Time Permit\n");
 
-    MPIN_BN254CX_GET_CLIENT_PERMIT(HASH_TYPE_MPIN_BN254CX,date,&S,&HCID,&PERMIT);
+    MPIN_BN254CX_GET_CLIENT_PERMIT(HASH_TYPE_BN254CX,date,&S,&HCID,&PERMIT);
     printf("Time Permit= ");
     OCT_output(&PERMIT);
 
@@ -667,7 +667,7 @@ int mpin_BN254CX(csprng *RNG)
     printf("MPIN Single Pass\n");
     timeValue = MPIN_BN254CX_GET_TIME();
 
-    rtn=MPIN_BN254CX_CLIENT(HASH_TYPE_MPIN_BN254CX,date,&CLIENT_ID,RNG,&X,pin,&TOKEN,&SEC,pxID,pxCID,pPERMIT,NULL,timeValue,&Y);
+    rtn=MPIN_BN254CX_CLIENT(HASH_TYPE_BN254CX,date,&CLIENT_ID,RNG,&X,pin,&TOKEN,&SEC,pxID,pxCID,pPERMIT,NULL,timeValue,&Y);
 
     if (rtn != 0)
     {
@@ -680,16 +680,16 @@ int mpin_BN254CX(csprng *RNG)
 #endif
 
 
-    rtn=MPIN_BN254CX_SERVER(HASH_TYPE_MPIN_BN254CX,date,pHID,pHTID,&Y,&SST,pxID,pxCID,&SEC,pE,pF,pID,NULL,timeValue);
+    rtn=MPIN_BN254CX_SERVER(HASH_TYPE_BN254CX,date,pHID,pHTID,&Y,&SST,pxID,pxCID,&SEC,pE,pF,pID,NULL,timeValue);
 
 #ifdef FULL
-    HASH_ID(HASH_TYPE_MPIN_BN254CX,&CLIENT_ID,&HSID);  // new
+    HASH_ID(HASH_TYPE_BN254CX,&CLIENT_ID,&HSID);  // new
     MPIN_BN254CX_GET_G1_MULTIPLE(RNG,0,&W,prHID,&T);  // Also send T=w.ID to client, remember random w
 #endif
 
 #else // SINGLE_PASS
     printf("MPIN Multi Pass\n");
-    if (MPIN_BN254CX_CLIENT_1(HASH_TYPE_MPIN_BN254CX,date,&CLIENT_ID,RNG,&X,pin,&TOKEN,&SEC,pxID,pxCID,pPERMIT)!=0)
+    if (MPIN_BN254CX_CLIENT_1(HASH_TYPE_BN254CX,date,&CLIENT_ID,RNG,&X,pin,&TOKEN,&SEC,pxID,pxCID,pPERMIT)!=0)
     {
         printf("Error from Client side - First Pass\n");
         return 0;
@@ -698,18 +698,18 @@ int mpin_BN254CX(csprng *RNG)
     // Send U=x.ID to server, and recreate secret from token and pin
 
 #ifdef FULL
-    HASH_ID(HASH_TYPE_MPIN_BN254CX,&CLIENT_ID,&HCID);
+    HASH_ID(HASH_TYPE_BN254CX,&CLIENT_ID,&HCID);
     MPIN_BN254CX_GET_G1_MULTIPLE(RNG,1,&R,&HCID,&Z);  // Also Send Z=r.ID to Server, remember random r, DH component
 #endif
 
     // Server calculates H(ID) and H(ID)+H(T|H(ID)) (if time permits enabled), and maps them to points on the curve HID and HTID resp.
-    MPIN_BN254CX_SERVER_1(HASH_TYPE_MPIN_BN254CX,date,pID,pHID,pHTID);
+    MPIN_BN254CX_SERVER_1(HASH_TYPE_BN254CX,date,pID,pHID,pHTID);
 
     // Server generates Random number Y and sends it to Client
     MPIN_BN254CX_RANDOM_GENERATE(RNG,&Y);
 
 #ifdef FULL
-    HASH_ID(HASH_TYPE_MPIN_BN254CX,&CLIENT_ID,&HSID); //new
+    HASH_ID(HASH_TYPE_BN254CX,&CLIENT_ID,&HSID); //new
     MPIN_BN254CX_GET_G1_MULTIPLE(RNG,0,&W,prHID,&T);  // Also send T=w.ID to client, remember random w, DH component
 #endif
 
@@ -745,13 +745,13 @@ int mpin_BN254CX(csprng *RNG)
 
 #ifdef FULL
 
-    HASH_ALL(HASH_TYPE_MPIN_BN254CX,&HCID,pxID,pxCID,&SEC,&Y,&Z,&T,&H);  // new
-    MPIN_BN254CX_CLIENT_KEY(HASH_TYPE_MPIN_BN254CX,&G1,&G2,pin,&R,&X,&H,&T,&CK);      // new H
+    HASH_ALL(HASH_TYPE_BN254CX,&HCID,pxID,pxCID,&SEC,&Y,&Z,&T,&H);  // new
+    MPIN_BN254CX_CLIENT_KEY(HASH_TYPE_BN254CX,&G1,&G2,pin,&R,&X,&H,&T,&CK);      // new H
     printf("Client Key = ");
     OCT_output(&CK);
 
-    HASH_ALL(HASH_TYPE_MPIN_BN254CX,&HSID,pxID,pxCID,&SEC,&Y,&Z,&T,&H);
-    MPIN_BN254CX_SERVER_KEY(HASH_TYPE_MPIN_BN254CX,&Z,&SST,&W,&H,pHID,pxID,pxCID,&SK); // new H,pHID
+    HASH_ALL(HASH_TYPE_BN254CX,&HSID,pxID,pxCID,&SEC,&Y,&Z,&T,&H);
+    MPIN_BN254CX_SERVER_KEY(HASH_TYPE_BN254CX,&Z,&SST,&W,&H,pHID,pxID,pxCID,&SK); // new H,pHID
     printf("Server Key = ");
     OCT_output(&SK);
 #endif
