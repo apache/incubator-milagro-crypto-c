@@ -4,9 +4,9 @@
 #
 # Build test with multiple curves and RSA security levels
 
-# @author Kealan McCusker <kealan.mccusker@mirack.com>
+# @author Kealan McCusker <kealanmccusker@gmail.com>
 
-set -e
+# set -e
 
 # Build default - see config.mk
 make clean
