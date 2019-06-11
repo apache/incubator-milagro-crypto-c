@@ -3,6 +3,7 @@
 
 /* Curve HIFIVE */
 
+
 #if CHUNK==16
 
 #error Not supported
@@ -22,3 +23,5 @@ const BIG_336_60 Modulus_HIFIVE= {0xFFFFFFFFFFFFFFDL,0xFFFFFFFFFFFFFFFL,0xFFFFFF
 const BIG_336_60 R2modp_HIFIVE= {0x9000000000000L,0x0L,0x0L,0x0L,0x0L,0x0L};
 const chunk MConst_HIFIVE= 0x3L;
 #endif
+
+
