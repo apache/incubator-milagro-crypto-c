@@ -89,7 +89,7 @@ void FP24_YYY_one(FP24_YYY *w)
     FP8_YYY_one(&(w->a));
     FP8_YYY_zero(&(w->b));
     FP8_YYY_zero(&(w->c));
-    w->type=FP_UNITY;
+    w->type=AMCL_FP_UNITY;
 }
 
 void FP24_YYY_zero(FP24_YYY *w)
@@ -97,7 +97,7 @@ void FP24_YYY_zero(FP24_YYY *w)
     FP8_YYY_zero(&(w->a));
     FP8_YYY_zero(&(w->b));
     FP8_YYY_zero(&(w->c));
-    w->type=FP_ZERO;
+    w->type=AMCL_FP_ZERO;
 }
 
 /* return 1 if x==y, else 0 */
@@ -126,7 +126,7 @@ void FP24_YYY_from_FP8(FP24_YYY *w,FP8_YYY *a)
     FP8_YYY_copy(&(w->a),a);
     FP8_YYY_zero(&(w->b));
     FP8_YYY_zero(&(w->c));
-    w->type=FP_SPARSER;
+    w->type=AMCL_AMCL_FP_SPARSER;
 }
 
 /* Create FP24 from 3 FP8's */
@@ -136,7 +136,7 @@ void FP24_YYY_from_FP8s(FP24_YYY *w,FP8_YYY *a,FP8_YYY *b,FP8_YYY *c)
     FP8_YYY_copy(&(w->a),a);
     FP8_YYY_copy(&(w->b),b);
     FP8_YYY_copy(&(w->c),c);
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
 }
 
 /* Granger-Scott Unitary Squaring. This does not benefit from lazy reduction */
@@ -176,7 +176,7 @@ void FP24_YYY_usqr(FP24_YYY *w,FP24_YYY *x)
     FP8_YYY_add(&(w->c),&(w->c),&(w->c));
     FP8_YYY_add(&(w->b),&B,&(w->b));
     FP8_YYY_add(&(w->c),&C,&(w->c));
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
     FP24_YYY_reduce(w);	    /* reduce here as in pow function repeated squarings would trigger multiple reductions */
 }
 
@@ -188,7 +188,7 @@ void FP24_YYY_sqr(FP24_YYY *w,FP24_YYY *x)
 
     FP8_YYY A,B,C,D;
 
-    if (x->type<=FP_UNITY)
+    if (x->type<=AMCL_FP_UNITY)
     {
         FP24_YYY_copy(w,x);
         return;
@@ -227,10 +227,10 @@ void FP24_YYY_sqr(FP24_YYY *w,FP24_YYY *x)
     FP8_YYY_add(&(w->b),&C,&D);
     FP8_YYY_add(&(w->c),&(w->c),&A);
 
-    if (x->type==FP_SPARSER)
-        w->type=FP_SPARSE;
+    if (x->type==AMCL_AMCL_FP_SPARSER)
+        w->type=AMCL_FP_SPARSE;
     else
-        w->type=FP_DENSE;
+        w->type=AMCL_FP_DENSE;
 
     FP24_YYY_norm(w);
 }
@@ -289,7 +289,7 @@ void FP24_YYY_mul(FP24_YYY *w,FP24_YYY *y)
     FP8_YYY_norm(&z3);
     FP8_YYY_times_i(&z3);
     FP8_YYY_add(&(w->a),&z0,&z3);
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
     FP24_YYY_norm(w);
 }
 
@@ -299,26 +299,26 @@ void FP24_YYY_mul(FP24_YYY *w,FP24_YYY *y)
 void FP24_YYY_ssmul(FP24_YYY *w,FP24_YYY *y)
 {
     FP8_YYY z0,z1,z2,z3,t0,t1;
-    if (w->type==FP_UNITY)
+    if (w->type==AMCL_FP_UNITY)
     {
         FP24_YYY_copy(w,y);
         return;
     }
-    if (y->type==FP_UNITY)
+    if (y->type==AMCL_FP_UNITY)
         return;
 
-    if (y->type >= FP_SPARSE)
+    if (y->type >= AMCL_FP_SPARSE)
     {
         FP8_YYY_mul(&z0,&(w->a),&(y->a));  // xa.ya   always 11x11
 
 #if SEXTIC_TWIST_ZZZ == M_TYPE
-        if (y->type==FP_SPARSE || w->type==FP_SPARSE)
+        if (y->type==AMCL_FP_SPARSE || w->type==AMCL_FP_SPARSE)
         {
             FP4_YYY_mul(&z2.b,&(w->b).b,&(y->b).b);
             FP4_YYY_zero(&z2.a);
-            if (y->type!=FP_SPARSE)
+            if (y->type!=AMCL_FP_SPARSE)
                 FP4_YYY_mul(&z2.a,&(w->b).b,&(y->b).a);
-            if (w->type!=FP_SPARSE)
+            if (w->type!=AMCL_FP_SPARSE)
                 FP4_YYY_mul(&z2.a,&(w->b).a,&(y->b).b);
             FP8_YYY_times_i(&z2);
         }
@@ -359,13 +359,13 @@ void FP24_YYY_ssmul(FP24_YYY *w,FP24_YYY *y)
         FP8_YYY_add(&z2,&z2,&t0);	// (xb.yb) - (xa.ya) + (xa+xc)(ya+yc)
 
 #if SEXTIC_TWIST_ZZZ == D_TYPE
-        if (y->type==FP_SPARSE || w->type==FP_SPARSE)
+        if (y->type==AMCL_FP_SPARSE || w->type==AMCL_FP_SPARSE)
         {
             FP4_YYY_mul(&t0.a,&(w->c).a,&(y->c).a);
             FP4_YYY_zero(&t0.b);
-            if (y->type!=FP_SPARSE)
+            if (y->type!=AMCL_FP_SPARSE)
                 FP4_YYY_mul(&t0.b,&(w->c).a,&(y->c).b);
-            if (w->type!=FP_SPARSE)
+            if (w->type!=AMCL_FP_SPARSE)
                 FP4_YYY_mul(&t0.b,&(w->c).b,&(y->c).a);
         }
         else
@@ -384,7 +384,7 @@ void FP24_YYY_ssmul(FP24_YYY *w,FP24_YYY *y)
     }
     else
     {
-        if (w->type==FP_SPARSER)
+        if (w->type==AMCL_AMCL_FP_SPARSER)
         {
             FP24_YYY_smul(w,y);
             return;
@@ -466,7 +466,7 @@ void FP24_YYY_ssmul(FP24_YYY *w,FP24_YYY *y)
         FP8_YYY_add(&(w->a),&z0,&z3);
 #endif
     }
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
     FP24_YYY_norm(w);
 }
 
@@ -567,7 +567,7 @@ void FP24_YYY_smul(FP24_YYY *w,FP24_YYY *y)
     FP8_YYY_norm(&(w->c));
 #endif
 
-    w->type=FP_SPARSE;
+    w->type=AMCL_FP_SPARSE;
 }
 
 /* Set w=1/x */
@@ -607,7 +607,7 @@ void FP24_YYY_inv(FP24_YYY *w,FP24_YYY *x)
     FP8_YYY_mul(&(w->a),&f0,&f3);
     FP8_YYY_mul(&(w->b),&f1,&f3);
     FP8_YYY_mul(&(w->c),&f2,&f3);
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
 }
 
 /* constant time powering by small integer of max length bts */
@@ -849,7 +849,6 @@ void FP24_YYY_pow8(FP24_YYY *p,FP24_YYY *q,BIG_XXX u[8])
 void FP24_YYY_frob(FP24_YYY *w,FP2_YYY *f,int n)
 {
     int i;
-    FP4_YYY X2,X4;
     FP2_YYY f3,f2;				// f=(1+i)^(p-7)/12
     FP2_YYY_sqr(&f2,f);     //
     FP2_YYY_mul(&f3,&f2,f); // f3=f^3=(1+i)^(p-7)/4
@@ -869,7 +868,7 @@ void FP24_YYY_frob(FP24_YYY *w,FP2_YYY *f,int n)
         FP8_YYY_times_i2(&(w->c));
         FP8_YYY_times_i2(&(w->c));
     }
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
 }
 
 /* SU= 8 */

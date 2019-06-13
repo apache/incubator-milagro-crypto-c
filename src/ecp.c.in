@@ -252,7 +252,7 @@ int ECP_ZZZ_get(BIG_XXX x,ECP_ZZZ *P)
     ECP_ZZZ_copy(&W,P);
     ECP_ZZZ_affine(&W);
     if (ECP_ZZZ_isinf(&W)) return -1;
-    FP_YYY_redc(x,&(Wx));
+    FP_YYY_redc(x,&(W));
     return 0;
 }
 
@@ -392,7 +392,6 @@ void ECP_ZZZ_mapit(ECP_ZZZ *P,octet *W)
 void ECP_ZZZ_affine(ECP_ZZZ *P)
 {
     FP_YYY one,iz;
-    BIG_XXX b;
     if (ECP_ZZZ_isinf(P)) return;
     FP_YYY_one(&one);
     if (FP_YYY_equals(&(P->z),&one)) return;

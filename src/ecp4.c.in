@@ -310,7 +310,7 @@ void ECP4_ZZZ_neg(ECP4_ZZZ *P)
 /* return -1 for Infinity, 0 for addition, 1 for doubling */
 int ECP4_ZZZ_dbl(ECP4_ZZZ *P)
 {
-    FP4_YYY t0,t1,t2,t3,iy,x3,y3;
+    FP4_YYY t0,t1,t2,iy,x3,y3;
 
     FP4_YYY_copy(&iy,&(P->y));		//FP4_YYY iy=new FP4_YYY(y);
 #if SEXTIC_TWIST_ZZZ==D_TYPE
@@ -729,7 +729,7 @@ void ECP4_ZZZ_mapit(ECP4_ZZZ *Q,octet *W)
 {
     BIG_XXX q,one,x,hv;
     FP2_YYY X[3],T;
-    FP4_YYY X4,Y4;
+    FP4_YYY X4;
 
     ECP4_ZZZ xQ, x2Q, x3Q, x4Q;
 

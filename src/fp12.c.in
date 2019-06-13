@@ -92,7 +92,7 @@ void FP12_YYY_one(FP12_YYY *w)
     FP4_YYY_one(&(w->a));
     FP4_YYY_zero(&(w->b));
     FP4_YYY_zero(&(w->c));
-    w->type=FP_UNITY;
+    w->type=AMCL_FP_UNITY;
 }
 
 void FP12_YYY_zero(FP12_YYY *w)
@@ -100,7 +100,7 @@ void FP12_YYY_zero(FP12_YYY *w)
     FP4_YYY_zero(&(w->a));
     FP4_YYY_zero(&(w->b));
     FP4_YYY_zero(&(w->c));
-    w->type=FP_ZERO;
+    w->type=AMCL_FP_ZERO;
 }
 
 /* return 1 if x==y, else 0 */
@@ -129,7 +129,7 @@ void FP12_YYY_from_FP4(FP12_YYY *w,FP4_YYY *a)
     FP4_YYY_copy(&(w->a),a);
     FP4_YYY_zero(&(w->b));
     FP4_YYY_zero(&(w->c));
-    w->type=FP_SPARSER;
+    w->type=AMCL_AMCL_FP_SPARSER;
 }
 
 /* Create FP12 from 3 FP4's */
@@ -139,7 +139,7 @@ void FP12_YYY_from_FP4s(FP12_YYY *w,FP4_YYY *a,FP4_YYY *b,FP4_YYY *c)
     FP4_YYY_copy(&(w->a),a);
     FP4_YYY_copy(&(w->b),b);
     FP4_YYY_copy(&(w->c),c);
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
 }
 
 /* Granger-Scott Unitary Squaring. This does not benefit from lazy reduction */
@@ -180,7 +180,7 @@ void FP12_YYY_usqr(FP12_YYY *w,FP12_YYY *x)
     FP4_YYY_add(&(w->b),&B,&(w->b));
     FP4_YYY_add(&(w->c),&C,&(w->c));
 
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
     FP12_YYY_reduce(w);	    /* reduce here as in pow function repeated squarings would trigger multiple reductions */
 }
 
@@ -192,7 +192,7 @@ void FP12_YYY_sqr(FP12_YYY *w,FP12_YYY *x)
 
     FP4_YYY A,B,C,D;
 
-    if (x->type<=FP_UNITY)
+    if (x->type<=AMCL_FP_UNITY)
     {
         FP12_YYY_copy(w,x);
         return;
@@ -229,10 +229,10 @@ void FP12_YYY_sqr(FP12_YYY *w,FP12_YYY *x)
     FP4_YYY_add(&(w->b),&C,&D);
     FP4_YYY_add(&(w->c),&(w->c),&A);
 
-    if (x->type==FP_SPARSER)
-        w->type=FP_SPARSE;
+    if (x->type==AMCL_AMCL_FP_SPARSER)
+        w->type=AMCL_FP_SPARSE;
     else
-        w->type=FP_DENSE;
+        w->type=AMCL_FP_DENSE;
 
     FP12_YYY_norm(w);
 }
@@ -292,7 +292,7 @@ void FP12_YYY_mul(FP12_YYY *w,FP12_YYY *y)
     FP4_YYY_times_i(&z3);
     FP4_YYY_add(&(w->a),&z0,&z3);
 
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
     FP12_YYY_norm(w);
 }
 
@@ -302,26 +302,26 @@ void FP12_YYY_mul(FP12_YYY *w,FP12_YYY *y)
 void FP12_YYY_ssmul(FP12_YYY *w,FP12_YYY *y)
 {
     FP4_YYY z0,z1,z2,z3,t0,t1;
-    if (w->type==FP_UNITY)
+    if (w->type==AMCL_FP_UNITY)
     {
         FP12_YYY_copy(w,y);
         return;
     }
-    if (y->type==FP_UNITY)
+    if (y->type==AMCL_FP_UNITY)
         return;
 
-    if (y->type >= FP_SPARSE)
+    if (y->type >= AMCL_FP_SPARSE)
     {
         FP4_YYY_mul(&z0,&(w->a),&(y->a));  // xa.ya   always 11x11
 
 #if SEXTIC_TWIST_ZZZ == M_TYPE
-        if (y->type==FP_SPARSE || w->type==FP_SPARSE)
+        if (y->type==AMCL_FP_SPARSE || w->type==AMCL_FP_SPARSE)
         {
             FP2_YYY_mul(&z2.b,&(w->b).b,&(y->b).b);
             FP2_YYY_zero(&z2.a);
-            if (y->type!=FP_SPARSE)
+            if (y->type!=AMCL_FP_SPARSE)
                 FP2_YYY_mul(&z2.a,&(w->b).b,&(y->b).a);
-            if (w->type!=FP_SPARSE)
+            if (w->type!=AMCL_FP_SPARSE)
                 FP2_YYY_mul(&z2.a,&(w->b).a,&(y->b).b);
             FP4_YYY_times_i(&z2);
         }
@@ -362,13 +362,13 @@ void FP12_YYY_ssmul(FP12_YYY *w,FP12_YYY *y)
         FP4_YYY_add(&z2,&z2,&t0);	// (xb.yb) - (xa.ya) + (xa+xc)(ya+yc)
 
 #if SEXTIC_TWIST_ZZZ == D_TYPE
-        if (y->type==FP_SPARSE || w->type==FP_SPARSE)
+        if (y->type==AMCL_FP_SPARSE || w->type==AMCL_FP_SPARSE)
         {
             FP2_YYY_mul(&t0.a,&(w->c).a,&(y->c).a);
             FP2_YYY_zero(&t0.b);
-            if (y->type!=FP_SPARSE)
+            if (y->type!=AMCL_FP_SPARSE)
                 FP2_YYY_mul(&t0.b,&(w->c).a,&(y->c).b);
-            if (w->type!=FP_SPARSE)
+            if (w->type!=AMCL_FP_SPARSE)
                 FP2_YYY_mul(&t0.b,&(w->c).b,&(y->c).a);
         }
         else
@@ -387,7 +387,7 @@ void FP12_YYY_ssmul(FP12_YYY *w,FP12_YYY *y)
     }
     else
     {
-        if (w->type==FP_SPARSER)
+        if (w->type==AMCL_AMCL_FP_SPARSER)
         {
             FP12_YYY_smul(w,y);
             return;
@@ -470,7 +470,7 @@ void FP12_YYY_ssmul(FP12_YYY *w,FP12_YYY *y)
 
 #endif
     }
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
     FP12_YYY_norm(w);
 }
 
@@ -574,7 +574,7 @@ void FP12_YYY_smul(FP12_YYY *w,FP12_YYY *y)
 #endif
 
 //	}
-    w->type=FP_SPARSE;
+    w->type=AMCL_FP_SPARSE;
 }
 
 /* Set w=1/x */
@@ -615,7 +615,7 @@ void FP12_YYY_inv(FP12_YYY *w,FP12_YYY *x)
     FP4_YYY_mul(&(w->a),&f0,&f3);
     FP4_YYY_mul(&(w->b),&f1,&f3);
     FP4_YYY_mul(&(w->c),&f2,&f3);
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
 }
 
 /* constant time powering by small integer of max length bts */
@@ -825,7 +825,7 @@ void FP12_YYY_frob(FP12_YYY *w,FP2_YYY *f)
 
     FP4_YYY_pmul(&(w->b),&(w->b),f);
     FP4_YYY_pmul(&(w->c),&(w->c),&f2);
-    w->type=FP_DENSE;
+    w->type=AMCL_FP_DENSE;
 }
 
 /* SU= 8 */

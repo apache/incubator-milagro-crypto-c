@@ -131,7 +131,7 @@ static void PAIR_ZZZ_line(FP12_YYY *v,ECP2_ZZZ *A,ECP2_ZZZ *B,FP_YYY *Qx,FP_YYY 
     }
 
     FP12_YYY_from_FP4s(v,&a,&b,&c);
-    v->type=FP_SPARSER;
+    v->type=AMCL_AMCL_FP_SPARSER;
 }
 
 
@@ -199,8 +199,8 @@ void PAIR_ZZZ_miller(FP12_YYY *res,FP12_YYY r[])
 /* Accumulate another set of line functions for n-pairing */
 void PAIR_ZZZ_another(FP12_YYY r[],ECP2_ZZZ* PV,ECP_ZZZ* QV)
 {
-    int i,j,nb,bt;
-    BIG_XXX x,n,n3;
+    int i,nb,bt;
+    BIG_XXX n,n3;
     FP12_YYY lv,lv2;
     ECP2_ZZZ A,NP,P;
     ECP_ZZZ Q;
@@ -271,8 +271,7 @@ void PAIR_ZZZ_another(FP12_YYY r[],ECP2_ZZZ* PV,ECP_ZZZ* QV)
 /* Optimal R-ate pairing r=e(P,Q) */
 void PAIR_ZZZ_ate(FP12_YYY *r,ECP2_ZZZ *P1,ECP_ZZZ *Q1)
 {
-
-    BIG_XXX x,n,n3;
+    BIG_XXX n,n3;
     FP_YYY Qx,Qy;
     int i,nb,bt;
     ECP2_ZZZ A,NP,P;
@@ -356,7 +355,7 @@ void PAIR_ZZZ_ate(FP12_YYY *r,ECP2_ZZZ *P1,ECP_ZZZ *Q1)
 /* Optimal R-ate double pairing e(P,Q).e(R,S) */
 void PAIR_ZZZ_double_ate(FP12_YYY *r,ECP2_ZZZ *P1,ECP_ZZZ *Q1,ECP2_ZZZ *R1,ECP_ZZZ *S1)
 {
-    BIG_XXX x,n,n3;
+    BIG_XXX n,n3;
     FP_YYY Qx,Qy,Sx,Sy;
     int i,nb,bt;
     ECP2_ZZZ A,B,NP,NR,P,R;

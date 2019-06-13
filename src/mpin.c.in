@@ -539,7 +539,7 @@ void MPIN_ZZZ_SERVER_1(int sha,int date,octet *CID,octet *HID,octet *HTID)
 /* Implement M-Pin on server side */
 int MPIN_ZZZ_SERVER_2(int date,octet *HID,octet *HTID,octet *Y,octet *SST,octet *xID,octet *xCID,octet *mSEC,octet *E,octet *F,octet *Pa)
 {
-    BIG_XXX px,py,y;
+    BIG_XXX y;
     FP12_YYY g;
     ECP2_ZZZ Q,sQ;
     ECP_ZZZ P,R;

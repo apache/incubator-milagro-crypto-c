@@ -33,7 +33,7 @@ under the License.
  * otherwise it is generated randomly internally */
 int ECP_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
 {
-    BIG_XXX r,gx,gy,s;
+    BIG_XXX r,s;
     ECP_ZZZ G;
     int res=0;
 
@@ -67,7 +67,7 @@ int ECP_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
 /* Validate public key */
 int ECP_ZZZ_PUBLIC_KEY_VALIDATE(octet *W)
 {
-    BIG_XXX q,r,wx,k;
+    BIG_XXX q,r,k;
     ECP_ZZZ WP;
     int valid,nb;
     int res=0;
@@ -142,7 +142,7 @@ int ECP_ZZZ_SP_DSA(int sha,csprng *RNG,octet *K,octet *S,octet *F,octet *C,octet
     char h[128];
     octet H= {0,sizeof(h),h};
 
-    BIG_XXX gx,gy,r,s,f,c,d,u,vx,w;
+    BIG_XXX r,s,f,c,d,u,vx,w;
     ECP_ZZZ G,V;
 
     ehashit(sha,F,-1,NULL,&H,sha);
@@ -230,7 +230,7 @@ int ECP_ZZZ_VP_DSA(int sha,octet *W,octet *F, octet *C,octet *D)
     char h[128];
     octet H= {0,sizeof(h),h};
 
-    BIG_XXX r,gx,gy,wx,wy,f,c,d,h2;
+    BIG_XXX r,f,c,d,h2;
     int res=0;
     ECP_ZZZ G,WP;
     int valid;

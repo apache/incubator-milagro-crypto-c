@@ -546,7 +546,6 @@ void MPIN_ZZZ_SERVER_1(int sha,int date,octet *CID,octet *HID,octet *HTID)
     char h[MODBYTES_XXX];
     octet H= {0,sizeof(h),h};
     ECP_ZZZ P,R;
-    BIG_XXX x;
 
 #ifdef USE_ANONYMOUS
     ECP_ZZZ_mapit(&P,CID);
@@ -573,7 +572,7 @@ void MPIN_ZZZ_SERVER_1(int sha,int date,octet *CID,octet *HID,octet *HTID)
 /* Implement M-Pin on server side */
 int MPIN_ZZZ_SERVER_2(int date,octet *HID,octet *HTID,octet *Y,octet *SST,octet *xID,octet *xCID,octet *mSEC,octet *E,octet *F,octet *Pa)
 {
-    BIG_XXX px,py,y;
+    BIG_XXX y;
     FP48_YYY g;
     ECP8_ZZZ Q,sQ;
     ECP_ZZZ P,R;
@@ -744,7 +743,6 @@ int MPIN_ZZZ_PRECOMPUTE(octet *TOKEN,octet *CID,octet *CP,octet *G1,octet *G2)
     ECP_ZZZ P,T;
     ECP8_ZZZ Q;
     FP48_YYY g;
-    BIG_XXX x;
     int res=0;
 
     if (!ECP_ZZZ_fromOctet(&T,TOKEN)) res=MPIN_INVALID_POINT;

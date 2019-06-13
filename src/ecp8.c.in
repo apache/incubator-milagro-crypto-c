@@ -376,7 +376,7 @@ void ECP8_ZZZ_neg(ECP8_ZZZ *P)
 /* return -1 for Infinity, 0 for addition, 1 for doubling */
 int ECP8_ZZZ_dbl(ECP8_ZZZ *P)
 {
-    FP8_YYY t0,t1,t2,t3,iy,x3,y3;
+    FP8_YYY t0,t1,t2,iy,x3,y3;
 
     FP8_YYY_copy(&iy,&(P->y));		//FP8_YYY iy=new FP8_YYY(y);
 #if SEXTIC_TWIST_ZZZ==D_TYPE
@@ -875,7 +875,6 @@ void ECP8_ZZZ_mul16(ECP8_ZZZ *P,ECP8_ZZZ Q[16],BIG_XXX u[16])
 void ECP8_ZZZ_mapit(ECP8_ZZZ *Q,octet *W)
 {
     BIG_XXX q,one,x,hv;
-    FP_YYY Fx,Fy;
     FP2_YYY T,X[3];
     FP4_YYY X4;
     FP8_YYY X8;
