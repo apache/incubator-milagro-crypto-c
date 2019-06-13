@@ -62,7 +62,7 @@ if __name__ == "__main__":
     rng = mpin_ZZZ.create_csprng(seed)
 
     # Identity
-    mpin_id = "user@miracl.com"
+    mpin_id = "alice@milagro.com"
 
     # Hash mpin_id
     hash_mpin_id = mpin_ZZZ.hash_id(HASH_TYPE_MPIN_ZZZ, mpin_id)
@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     mpin_id = mpin_id
 
-    # Generate master secret for MIRACL and Customer
+    # Generate master secret for MILAGRO and Customer
     time_func('rtn, ms1 = mpin_ZZZ.random_generate(rng)', nIter)
     rtn, ms1 = mpin_ZZZ.random_generate(rng)
     if rtn != 0:

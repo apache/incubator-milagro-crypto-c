@@ -368,6 +368,7 @@ int main(int argc, char** argv)
             }
         }
         // Test s-multiplication for D-TYPE
+	/*
         if (!strncmp(line,FP24smuldtypeline, strlen(FP24smuldtypeline)))
         {
             len = strlen(FP24smuldtypeline);
@@ -395,6 +396,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
+	*/
         // Test inverse fuction
         if (!strncmp(line,FP24invline, strlen(FP24invline)))
         {

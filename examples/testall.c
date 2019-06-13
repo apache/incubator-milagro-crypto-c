@@ -557,7 +557,7 @@ int mpin_BN254CX(csprng *RNG)
     OCT_output(&S);
 
     // Create Client Identity
-    OCT_jstring(&CLIENT_ID,"testUser@miracl.com");
+    OCT_jstring(&CLIENT_ID,"testUser@milagro.com");
     HASH_ID(HASH_TYPE_BN254CX,&CLIENT_ID,&HCID);  // Either Client or TA calculates Hash(ID) - you decide!
 
     printf("Client ID Hash= ");

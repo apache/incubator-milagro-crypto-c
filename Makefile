@@ -1,7 +1,7 @@
 # MAKEFILE
 #
-# @author      Nicola Asuni <support@miracl.com>
-# @link        https://github.com/milagro-crypto/milagro-crypto-c
+# @author      Nicola Asuni <nicola.asuni@gmail.com>
+# @link        https://github.com/apache/incubator-milagro-crypto-c
 #
 # Requires GNU parallel: https://www.gnu.org/software/parallel/
 # -----------------------------------------------------------------------------
@@ -14,15 +14,6 @@ SHELL=/bin/bash
 
 # Project root directory
 PROJECTROOT=$(shell pwd)
-
-# CVS path (path to the parent dir containing the project)
-CVSPATH=github.com/miracl
-
-# Project owner
-OWNER=MIRACL
-
-# Project vendor
-VENDOR=miracl
 
 # Project name
 PROJECT=amcl

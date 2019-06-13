@@ -295,7 +295,7 @@ if __name__ == "__main__":
         print "IdB: %s" % toHex(IdB)
         print "HIdB: %s" % toHex(HIdB)
         
-    # Generate master secret for MIRACL and Customer
+    # Generate master secret for MILAGRO and Customer
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG, MS1)
     if rtn != 0:
         print "libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,MS1) Error %s", rtn

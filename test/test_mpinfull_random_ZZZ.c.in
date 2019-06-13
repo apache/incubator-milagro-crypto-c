@@ -170,7 +170,7 @@ int main()
 
     for(iter=1; iter<nRandomTests+1; iter++)
     {
-        /* Generate Client master secret for MIRACL and Customer */
+        /* Generate Client master secret for MILAGRO and Customer */
         rtn = MPIN_ZZZ_RANDOM_GENERATE(&RNG,&MS1);
         if (rtn != 0)
         {
@@ -183,7 +183,7 @@ int main()
             printf("MPIN_ZZZ_RANDOM_GENERATE(&RNG,&MS2) Error %d\n", rtn);
             return 1;
         }
-        printf("MASTER SECRET MIRACL:= 0x");
+        printf("MASTER SECRET MILAGRO:= 0x");
         OCT_output(&MS1);
         printf("MASTER SECRET CUSTOMER:= 0x");
         OCT_output(&MS2);

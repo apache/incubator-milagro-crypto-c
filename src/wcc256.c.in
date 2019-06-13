@@ -98,7 +98,7 @@ int WCC_ZZZ_GET_G2_MULTIPLE(octet *S,octet *HID,octet *VG2)
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G2mul(&P,s);
 
-    ECP8_ZZZ_toOctet(VG2,&P,false);
+    ECP8_ZZZ_toOctet(VG2,&P);
     return 0;
 }
 
@@ -407,7 +407,7 @@ int WCC_ZZZ_RECOMBINE_G2(octet *W1,octet *W2,octet *W)
     if (res==0)
     {
         ECP8_ZZZ_add(&Q,&T);
-        ECP8_ZZZ_toOctet(W,&Q,false);
+        ECP8_ZZZ_toOctet(W,&Q);
     }
     return res;
 }

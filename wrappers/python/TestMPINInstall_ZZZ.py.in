@@ -35,7 +35,7 @@ class TestMPIN(unittest.TestCase):
         # Form MPin ID
         endUserData = {
             "issued": "2013-10-19T06:12:28Z",
-            "userID": "testUser@miracl.com",
+            "userID": "alice@milagro.com",
             "mobile": 1,
             "salt": "e985da112a378c222cfc2f7226097b0c"
         }
@@ -58,7 +58,7 @@ class TestMPIN(unittest.TestCase):
         # random number generator
         rng = mpin_ZZZ.create_csprng(self.seed)
 
-        # Generate Client master secret share for MIRACL and Customer
+        # Generate Client master secret share for MILAGRO and Customer
         rtn, ms1 = mpin_ZZZ.random_generate(rng)
         self.assertEqual(rtn, 0)
         rtn, ms2 = mpin_ZZZ.random_generate(rng)
@@ -131,7 +131,7 @@ class TestMPIN(unittest.TestCase):
         # random number generator
         rng = mpin_ZZZ.create_csprng(self.seed)
 
-        # Generate Client master secret share for MIRACL and Customer
+        # Generate Client master secret share for MILAGRO and Customer
         rtn, ms1 = mpin_ZZZ.random_generate(rng)
         self.assertEqual(rtn, 0)
         rtn, ms2 = mpin_ZZZ.random_generate(rng)
@@ -204,7 +204,7 @@ class TestMPIN(unittest.TestCase):
         # random number generator
         rng = mpin_ZZZ.create_csprng(self.seed)
 
-        # Generate Client master secret share for MIRACL and Customer
+        # Generate Client master secret share for MILAGRO and Customer
         rtn, ms1 = mpin_ZZZ.random_generate(rng)
         self.assertEqual(rtn, 0)
         rtn, ms2 = mpin_ZZZ.random_generate(rng)
