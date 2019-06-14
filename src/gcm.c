@@ -363,7 +363,7 @@ int main()
 	char T[16];   // Tag
 	char K[16];   // AES Key
 	char H[64];   // Header - to be included in Authentication, but not encrypted
-	char N[100];   // IV - Initialization vector
+	char N[100];   // IV - Initialisation vector
 	char M[100];  // Plaintext to be encrypted/authenticated
 	char C[100];  // Ciphertext
 	char P[100];  // Recovered Plaintext

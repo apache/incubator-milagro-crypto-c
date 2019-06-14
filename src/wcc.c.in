@@ -83,7 +83,7 @@ int WCC_ZZZ_GET_G1_MULTIPLE(octet *S,octet *HID,octet *VG1)
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G1mul(&P,s);
 
-    ECP_ZZZ_toOctet(VG1,&P);
+    ECP_ZZZ_toOctet(VG1,&P,false);
     return 0;
 }
 
@@ -182,7 +182,7 @@ int WCC_ZZZ_SENDER_KEY(int sha, octet *xOct, octet *piaOct, octet *pibOct, octet
 
     // x.PgG1
     PAIR_ZZZ_G1mul(&PgG1,x);
-    ECP_ZZZ_toOctet(&xPgG1Oct,&PgG1);
+    ECP_ZZZ_toOctet(&xPgG1Oct,&PgG1,false);
 
     // Generate AES Key : K=H(k,x.PgG1)
     FP12_YYY_trace(&c,&g);
@@ -271,7 +271,7 @@ int WCC_ZZZ_RECEIVER_KEY(int sha, octet *yOct, octet *wOct,  octet *piaOct, octe
 
     // w.PaG1
     PAIR_ZZZ_G1mul(&PaG1,w);
-    ECP_ZZZ_toOctet(&wPaG1Oct,&PaG1);
+    ECP_ZZZ_toOctet(&wPaG1Oct,&PaG1,false);
 
     // Generate AES Key: K=H(k,w.PaG1)
     FP12_YYY_trace(&c,&g);
@@ -322,7 +322,7 @@ int WCC_ZZZ_RECOMBINE_G1(octet *R1,octet *R2,octet *R)
     if (res==0)
     {
         ECP_ZZZ_add(&P,&T);
-        ECP_ZZZ_toOctet(R,&P);
+        ECP_ZZZ_toOctet(R,&P,false);
     }
     return res;
 }

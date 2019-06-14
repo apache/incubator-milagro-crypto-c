@@ -177,7 +177,7 @@ int main()
 
     for(iter=1; iter<nRandomTests+1; iter++)
     {
-        /* Generate Client master secret for MIRACL and Customer */
+        /* Generate Client master secret for MILAGRO and Customer */
         rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS1);
         if (rtn != 0)
         {

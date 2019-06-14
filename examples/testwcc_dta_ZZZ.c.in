@@ -154,7 +154,7 @@ int main()
     OCT_output(&MS2);
 
     // Alice's ID
-    OCT_jstring(&IdA,"alice@miracl.com");
+    OCT_jstring(&IdA,"alice@milagro.com");
 
     // Hash Alice's Id
     HASH_ID(HASH_TYPE_ZZZ,&IdA,&HIdA);
@@ -187,7 +187,7 @@ int main()
     OCT_output(&AKeyG1);
 
     // Bob's ID
-    OCT_jstring(&IdB,"bob@miracl.com");
+    OCT_jstring(&IdB,"bob@milagro.com");
 
     // Hash Bob's Id
     HASH_ID(HASH_TYPE_ZZZ,&IdB,&HIdB);

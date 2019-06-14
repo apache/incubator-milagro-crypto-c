@@ -111,7 +111,7 @@ int main()
     PIN2 = 1234;
 
     /* Assign the End-User an ID */
-    char* user = "testuser@miracl.com";
+    char* user = "alice@milagro.com";
     OCT_jstring(&ID,user);
     printf("CLIENT: ID %s\n", user);
 
@@ -147,7 +147,7 @@ int main()
     HASH_ID(HASH_TYPE_ZZZ,&ID,&HCID);
     OCT_output(&HCID);
 
-    /* Generate Client master secret for MIRACL and Customer */
+    /* Generate Client master secret for MILAGRO and Customer */
     rtn = MPIN_ZZZ_RANDOM_GENERATE(&RNG,&MS1);
     if (rtn != 0)
     {
@@ -160,7 +160,7 @@ int main()
         printf("MPIN_ZZZ_RANDOM_GENERATE(&RNG,&MS2) Error %d\n", rtn);
         return 1;
     }
-    printf("MASTER SECRET MIRACL:= 0x");
+    printf("MASTER SECRET MILAGRO:= 0x");
     OCT_output(&MS1);
     printf("MASTER SECRET CUSTOMER:= 0x");
     OCT_output(&MS2);

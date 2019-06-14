@@ -169,7 +169,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
 #endif
-            ECP_ZZZ_toOctet(&OCTaux,&ecp1);
+            ECP_ZZZ_toOctet(&OCTaux,&ecp1,false);
             ECP_ZZZ_fromOctet(&ECPaux1,&OCTaux);
             if(!ECP_ZZZ_equals(&ECPaux1,&ecp1)) // test octet conversion
             {

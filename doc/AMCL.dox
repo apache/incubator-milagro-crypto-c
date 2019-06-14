@@ -7,13 +7,11 @@
 
  AMCL is a standards compliant C cryptographic library with no external dependencies, specifically designed to support the Internet of Things (IoT).
 
- For a detailed explanation about this library please read: <a href="AMCL.pdf">AMCL.pdf</a>
-
  AMCL is provided in *C* language but includes a <a href="https://www.python.org">Python</a> wrapper.for some components as an aid for development work.
 
   \section homepage Project page
   The official project page is hosted at 
-	<a href="http://milagro.apache.org/">Apache Milagro (incubating)</a>
+	<a href="http://milagro.apache.org/docs/milagro-intro/">Apache Milagro (incubating)</a>
 
   \section license License
 

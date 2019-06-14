@@ -1430,7 +1430,7 @@ if __name__ == "__main__":
     if INPUT:
         mpin_id = raw_input("Please enter identity:")
     else:
-        mpin_id = "user@miracl.com"
+        mpin_id = "user@milagro.com"
 
     # Hash mpin_id
     hash_mpin_id = hash_id(HASH_TYPE_MPIN_ZZZ, mpin_id)
@@ -1438,7 +1438,7 @@ if __name__ == "__main__":
         print "mpin_id: %s" % mpin_id.encode("hex")
         print "hash_mpin_id: %s" % hash_mpin_id.encode("hex")
 
-    # Generate master secret for MIRACL and Customer
+    # Generate master secret for MILAGRO and Customer
     rtn, ms1 = random_generate(rng)
     if rtn != 0:
         print "random_generate(rng) Error %s", rtn

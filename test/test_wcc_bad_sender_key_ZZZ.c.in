@@ -147,7 +147,7 @@ int main()
     /* Generate key material for Alice, Bob and Eve */
 
     // Alice's ID
-    OCT_jstring(&IdA,"alice@miracl.com");
+    OCT_jstring(&IdA,"alice@milagro.com");
 #ifdef DEBUG
     printf("ALICE ID:");
     OCT_output_string(&IdA);
@@ -170,7 +170,7 @@ int main()
 #endif
 
     // Bob's ID
-    OCT_jstring(&IdB,"bob@miracl.com");
+    OCT_jstring(&IdB,"bob@milagro.com");
 #ifdef DEBUG
     printf("BOB ID:");
     OCT_output_string(&IdB);
@@ -193,7 +193,7 @@ int main()
 #endif
 
     // Eve's ID
-    OCT_jstring(&IdE,"eve@miracl.com");
+    OCT_jstring(&IdE,"eve@milagro.com");
 #ifdef DEBUG
     printf("EVE ID:");
     OCT_output_string(&IdE);

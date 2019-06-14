@@ -351,6 +351,7 @@ int main(int argc, char** argv)
             }
         }
         // modular exponentiation
+	/*
         if (!strncmp(line,FPexpline, strlen(FPexpline)))
         {
             len = strlen(FPexpline);
@@ -368,6 +369,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
+	*/
     }
     fclose(fp);
 

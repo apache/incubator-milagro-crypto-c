@@ -125,8 +125,6 @@ int main(int argc, char** argv)
     const char* PIN2line = "PIN2 = ";
 
     // Client Secret
-    char cs1[2*PFS_ZZZ+1];
-    octet CS1= {0,sizeof(cs1),cs1};
     char cs1Golden[2*PFS_ZZZ+1];
     octet CS1Golden= {0,sizeof(cs1Golden),cs1Golden};
     const char* CS1line = "CS1 = ";
@@ -137,8 +135,8 @@ int main(int argc, char** argv)
     octet CS2Golden= {0,sizeof(cs2Golden),cs2Golden};
     const char* CS2line = "CS2 = ";
 
-    char cs[2*PFS_ZZZ+1];
-    octet CS= {0,sizeof(cs),cs};
+    char cs1[2*PFS_ZZZ+1];
+    octet CS1= {0,sizeof(cs1),cs1};
     char csGolden[2*PFS_ZZZ+1];
     octet CSGolden= {0,sizeof(csGolden),csGolden};
     const char* CSline = "CS = ";
