@@ -2,11 +2,11 @@
 
 [![Master Branch](https://img.shields.io/badge/-master:-gray.svg)](https://github.com/apache/incubator-milagro-crypto-c/tree/master)
 [![Master Build Status](https://travis-ci.org/apache/incubator-milagro-crypto-c.svg?branch=master)](https://travis-ci.org/apache/incubator-milagro-crypto-c)
-[![Master Coverage Status](https://coveralls.io/repos/github/apache/incubator-milagro-crypto-c/badge.svg?branch=master)](https://coveralls.io/github/apache/incubatory-milagro-crypto-c?branch=master)
+[![Master Coverage Status](https://coveralls.io/repos/github/apache/incubator-milagro-crypto-c/badge.svg?branch=master)](https://coveralls.io/github/apache/incubator-milagro-crypto-c?branch=master)
 
 [![Develop Branch](https://img.shields.io/badge/-develop:-gray.svg)](https://github.com/apache/incubator-milagro-crypto-c/tree/develop)
 [![Develop Build Status](https://travis-ci.org/apache/incubator-milagro-crypto-c.svg?branch=develop)](https://travis-ci.org/apache/incubator-milagro-crypto-c)
-[![Develop Coverage Status](https://coveralls.io/repos/github/apache/incubator-milagro-crypto-c/badge.svg?branch=develop)](https://coveralls.io/github/apache/incubatory-milagro-crypto-c?branch=develop)
+[![Develop Coverage Status](https://coveralls.io/repos/github/apache/incubator-milagro-crypto-c/badge.svg?branch=develop)](https://coveralls.io/github/apache/incubator-milagro-crypto-c?branch=develop)
 
 * **category**:    Library
 * **copyright**:   2019 The Apache Software Foundation
