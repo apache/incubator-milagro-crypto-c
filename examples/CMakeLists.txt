@@ -46,6 +46,12 @@ foreach(curve ${AMCL_CURVE})
     target_link_libraries(testwcc_dta_${TC} PRIVATE amcl_wcc_${TC})
   endif()
 
+  if(TARGET amcl_bls_${TC})
+    amcl_configure_file_curve(testbls_ZZZ.c.in testbls_${TC}.c "${curve}" testbls_${TC}_GEN_SRCS)
+    add_executable(testbls_${TC} ${testbls_${TC}_GEN_SRCS})
+    target_link_libraries(testbls_${TC} PRIVATE amcl_bls_${TC})
+  endif()
+  
 endforeach()
 
 foreach(level ${AMCL_RSA})

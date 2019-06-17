@@ -64,7 +64,7 @@ set(AMCL_SOVERSION ${AMCL_VERSION_MAJOR})
 if(CMAKE_COMPILER_IS_GNUCC)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
                     OUTPUT_VARIABLE GCC_VERSION)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -static-libgcc -Wall -Wextra -Wno-strict-prototypes -Wunused-value -Wcast-align -Wunused-variable -Wundef -Wformat-security")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc -Wall -Wextra -Wno-strict-prototypes -Wunused-value -Wcast-align -Wunused-variable -Wundef -Wformat-security")
 
     if (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wshadow")
@@ -117,9 +117,11 @@ log(BUILD_TESTING) # added by 'include(CTest)'
 option(BUILD_MPIN    "Build MPIN"    ON)
 option(BUILD_WCC     "Build WCC"     ON)
 option(BUILD_X509    "BUild X509"    ON)
+option(BUILD_BLS     "Build BLS"    ON)
 log(BUILD_MPIN)
 log(BUILD_WCC)
 log(BUILD_X509)
+log(BUILD_BLS)
 
 option(DEBUG_REDUCE "Print debug message for field reduction" OFF)
 option(DEBUG_NORM "Detect digit overflow" OFF)
@@ -223,7 +225,7 @@ install(FILES
   DESTINATION ${INSTALL_INCLUDESUBDIR}
 )
 
-if (BUILD_MPIN OR BUILD_WCC)
+if (BUILD_MPIN OR BUILD_WCC OR BUILD_BLS)
   amcl_configure_file_core(include/config_test.h.in include/config_test.h amcl_core_pbc_GEN_HDRS)
 
   target_sources(amcl_core PRIVATE src/pbc_support.c)
@@ -590,6 +592,60 @@ if(BUILD_WCC)
 
       install(FILES
         ${amcl_wcc_${TC}_GEN_HDRS}
+        DESTINATION ${INSTALL_INCLUDESUBDIR}
+      )
+    endif()
+  endforeach()
+endif()
+
+##################################################
+# AMCL_BLS_*** Libraries
+##################################################
+if(BUILD_BLS)
+  foreach(curve ${AMCL_CURVE})
+    amcl_curve_field(TC "${curve}")
+    amcl_curve_field(CS "${curve}")
+
+    if(TARGET amcl_pairing_${TC})
+      if(CS STREQUAL "128")
+        amcl_configure_file_curve(include/bls.h.in include/bls_${TC}.h "${curve}" amcl_bls_${TC}_GEN_HDRS)
+        amcl_configure_file_curve(src/bls.c.in     src/bls_${TC}.c     "${curve}" amcl_bls_${TC}_GEN_SRCS)
+      else(CS STREQUAL "128")
+        amcl_configure_file_curve(include/bls${CS}.h.in include/bls${CS}_${TC}.h "${curve}" amcl_bls_${TC}_GEN_HDRS)
+        amcl_configure_file_curve(src/bls${CS}.c.in     src/bls${CS}_${TC}.c     "${curve}" amcl_bls_${TC}_GEN_SRCS)
+      endif(CS STREQUAL "128")
+
+      message(STATUS "Build libamcl_bls_${TC}")
+      add_library(amcl_bls_${TC}
+        ${amcl_bls_${TC}_GEN_SRCS}
+      )
+      list(APPEND AMCL_LIBRARIES amcl_bls_${TC})
+
+      set_target_properties(amcl_bls_${TC} PROPERTIES
+        EXPORT_NAME bls_${TC}
+        VERSION ${AMCL_VERSION}
+        SOVERSION ${AMCL_SOVERSION}
+      )
+
+      target_include_directories(amcl_bls_${TC} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      )
+
+      target_link_libraries(amcl_bls_${TC} PUBLIC
+        amcl_pairing_${TC}
+      )
+
+      install(TARGETS amcl_bls_${TC}
+        EXPORT AMCLTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      )
+
+      install(FILES
+        ${amcl_bls_${TC}_GEN_HDRS}
         DESTINATION ${INSTALL_INCLUDESUBDIR}
       )
     endif()

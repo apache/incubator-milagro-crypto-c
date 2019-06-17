@@ -204,6 +204,13 @@ foreach(curve ${AMCL_CURVE})
       amcl_curve_test(${curve} test_wcc_bad_receiver_key_${TC} test_wcc_bad_receiver_key_ZZZ.c.in amcl_wcc_${TC} "SUCCESS")
     endif()
 
+    ################################################
+    # BLS Tests
+    ################################################
+    if(BUILD_BLS)
+      amcl_curve_test(${curve} test_bls_${TC} test_bls_ZZZ.c.in amcl_bls_${TC} "SUCCESS")
+    endif()
+    
   endif()
 endforeach()
 

@@ -351,25 +351,25 @@ int main(int argc, char** argv)
             }
         }
         // modular exponentiation
-	/*
-        if (!strncmp(line,FPexpline, strlen(FPexpline)))
-        {
-            len = strlen(FPexpline);
-            linePtr = line + len;
-            read_FP_YYY(&FPexp,linePtr);
-            FP_YYY_copy(&supp,&FP_1);
-            FP_YYY_reduce(&supp);
-            FP_YYY_redc(bigsupp,&FP_2);
-            BIG_XXX_norm(bigsupp);
-            FP_YYY_pow(&supp,&supp,bigsupp);
-            FP_YYY_reduce(&supp);
-            if(!FP_YYY_equals(&supp,&FPexp))
+        /*
+            if (!strncmp(line,FPexpline, strlen(FPexpline)))
             {
-                printf("ERROR in modular exponentiation, line %d\n",i);
-                exit(EXIT_FAILURE);
+                len = strlen(FPexpline);
+                linePtr = line + len;
+                read_FP_YYY(&FPexp,linePtr);
+                FP_YYY_copy(&supp,&FP_1);
+                FP_YYY_reduce(&supp);
+                FP_YYY_redc(bigsupp,&FP_2);
+                BIG_XXX_norm(bigsupp);
+                FP_YYY_pow(&supp,&supp,bigsupp);
+                FP_YYY_reduce(&supp);
+                if(!FP_YYY_equals(&supp,&FPexp))
+                {
+                    printf("ERROR in modular exponentiation, line %d\n",i);
+                    exit(EXIT_FAILURE);
+                }
             }
-        }
-	*/
+        */
     }
     fclose(fp);
 

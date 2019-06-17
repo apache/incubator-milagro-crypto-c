@@ -22,7 +22,7 @@ under the License.
 
 /* Build executible after installation:
 
-  gcc -std=c99 -g ./testmpin.c -I/opt/amcl/include -L/opt/amcl/lib -lamcl_mpin_ZZZ -lamcl_pairing_ZZZ -lamcl_curve_ZZZ -lamcl_core -o testmpin_ZZZ
+  gcc -O0 -g ./testmpin_ZZZ.c $(pkg-config --libs --cflags amcl) -o testmpin_ZZZ
 
 */
 
