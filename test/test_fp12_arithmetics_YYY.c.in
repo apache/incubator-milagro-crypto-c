@@ -395,40 +395,40 @@ int main(int argc, char** argv)
             }
         }
         // Test s-multiplication for D-TYPE
-	/*
-        if (!strncmp(line,FP12smuldtypeline, strlen(FP12smuldtypeline)))
-        {
-            len = strlen(FP12smuldtypeline);
-            linePtr = line + len;
-            read_FP12_YYY(&FP12smul_dtype,linePtr);
-            FP12_YYY_copy(&FP12aux1,FP_12);
-            FP12_YYY_smul(&FP12aux1,&FP_12_smul_y_dtype,D_TYPE);
-            FP12_YYY_reduce(&FP12aux1);
-            FP12_YYY_norm(&FP12aux1);
-            if(!FP12_YYY_equals(&FP12aux1,&FP12smul_dtype))
+        /*
+            if (!strncmp(line,FP12smuldtypeline, strlen(FP12smuldtypeline)))
             {
-                printf("ERROR computing s-multiplication for D-TYPE, line %d\n",i);
-                exit(EXIT_FAILURE);
+                len = strlen(FP12smuldtypeline);
+                linePtr = line + len;
+                read_FP12_YYY(&FP12smul_dtype,linePtr);
+                FP12_YYY_copy(&FP12aux1,FP_12);
+                FP12_YYY_smul(&FP12aux1,&FP_12_smul_y_dtype,D_TYPE);
+                FP12_YYY_reduce(&FP12aux1);
+                FP12_YYY_norm(&FP12aux1);
+                if(!FP12_YYY_equals(&FP12aux1,&FP12smul_dtype))
+                {
+                    printf("ERROR computing s-multiplication for D-TYPE, line %d\n",i);
+                    exit(EXIT_FAILURE);
+                }
             }
-        }
 
-        // Test s-multiplication for M-TYPE
-        if (!strncmp(line,FP12smulmtypeline, strlen(FP12smulmtypeline)))
-        {
-            len = strlen(FP12smulmtypeline);
-            linePtr = line + len;
-            read_FP12_YYY(&FP12smul_mtype,linePtr);
-            FP12_YYY_copy(&FP12aux1,FP_12);
-            FP12_YYY_smul(&FP12aux1,&FP_12_smul_y_mtype,M_TYPE);
-            FP12_YYY_reduce(&FP12aux1);
-            FP12_YYY_norm(&FP12aux1);
-            if(!FP12_YYY_equals(&FP12aux1,&FP12smul_mtype))
+            // Test s-multiplication for M-TYPE
+            if (!strncmp(line,FP12smulmtypeline, strlen(FP12smulmtypeline)))
             {
-                printf("ERROR computing s-multiplication for M-TYPE, line %d\n",i);
-                exit(EXIT_FAILURE);
+                len = strlen(FP12smulmtypeline);
+                linePtr = line + len;
+                read_FP12_YYY(&FP12smul_mtype,linePtr);
+                FP12_YYY_copy(&FP12aux1,FP_12);
+                FP12_YYY_smul(&FP12aux1,&FP_12_smul_y_mtype,M_TYPE);
+                FP12_YYY_reduce(&FP12aux1);
+                FP12_YYY_norm(&FP12aux1);
+                if(!FP12_YYY_equals(&FP12aux1,&FP12smul_mtype))
+                {
+                    printf("ERROR computing s-multiplication for M-TYPE, line %d\n",i);
+                    exit(EXIT_FAILURE);
+                }
             }
-        }
-	*/
+        */
         // Test inverse fuction
         if (!strncmp(line,FP12invline, strlen(FP12invline)))
         {
