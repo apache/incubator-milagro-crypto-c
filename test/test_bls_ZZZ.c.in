@@ -96,7 +96,7 @@ int bls(csprng *RNG)
     printf("Signature: 0x");
     OCT_output(&SIG);
     rc=BLS_ZZZ_VERIFY(&SIG,message,&W);
-    if (rc!=BLS_OK)    
+    if (rc!=BLS_OK)
     {
         printf("Test Passed invalid Signature / valid message\n");
     }

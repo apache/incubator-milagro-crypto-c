@@ -39,8 +39,10 @@ under the License.
 #define BGS_ZZZ MODBYTES_XXX  /**< BLS Group Size */
 #define BFS_ZZZ MODBYTES_XXX  /**< BLS Field Size */
 
-#define BLS_OK           0  /**< Function completed without error */
-#define BLS_FAIL	-1  /**< Point is NOT on the curve */
+#define BLS_OK             0   /**< Function completed without error */
+#define BLS_FAIL	   41  /**< Invalid signature */
+#define BLS_INVALID_G1     42  /**< Not a valid G1 point on the curve */
+#define BLS_INVALID_G2     43  /**< Not a valid G2 point on the curve */
 
 /* BLS API functions */
 
@@ -70,6 +72,26 @@ int BLS_ZZZ_SIGN(octet *SIG,char *m,octet *S);
 	@return     Zero for success or else an error code
  */
 int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W);
+
+
+/**	@brief Add two members from the group G1
+ *
+	@param      R1 member of G1
+	@param      R2 member of G1
+	@param      R member of G1. R = R1+R2
+	@return     Zero for success or else an error code
+ */
+int BLS_ADD_G1(octet *R1,octet *R2,octet *R);
+
+/**	@brief Add two members from the group G2
+ *
+	@param      W1 member of G2
+	@param      W2 member of G2
+	@param      W member of G2. W = W1+W2
+	@return     Zero for success or else an error code
+ */
+int BLS_ADD_G2(octet *W1,octet *W2,octet *W);
+
 
 #endif
 
