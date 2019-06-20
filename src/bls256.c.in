@@ -77,9 +77,9 @@ int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W)
     if (!ECP_ZZZ_fromOctet(&D,SIG))
     {
         return BLS_INVALID_G1;
-    }     
+    }
     ECP_ZZZ_neg(&D);
-    
+
     ECP8_ZZZ_generator(&G);
 
     if (!ECP8_ZZZ_fromOctet(&PK,W))
@@ -95,7 +95,7 @@ int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W)
     {
         return BLS_FAIL;
     }
-    return BLS_OK;      
+    return BLS_OK;
 }
 
 /* R=R1+R2 in group G1 */
@@ -116,7 +116,7 @@ int BLS_ZZZ_ADD_G1(octet *R1,octet *R2,octet *R)
 
     ECP_ZZZ_add(&P,&T);
     ECP_ZZZ_toOctet(R,&P,true);
-    
+
     return BLS_OK;
 }
 
@@ -135,7 +135,7 @@ int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W)
     {
         return BLS_INVALID_G2;
     }
-      
+
     ECP8_ZZZ_add(&Q,&T);
     ECP8_ZZZ_toOctet(W,&Q);
 

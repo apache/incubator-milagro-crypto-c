@@ -62,8 +62,8 @@ int BLS_ZZZ_SIGN(octet *SIG,char *m,octet *S)
     BLS_HASHIT(&D,m);
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G1mul(&D,s);
-    // compress output 
-    ECP_ZZZ_toOctet(SIG,&D,true); 
+    // compress output
+    ECP_ZZZ_toOctet(SIG,&D,true);
     return BLS_OK;
 }
 
@@ -74,11 +74,11 @@ int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W)
     ECP2_ZZZ G,PK;
     ECP_ZZZ D,HM;
     BLS_HASHIT(&HM,m);
-    
+
     if (!ECP_ZZZ_fromOctet(&D,SIG))
     {
         return BLS_INVALID_G1;
-    }      
+    }
 
     ECP2_ZZZ_generator(&G);
 
@@ -116,7 +116,7 @@ int BLS_ZZZ_ADD_G1(octet *R1,octet *R2,octet *R)
 
     ECP_ZZZ_add(&P,&T);
     ECP_ZZZ_toOctet(R,&P,true);
-    
+
     return BLS_OK;
 }
 
@@ -135,7 +135,7 @@ int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W)
     {
         return BLS_INVALID_G2;
     }
-      
+
     ECP2_ZZZ_add(&Q,&T);
     ECP2_ZZZ_toOctet(W,&Q);
 

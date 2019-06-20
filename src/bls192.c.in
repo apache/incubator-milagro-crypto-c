@@ -77,7 +77,7 @@ int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W)
     if (!ECP_ZZZ_fromOctet(&D,SIG))
     {
         return BLS_INVALID_G1;
-    }      
+    }
 
     ECP4_ZZZ_generator(&G);
 
@@ -94,7 +94,7 @@ int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W)
     {
         return BLS_FAIL;
     }
-    return BLS_OK;	
+    return BLS_OK;
 }
 
 
@@ -116,7 +116,7 @@ int BLS_ZZZ_ADD_G1(octet *R1,octet *R2,octet *R)
 
     ECP_ZZZ_add(&P,&T);
     ECP_ZZZ_toOctet(R,&P,true);
-    
+
     return BLS_OK;
 }
 
@@ -135,7 +135,7 @@ int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W)
     {
         return BLS_INVALID_G2;
     }
-      
+
     ECP4_ZZZ_add(&Q,&T);
     ECP4_ZZZ_toOctet(W,&Q);
 

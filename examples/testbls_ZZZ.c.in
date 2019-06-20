@@ -52,36 +52,36 @@ int bls(csprng *RNG)
     int rc;
 
     char sk1[BGS_ZZZ];
-    octet SK1 = {0,sizeof(sk1),sk1};    
+    octet SK1 = {0,sizeof(sk1),sk1};
     char pk1[G2LEN];
     octet PK1 = {0,sizeof(pk1),pk1};
     char sig1[BFS_ZZZ+1];
     octet SIG1 = {0,sizeof(sig1),sig1};
 
     char sk2[BGS_ZZZ];
-    octet SK2 = {0,sizeof(sk2),sk2};    
+    octet SK2 = {0,sizeof(sk2),sk2};
     char pk2[G2LEN];
     octet PK2 = {0,sizeof(pk2),pk2};
     char sig2[BFS_ZZZ+1];
     octet SIG2 = {0,sizeof(sig2),sig2};
 
     char sk3[BGS_ZZZ];
-    octet SK3 = {0,sizeof(sk3),sk3};    
+    octet SK3 = {0,sizeof(sk3),sk3};
     char pk3[G2LEN];
     octet PK3 = {0,sizeof(pk3),pk3};
     char sig3[BFS_ZZZ+1];
     octet SIG3 = {0,sizeof(sig3),sig3};
-    
+
     // Combined signature and public keys
     char pk[G2LEN];
-    octet PK = {0,sizeof(pk),pk};    
+    octet PK = {0,sizeof(pk),pk};
     char sig[BFS_ZZZ+1];
     octet SIG = {0,sizeof(sig),sig};
-    
+
     // Generate key pairs
     BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK1,&PK1);
     BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK2,&PK2);
-    BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK3,&PK3);    
+    BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK3,&PK3);
 
     printf("Private key SK1: ");
     OCT_output(&SK1);
@@ -100,7 +100,7 @@ int bls(csprng *RNG)
     // Sign the message
     BLS_ZZZ_SIGN(&SIG1,message,&SK1);
     BLS_ZZZ_SIGN(&SIG2,message,&SK2);
-    BLS_ZZZ_SIGN(&SIG3,message,&SK3);    
+    BLS_ZZZ_SIGN(&SIG3,message,&SK3);
 
     printf("SIG1: ");
     OCT_output(&SIG1);
@@ -119,10 +119,10 @@ int bls(csprng *RNG)
     else
     {
         printf("Error: Invalid Signature\n");
-	return 1;
+        return 1;
     }
 
-    // Verify signature    
+    // Verify signature
     rc=BLS_ZZZ_VERIFY(&SIG2,message,&PK2);
     if (rc==BLS_OK)
     {
@@ -131,10 +131,10 @@ int bls(csprng *RNG)
     else
     {
         printf("Error: Invalid Signature\n");
-	return 1;
+        return 1;
     }
 
-    // Verify signature    
+    // Verify signature
     rc=BLS_ZZZ_VERIFY(&SIG3,message,&PK3);
     if (rc==BLS_OK)
     {
@@ -143,22 +143,22 @@ int bls(csprng *RNG)
     else
     {
         printf("Error: Invalid Signature\n");
-	return 1;
+        return 1;
     }
-    
+
     // Add Public keys
     rc = BLS_ZZZ_ADD_G2(&PK1,&PK2,&PK);
     if (rc!=BLS_OK)
     {
         printf("ERROR BLS_ZZZ_ADD_G2 errorCode : %d\n", rc);
-	return 1;
+        return 1;
     }
     rc = BLS_ZZZ_ADD_G2(&PK,&PK3,&PK);
     if (rc!=BLS_OK)
     {
         printf("ERROR BLS_ZZZ_ADD_G2 errorCode : %d\n", rc);
-	return 1;
-    }        
+        return 1;
+    }
     printf("Public key PK: ");
     OCT_output(&PK);
     printf("\n");
@@ -168,15 +168,15 @@ int bls(csprng *RNG)
     if (rc!=BLS_OK)
     {
         printf("ERROR BLS_ZZZ_ADD_G1 errorCode : %d\n", rc);
-	return 1;
-    }        
+        return 1;
+    }
 
-    // Verify combined signature. This should fail.    
+    // Verify combined signature. This should fail.
     rc=BLS_ZZZ_VERIFY(&SIG,message,&PK);
     if (rc==BLS_OK)
     {
         printf("Success: Combined signature is valid\n");
-	return 1;	
+        return 1;
     }
     else
     {
@@ -187,12 +187,12 @@ int bls(csprng *RNG)
     if (rc!=BLS_OK)
     {
         printf("ERROR BLS_ZZZ_ADD_G1 errorCode : %d\n", rc);
-	return 1;
-    }        
+        return 1;
+    }
     printf("SIG: ");
     OCT_output(&SIG);
     printf("\n");
-    // Verify combined signature.    
+    // Verify combined signature.
     rc=BLS_ZZZ_VERIFY(&SIG,message,&PK);
     if (rc==BLS_OK)
     {
@@ -201,10 +201,10 @@ int bls(csprng *RNG)
     else
     {
         printf("Error: Combined signature is invalid\n");
-	return 1;
+        return 1;
     }
 
-    
+
     // change the message
     message[0]='Z';
     printf("message %s\n", message);
@@ -212,11 +212,11 @@ int bls(csprng *RNG)
     if (rc==BLS_OK)
     {
         printf("Success: Signature is valid\n");
-	return 1;
+        return 1;
     }
     else
     {
-        printf("Error: Invalid Signature\n");      
+        printf("Error: Invalid Signature\n");
     }
 
     // Change the signature
@@ -229,7 +229,7 @@ int bls(csprng *RNG)
     if (rc==BLS_OK)
     {
         printf("Success: Signature is valid\n");
-	return 1;
+        return 1;
     }
     else
     {
@@ -239,8 +239,8 @@ int bls(csprng *RNG)
     /* clear memory */
     OCT_clear(&SK1);
     OCT_clear(&SK2);
-    OCT_clear(&SK3);    
-    
+    OCT_clear(&SK3);
+
     return 0;
 }
 

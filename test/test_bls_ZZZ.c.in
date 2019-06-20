@@ -16,7 +16,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-/* smoke test for BLS */
+// smoke test for BLS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,30 +41,73 @@ under the License.
 #define G2LEN 16*BFS_ZZZ
 #endif
 
-static char message[]="This is a test message";
+static char message[]="test message";
 
 int bls(csprng *RNG)
 {
     int rc;
-    char s[BGS_ZZZ];
-    char w[G2LEN];
+
+    char sk1[BGS_ZZZ];
+    octet SK1 = {0,sizeof(sk1),sk1};
+    char pk1[G2LEN];
+    octet PK1 = {0,sizeof(pk1),pk1};
+    char sig1[BFS_ZZZ+1];
+    octet SIG1 = {0,sizeof(sig1),sig1};
+
+    char sk2[BGS_ZZZ];
+    octet SK2 = {0,sizeof(sk2),sk2};
+    char pk2[G2LEN];
+    octet PK2 = {0,sizeof(pk2),pk2};
+    char sig2[BFS_ZZZ+1];
+    octet SIG2 = {0,sizeof(sig2),sig2};
+
+    char sk3[BGS_ZZZ];
+    octet SK3 = {0,sizeof(sk3),sk3};
+    char pk3[G2LEN];
+    octet PK3 = {0,sizeof(pk3),pk3};
+    char sig3[BFS_ZZZ+1];
+    octet SIG3 = {0,sizeof(sig3),sig3};
+
+    // Combined signature and public keys
+    char pk[G2LEN];
+    octet PK = {0,sizeof(pk),pk};
     char sig[BFS_ZZZ+1];
-    octet S= {0,sizeof(s),s};
-    octet W= {0,sizeof(w),w};
-    octet SIG= {0,sizeof(sig),sig};
+    octet SIG = {0,sizeof(sig),sig};
 
-    BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&S,&W);
+    // Generate key pairs
+    BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK1,&PK1);
+    BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK2,&PK2);
+    BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK3,&PK3);
 
-    printf("Private key: 0x");
-    OCT_output(&S);
-    printf("Public key: 0x");
-    OCT_output(&W);
+    printf("Private key SK1: ");
+    OCT_output(&SK1);
+    printf("Public key PK1: ");
+    OCT_output(&PK1);
+    printf("Private key SK2: ");
+    OCT_output(&SK2);
+    printf("Public key PK2: ");
+    OCT_output(&PK2);
+    printf("Private key SK3: ");
+    OCT_output(&SK2);
+    printf("Public key PK3: ");
+    OCT_output(&PK2);
+    printf("\n");
 
-    BLS_ZZZ_SIGN(&SIG,message,&S);
-    printf("Signature: 0x");
-    OCT_output(&SIG);
+    // Sign the message
+    BLS_ZZZ_SIGN(&SIG1,message,&SK1);
+    BLS_ZZZ_SIGN(&SIG2,message,&SK2);
+    BLS_ZZZ_SIGN(&SIG3,message,&SK3);
 
-    rc=BLS_ZZZ_VERIFY(&SIG,message,&W);
+    printf("SIG1: ");
+    OCT_output(&SIG1);
+    printf("SIG2: ");
+    OCT_output(&SIG2);
+    printf("SIG3: ");
+    OCT_output(&SIG3);
+    printf("\n");
+
+    // Verify signature
+    rc=BLS_ZZZ_VERIFY(&SIG1,message,&PK1);
     if (rc==BLS_OK)
     {
         printf("Test Passed valid Signature / message\n");
@@ -75,36 +118,126 @@ int bls(csprng *RNG)
         return 1;
     }
 
-    // change the message
-    message[0]='Z';
-    printf("message %s\n", message);
-    rc=BLS_ZZZ_VERIFY(&SIG,message,&W);
-    if (rc!=BLS_OK)
+    // Verify signature
+    rc=BLS_ZZZ_VERIFY(&SIG2,message,&PK2);
+    if (rc==BLS_OK)
     {
-        printf("Test Passed valid Signature / invalid message\n");
+        printf("Test Passed valid Signature / message\n");
     }
     else
     {
-        printf("Test Failed valid Signature / invalid message\n");
+        printf("Test Failed valid Signature / message\n");
         return 1;
     }
 
-    // Invalid signature
-    message[0]='T';
-    SIG.val[0]=5;
-    printf("message %s\n", message);
-    printf("Signature: 0x");
-    OCT_output(&SIG);
-    rc=BLS_ZZZ_VERIFY(&SIG,message,&W);
-    if (rc!=BLS_OK)
+    // Verify signature
+    rc=BLS_ZZZ_VERIFY(&SIG3,message,&PK3);
+    if (rc==BLS_OK)
     {
-        printf("Test Passed invalid Signature / valid message\n");
+        printf("Test Passed valid Signature / message\n");
     }
     else
     {
-        printf("Test Failed invalid Signature / valid message\n");
+        printf("Test Failed valid Signature / message\n");
         return 1;
     }
+
+    // Add Public keys
+    rc = BLS_ZZZ_ADD_G2(&PK1,&PK2,&PK);
+    if (rc!=BLS_OK)
+    {
+        printf("ERROR BLS_ZZZ_ADD_G2 errorCode : %d\n", rc);
+        return 1;
+    }
+    rc = BLS_ZZZ_ADD_G2(&PK,&PK3,&PK);
+    if (rc!=BLS_OK)
+    {
+        printf("ERROR BLS_ZZZ_ADD_G2 errorCode : %d\n", rc);
+        return 1;
+    }
+    printf("Public key PK: ");
+    OCT_output(&PK);
+    printf("\n");
+
+    // Add signatures
+    rc = BLS_ZZZ_ADD_G1(&SIG1,&SIG2,&SIG);
+    if (rc!=BLS_OK)
+    {
+        printf("ERROR BLS_ZZZ_ADD_G1 errorCode : %d\n", rc);
+        return 1;
+    }
+
+    // Verify combined signature. This should fail.
+    rc=BLS_ZZZ_VERIFY(&SIG,message,&PK);
+    if (rc==BLS_FAIL)
+    {
+        printf("Test Passed invalid signature SIG = SIG1 + SIG2 \n");
+    }
+    else
+    {
+        printf("Test Failed invalid signature SIG = SIG1 + SIG2 \n");
+        return 1;
+    }
+
+    rc = BLS_ZZZ_ADD_G1(&SIG,&SIG3,&SIG);
+    if (rc!=BLS_OK)
+    {
+        printf("ERROR BLS_ZZZ_ADD_G1 errorCode : %d\n", rc);
+        return 1;
+    }
+    printf("SIG: ");
+    OCT_output(&SIG);
+    printf("\n");
+
+    // Verify combined signature.
+    rc=BLS_ZZZ_VERIFY(&SIG,message,&PK);
+    if (rc==BLS_OK)
+    {
+        printf("Test Passed valid Signature SIG = SIG1 + SIG2 + SIG3\n");
+    }
+    else
+    {
+        printf("Test Failed valid Signature SIG = SIG1 + SIG2 + SIG3\n");
+        return 1;
+    }
+
+
+    // change the message
+    message[0]='Z';
+    printf("message %s\n", message);
+    rc=BLS_ZZZ_VERIFY(&SIG1,message,&PK1);
+    if (rc==BLS_FAIL)
+    {
+        printf("Test Passed valid signature / invalid message\n");
+    }
+    else
+    {
+        printf("Test Failed valid signature / invalid message\n");
+        return 1;
+    }
+
+
+    // Change the signature
+    message[0]='t';
+    SIG1.val[0]=5;
+    printf("message %s\n", message);
+    printf("Sig1nature SIG1: ");
+    OCT_output(&SIG1);
+    rc=BLS_ZZZ_VERIFY(&SIG1,message,&PK1);
+    if (rc==BLS_FAIL)
+    {
+        printf("Test Passed invalid signature / valid message\n");
+    }
+    else
+    {
+        printf("Test Failed invalid signature / valid message\n");
+        return 1;
+    }
+
+    /* clear memory */
+    OCT_clear(&SK1);
+    OCT_clear(&SK2);
+    OCT_clear(&SK3);
 
     return 0;
 }
@@ -129,8 +262,7 @@ int main()
     CREATE_CSPRNG(&RNG,&SEED);
 
     printf("\nTesting BLS signature for curve ZZZ\n");
-    int rc = bls(&RNG);
-    if (rc == 0)
+    if (bls(&RNG))
     {
         printf("SUCCESS");
     }
