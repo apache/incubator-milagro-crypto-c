@@ -147,16 +147,16 @@ int bls(csprng *RNG)
     }
     
     // Add Public keys
-    rc = BLS_ADD_G2(&PK1,&PK2,&PK);
+    rc = BLS_ZZZ_ADD_G2(&PK1,&PK2,&PK);
     if (rc!=BLS_OK)
     {
-        printf("ERROR BLS_ADD_G2 errorCode : %d\n", rc);
+        printf("ERROR BLS_ZZZ_ADD_G2 errorCode : %d\n", rc);
 	return 1;
     }
-    rc = BLS_ADD_G2(&PK,&PK3,&PK);
+    rc = BLS_ZZZ_ADD_G2(&PK,&PK3,&PK);
     if (rc!=BLS_OK)
     {
-        printf("ERROR BLS_ADD_G2 errorCode : %d\n", rc);
+        printf("ERROR BLS_ZZZ_ADD_G2 errorCode : %d\n", rc);
 	return 1;
     }        
     printf("Public key PK: ");
@@ -164,10 +164,10 @@ int bls(csprng *RNG)
     printf("\n");
 
     // Add signatures
-    rc = BLS_ADD_G1(&SIG1,&SIG2,&SIG);
+    rc = BLS_ZZZ_ADD_G1(&SIG1,&SIG2,&SIG);
     if (rc!=BLS_OK)
     {
-        printf("ERROR BLS_ADD_G1 errorCode : %d\n", rc);
+        printf("ERROR BLS_ZZZ_ADD_G1 errorCode : %d\n", rc);
 	return 1;
     }        
 
@@ -183,10 +183,10 @@ int bls(csprng *RNG)
         printf("Error: Combined signature is invalid\n");
     }
 
-    rc = BLS_ADD_G1(&SIG,&SIG3,&SIG);
+    rc = BLS_ZZZ_ADD_G1(&SIG,&SIG3,&SIG);
     if (rc!=BLS_OK)
     {
-        printf("ERROR BLS_ADD_G1 errorCode : %d\n", rc);
+        printf("ERROR BLS_ZZZ_ADD_G1 errorCode : %d\n", rc);
 	return 1;
     }        
     printf("SIG: ");
