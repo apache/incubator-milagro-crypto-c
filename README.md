@@ -260,5 +260,5 @@ Please add yourself here if you make or have made a contribution.
 1.  [Check for open issues](https://github.com/apache/incubator-milagro-crypto-c/issues) or start a discussion around a feature idea or a bug by sending a mail to dev@milagro.incubator.apache.org
 2.  Fork the repository to start making your changes. Please use the "development" branch as a basis.
 3.  Write a test which shows that the bug was fixed or that the feature works as expected.
-4.  Send a pull request with a reference to the issue
+4.  Make a pull request with a reference to the issue
 

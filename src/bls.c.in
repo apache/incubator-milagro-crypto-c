@@ -26,7 +26,6 @@ under the License.
 #include "bls_ZZZ.h"
 
 /* hash a message to an ECP point, using SHA3 */
-
 static void BLS_HASHIT(ECP_ZZZ *P,char *m)
 {
     int i;
@@ -41,7 +40,6 @@ static void BLS_HASHIT(ECP_ZZZ *P,char *m)
 }
 
 /* generate key pair, private key S, public key W */
-
 int BLS_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
 {
     ECP2_ZZZ G;
@@ -57,7 +55,6 @@ int BLS_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
 }
 
 /* Sign message m using private key S to produce signature SIG */
-
 int BLS_ZZZ_SIGN(octet *SIG,char *m,octet *S)
 {
     BIG_XXX s;
@@ -65,29 +62,82 @@ int BLS_ZZZ_SIGN(octet *SIG,char *m,octet *S)
     BLS_HASHIT(&D,m);
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G1mul(&D,s);
-    ECP_ZZZ_toOctet(SIG,&D,true); /* compress output */
+    // compress output
+    ECP_ZZZ_toOctet(SIG,&D,true);
     return BLS_OK;
 }
 
 /* Verify signature of message m, the signature SIG, and the public key W */
-
 int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W)
 {
     FP12_YYY v;
     ECP2_ZZZ G,PK;
     ECP_ZZZ D,HM;
     BLS_HASHIT(&HM,m);
-    ECP_ZZZ_fromOctet(&D,SIG);
+
+    if (!ECP_ZZZ_fromOctet(&D,SIG))
+    {
+        return BLS_INVALID_G1;
+    }
+
     ECP2_ZZZ_generator(&G);
-    ECP2_ZZZ_fromOctet(&PK,W);
+
+    if (!ECP2_ZZZ_fromOctet(&PK,W))
+    {
+        return BLS_INVALID_G2;
+    }
     ECP_ZZZ_neg(&D);
 
-
     PAIR_ZZZ_double_ate(&v,&G,&D,&PK,&HM);
-
     PAIR_ZZZ_fexp(&v);
 
-    if (FP12_YYY_isunity(&v)) return BLS_OK;
-    return BLS_FAIL;
+    if (!FP12_YYY_isunity(&v))
+    {
+        return BLS_FAIL;
+    }
+    return BLS_OK;
 }
 
+/* R=R1+R2 in group G1 */
+int BLS_ZZZ_ADD_G1(octet *R1,octet *R2,octet *R)
+{
+    ECP_ZZZ P;
+    ECP_ZZZ T;
+
+    if (!ECP_ZZZ_fromOctet(&P,R1))
+    {
+        return BLS_INVALID_G1;
+    }
+
+    if (!ECP_ZZZ_fromOctet(&T,R2))
+    {
+        return BLS_INVALID_G1;
+    }
+
+    ECP_ZZZ_add(&P,&T);
+    ECP_ZZZ_toOctet(R,&P,true);
+
+    return BLS_OK;
+}
+
+/* W=W1+W2 in group G2 */
+int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W)
+{
+    ECP2_ZZZ Q;
+    ECP2_ZZZ T;
+
+    if (!ECP2_ZZZ_fromOctet(&Q,W1))
+    {
+        return BLS_INVALID_G2;
+    }
+
+    if (!ECP2_ZZZ_fromOctet(&T,W2))
+    {
+        return BLS_INVALID_G2;
+    }
+
+    ECP2_ZZZ_add(&Q,&T);
+    ECP2_ZZZ_toOctet(W,&Q);
+
+    return BLS_OK;
+}
