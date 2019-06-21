@@ -344,26 +344,21 @@ int mpin(csprng *RNG)
 
 int main()
 {
-    int i;
-    unsigned long ran;
-
-    char raw[100];
-    octet RAW= {0,sizeof(raw),raw};
-    /* Crypto Strong RNG */
+    char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
+    char seed[16] = {0};
+    octet SEED = {sizeof(seed),sizeof(seed),seed};
+    printf("SEED: ");
+    OCT_output(&SEED);
+    printf("\n");
+    
+    // CSPRNG
     csprng RNG;
 
-    time((time_t *)&ran);
+    // fake random source 
+    OCT_fromHex(&SEED,seedHex);
 
-    /* fake random seed source */
-    RAW.len=100;
-    RAW.val[0]=ran;
-    RAW.val[1]=ran>>8;
-    RAW.val[2]=ran>>16;
-    RAW.val[3]=ran>>24;
-    for (i=0; i<100; i++) RAW.val[i]=i+1;
-
-    /* initialise strong RNG */
-    CREATE_CSPRNG(&RNG,&RAW);
+    // initialise strong RNG 
+    CREATE_CSPRNG(&RNG,&SEED);
 
     mpin(&RNG);
 
