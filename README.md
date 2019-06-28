@@ -93,7 +93,7 @@ shows how to write a program to use the different curves etc in a single
 program. To build and run the example use this script;
 
 ```
-buildMulti.sh
+./scripts/buildMulti.sh
 ```
 
 ##### Manual build
