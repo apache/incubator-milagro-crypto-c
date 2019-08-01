@@ -31,25 +31,6 @@ There is also an example usage program in this file.
 import cffi
 import platform
 
-# WCC Group Size
-PGS = @NB@
-# WCC Field Size
-PFS = @NB@
-G1 = 2 * PFS + 1
-G2 = 4 * PFS
-# Length of hash
-HASH_BYTES = 32
-# AES-GCM IV length
-IVL = 12
-# AES Key length
-PAS = 16
-
-# Hash function choice
-SHA256 = 32
-SHA384 = 48
-SHA512 = 64
-HASH_TYPE_WCC_ZZZ = SHA256
-
 ffi = cffi.FFI()
 ffi.cdef("""
 typedef struct {
@@ -94,6 +75,32 @@ else:
     libamcl_wcc_ZZZ = ffi.dlopen("libamcl_wcc_ZZZ.so")
     libamcl_core = ffi.dlopen("libamcl_core.so")
 
+# Group Size
+PGS = @NB@
+# Field Size
+PFS = @NB@
+
+CURVE_SECURITY = @CS@
+
+if CURVE_SECURITY == 128:
+    G2 = 4*PFS
+    HASH_TYPE_ZZZ = 32
+    AESKEY_ZZZ = 16    
+    
+if CURVE_SECURITY == 192:
+    G2 = 8*PFS
+    HASH_TYPE_ZZZ = 48    
+    AESKEY_ZZZ = 24
+    
+if CURVE_SECURITY == 256:
+    G2 = 16*PFS
+    HASH_TYPE_ZZZ = 64
+    AESKEY_ZZZ = 32
+    
+G1 = 2 * PFS + 1
+
+# AES-GCM IV length
+IVL = 12
 
 def toHex(octetValue):
     """Converts an octet type into a string
@@ -151,10 +158,10 @@ if __name__ == "__main__":
 
     # Hash value of IdA
     HIdA = ffi.new("octet*")
-    HIdAval = ffi.new("char []", HASH_BYTES)
+    HIdAval = ffi.new("char []", PFS)
     HIdA[0].val = HIdAval
-    HIdA[0].max = HASH_BYTES
-    HIdA[0].len = HASH_BYTES
+    HIdA[0].max = PFS
+    HIdA[0].len = PFS
 
     # Bob Identity
     bob_id = raw_input("Please enter Bob's identity:")
@@ -166,10 +173,10 @@ if __name__ == "__main__":
 
     # Hash value of IdB
     HIdB = ffi.new("octet*")
-    HIdBval = ffi.new("char []", HASH_BYTES)
+    HIdBval = ffi.new("char []", PFS)
     HIdB[0].val = HIdBval
-    HIdB[0].max = HASH_BYTES
-    HIdB[0].len = HASH_BYTES
+    HIdB[0].max = PFS
+    HIdB[0].len = PFS
 
     # Sender keys
     A1KeyG1 = ffi.new("octet*")
@@ -211,16 +218,16 @@ if __name__ == "__main__":
 
     # AES Keys
     KEY1 = ffi.new("octet*")
-    KEY1val = ffi.new("char []", PAS)
+    KEY1val = ffi.new("char []", AESKEY_ZZZ)
     KEY1[0].val = KEY1val
-    KEY1[0].max = PAS
-    KEY1[0].len = PAS
+    KEY1[0].max = AESKEY_ZZZ
+    KEY1[0].len = AESKEY_ZZZ
 
     KEY2 = ffi.new("octet*")
-    KEY2val = ffi.new("char []", PAS)
+    KEY2val = ffi.new("char []", AESKEY_ZZZ)
     KEY2[0].val = KEY2val
-    KEY2[0].max = PAS
-    KEY2[0].len = PAS
+    KEY2[0].max = AESKEY_ZZZ
+    KEY2[0].len = AESKEY_ZZZ
 
     X = ffi.new("octet*")
     Xval = ffi.new("char []", PGS)
@@ -284,13 +291,13 @@ if __name__ == "__main__":
     libamcl_core.CREATE_CSPRNG(RNG, SEED)
 
     # Hash IdA
-    libamcl_core.HASH_ID(HASH_TYPE_WCC_ZZZ, IdA, HIdA)
+    libamcl_core.HASH_ID(HASH_TYPE_ZZZ, IdA, HIdA)
     if DEBUG:
         print "IdA: %s" % toHex(IdA)
         print "HIdA: %s" % toHex(HIdA)
 
     # Hash IdB
-    libamcl_core.HASH_ID(HASH_TYPE_WCC_ZZZ, IdB, HIdB)
+    libamcl_core.HASH_ID(HASH_TYPE_ZZZ, IdB, HIdB)
     if DEBUG:
         print "IdB: %s" % toHex(IdB)
         print "HIdB: %s" % toHex(HIdB)
@@ -377,18 +384,18 @@ if __name__ == "__main__":
         print "PbG2: %s" % toHex(PbG2)
 
     # PIA = Hq(PaG1,PbG2,PgG1,IdB)
-    libamcl_wcc_ZZZ.WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ, PaG1, PbG2, PgG1, IdB, PIA)
+    libamcl_wcc_ZZZ.WCC_ZZZ_Hq(HASH_TYPE_ZZZ, PaG1, PbG2, PgG1, IdB, PIA)
     if DEBUG:
         print "PIA: %s" % toHex(PIA)
 
     # PIB = Hq(PbG2,PaG1,PgG1,IdA)
-    libamcl_wcc_ZZZ.WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ, PbG2, PaG1, PgG1, IdA, PIB)
+    libamcl_wcc_ZZZ.WCC_ZZZ_Hq(HASH_TYPE_ZZZ, PbG2, PaG1, PgG1, IdA, PIB)
     if DEBUG:
         print "PIB: %s" % toHex(PIB)
 
     # Alice calculates AES Key
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_SENDER_KEY(
-        HASH_TYPE_WCC_ZZZ,
+        HASH_TYPE_ZZZ,
         X,
         PIA,
         PIB,
@@ -398,12 +405,12 @@ if __name__ == "__main__":
         IdB,
         KEY1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ, X, PIA, PIB, PbG2, PgG1, AKeyG1, IdB, KEY1) Error %s" % rtn
+        print "libamcl_wcc_ZZZ.WCC_ZZZ_SENDER_KEY(HASH_TYPE_ZZZ, X, PIA, PIB, PbG2, PgG1, AKeyG1, IdB, KEY1) Error %s" % rtn
     print "{0}'s AES Key: {1}".format(alice_id, toHex(KEY1))
 
     # Bob calculates AES Key
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RECEIVER_KEY(
-        HASH_TYPE_WCC_ZZZ,
+        HASH_TYPE_ZZZ,
         Y,
         W,
         PIA,
@@ -414,7 +421,7 @@ if __name__ == "__main__":
         IdA,
         KEY2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ, Y, W, PIA, PIB, PaG1, PgG1, BKeyG2, IdA, KEY2) Error %s" % rtn
+        print "libamcl_wcc_ZZZ.WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_ZZZ, Y, W, PIA, PIB, PaG1, PgG1, BKeyG2, IdA, KEY2) Error %s" % rtn
     print "{0}'s AES Key: {1}".format(bob_id, toHex(KEY2))
 
     libamcl_core.KILL_CSPRNG(RNG)
