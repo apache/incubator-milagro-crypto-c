@@ -81,13 +81,11 @@ brew install parallel
 ```
 
 * **Windows**
-* Minimalist GNU for Windows [MinGW](http://www.mingw.org) provides the tool set used to build the library and should be installed
-* When the MinGW installer starts select the **mingw32-base** and **mingw32-gcc-g++** components
-* From the menu select *"Installation"* &rarr; *"Apply Changes"*, then click *"Apply"*
-* Finally add *C:\MinGW\bin* to the PATH variable
-* pip install cffi
-* install CMake following the instructions on http://www.cmake.org
-* install Doxygen following the instructions on http://www.doxygen.org
+
+* install [MinGW](http://www.mingw.org) Please select the **mingw32-base** and **mingw32-gcc-g++** components. Add *C:\MinGW\bin* to the PATH variable
+* install [Python](https://www.python.org/downloads/windows/). Add *C:\Python27 to the PATH variable
+* install [CMake](http://www.cmake.org)
+* install [Doxygen](http://www.doxygen.org)
 
 
 ## Build Instructions
@@ -183,7 +181,7 @@ git clone https://github.com/milagro-crypto/milagro-crypto-c
 cd milagro-crypto-c
 mkdir target\build
 cd target\build
-cmake -G "MinGW Makefiles" ..\..
+cmake -G "MinGW Makefiles" -D WORD_SIZE=64 ..\..
 mingw32-make
 mingw32-make test
 mingw32-make doc
@@ -214,7 +212,7 @@ After having built the libraries you can build a Windows installer using this co
 sudo mingw32-make package
 ```
 
-In order for this to work NSSI has to have been installed
+In order for this to work [NSIS](https://nsis.sourceforge.io) has to have been installed
 
 ## Contributions
 
