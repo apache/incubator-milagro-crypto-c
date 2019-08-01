@@ -32,7 +32,6 @@ import cffi
 import platform
 import os
 
-
 ffi = cffi.FFI()
 ffi.cdef("""
 typedef struct {
@@ -101,22 +100,33 @@ else:
     libamcl_mpin_ZZZ = ffi.dlopen("libamcl_mpin_ZZZ.so")
     libamcl_core = ffi.dlopen("libamcl_core.so")
 
-# MPIN Group Size
+# Group Size
 PGS = @NB@
-# MPIN Field Size
+# Field Size
 PFS = @NB@
+
+CURVE_SECURITY = @CS@
+
+if CURVE_SECURITY == 128:
+    G2 = 4*PFS
+    HASH_TYPE_ZZZ = 32
+    AESKEY_ZZZ = 16    
+    
+if CURVE_SECURITY == 192:
+    G2 = 8*PFS
+    HASH_TYPE_ZZZ = 48    
+    AESKEY_ZZZ = 24
+    
+if CURVE_SECURITY == 256:
+    G2 = 16*PFS
+    HASH_TYPE_ZZZ = 64
+    AESKEY_ZZZ = 32
+    
 G1 = 2 * PFS + 1
-G2 = 4 * PFS
-GT = 12 * PFS
+GT = 3*G2
+
 # AES-GCM IV length
 IVL = 12
-# MPIN Symmetric Key Size
-PAS = 16
-
-# Hash function choice
-SHA256 = 32
-SHA384 = 48
-SHA512 = 64
 
 
 def to_hex(octet_value):
@@ -1164,7 +1174,7 @@ def client_key(hash_type, pc1, pc2, pin, r, x, hm, t):
     x1, x1_val = make_octet(None, x)
     hm1, hm1_val = make_octet(None, hm)
     t1, t1_val = make_octet(None, t)
-    client_aes_key1, client_aes_key_val1 = make_octet(PAS)
+    client_aes_key1, client_aes_key_val1 = make_octet(AESKEY_ZZZ)
     error_code = libamcl_mpin_ZZZ.MPIN_ZZZ_CLIENT_KEY(
         hash_type,
         pc11,
@@ -1225,7 +1235,7 @@ def server_key(hash_type, z, server_secret, w, hm, HID, u, ut):
     HID1, HID1_val = make_octet(None, HID)
     u1, u1_val = make_octet(None, u)
 
-    server_aes_key1, server_aes_key1_val = make_octet(PAS)
+    server_aes_key1, server_aes_key1_val = make_octet(AESKEY_ZZZ)
     error_code = libamcl_mpin_ZZZ.MPIN_ZZZ_SERVER_KEY(
         hash_type,
         z1,
@@ -1278,7 +1288,7 @@ def aes_gcm_encrypt(aes_key, iv, header, plaintext):
     iv1, iv1_val = make_octet(None, iv)
     header1, header1_val = make_octet(None, header)
     plaintext1, plaintext1_val = make_octet(None, plaintext)
-    tag1, tag1_val = make_octet(PAS)
+    tag1, tag1_val = make_octet(AESKEY_ZZZ)
     ciphertext1, ciphertext1_val = make_octet(len(plaintext))
 
     libamcl_core.AES_GCM_ENCRYPT(
@@ -1326,7 +1336,7 @@ def aes_gcm_decrypt(aes_key, iv, header, ciphertext):
     iv1, iv1_val = make_octet(None, iv)
     header1, header1_val = make_octet(None, header)
     ciphertext1, ciphertext1_val = make_octet(None, ciphertext)
-    tag1, tag1_val = make_octet(PAS)
+    tag1, tag1_val = make_octet(AESKEY_ZZZ)
     plaintext1, plaintext1_val = make_octet(len(ciphertext))
 
     libamcl_core.AES_GCM_DECRYPT(
@@ -1412,7 +1422,7 @@ if __name__ == "__main__":
     MPIN_ZZZ_FULL = True
     PIN_ERROR = True
 
-    HASH_TYPE_MPIN_ZZZ = SHA256
+
 
     if TIME_PERMITS:
         date = today()
@@ -1433,7 +1443,7 @@ if __name__ == "__main__":
         mpin_id = "user@milagro.com"
 
     # Hash mpin_id
-    hash_mpin_id = hash_id(HASH_TYPE_MPIN_ZZZ, mpin_id)
+    hash_mpin_id = hash_id(HASH_TYPE_ZZZ, mpin_id)
     if DEBUG:
         print "mpin_id: %s" % mpin_id.encode("hex")
         print "hash_mpin_id: %s" % hash_mpin_id.encode("hex")
@@ -1489,13 +1499,13 @@ if __name__ == "__main__":
         if DEBUG:
             print "Date %s" % date
         rtn, tp1 = get_client_permit(
-            HASH_TYPE_MPIN_ZZZ, date, ms1, hash_mpin_id)
+            HASH_TYPE_ZZZ, date, ms1, hash_mpin_id)
         if rtn != 0:
-            print "get_client_permit(HASH_TYPE_MPIN_ZZZ, date, ms1, hash_mpin_id) Error %s" % rtn
+            print "get_client_permit(HASH_TYPE_ZZZ, date, ms1, hash_mpin_id) Error %s" % rtn
         rtn, tp2 = get_client_permit(
-            HASH_TYPE_MPIN_ZZZ, date, ms2, hash_mpin_id)
+            HASH_TYPE_ZZZ, date, ms2, hash_mpin_id)
         if rtn != 0:
-            print "get_client_permit(HASH_TYPE_MPIN_ZZZ, date, ms2, hash_mpin_id) Error %s" % rtn
+            print "get_client_permit(HASH_TYPE_ZZZ, date, ms2, hash_mpin_id) Error %s" % rtn
         if DEBUG:
             print "tp1: %s" % tp1.encode("hex")
             print "tp2: %s" % tp2.encode("hex")
@@ -1515,9 +1525,9 @@ if __name__ == "__main__":
             raw_input("Please enter four digit PIN to create M-Pin Token:"))
     else:
         PIN = 1234
-    rtn, token = extract_pin(HASH_TYPE_MPIN_ZZZ, mpin_id, PIN, client_secret)
+    rtn, token = extract_pin(HASH_TYPE_ZZZ, mpin_id, PIN, client_secret)
     if rtn != 0:
-        print "extract_pin(HASH_TYPE_MPIN_ZZZ, mpin_id, PIN, token) Error %s" % rtn
+        print "extract_pin(HASH_TYPE_ZZZ, mpin_id, PIN, token) Error %s" % rtn
     print "Token: %s" % token.encode("hex")
 
     if ONE_PASS:
@@ -1536,7 +1546,7 @@ if __name__ == "__main__":
 
         # Client MPIN
         rtn, x, u, ut, v, y = client(
-            HASH_TYPE_MPIN_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit, None, epoch_time)
+            HASH_TYPE_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit, None, epoch_time)
         if rtn != 0:
             print "MPIN_ZZZ_CLIENT ERROR %s" % rtn
 
@@ -1546,7 +1556,7 @@ if __name__ == "__main__":
 
         # Server MPIN
         rtn, HID, HTID, E, F, y2 = server(
-            HASH_TYPE_MPIN_ZZZ, date, server_secret, u, ut, v, mpin_id, None, epoch_time)
+            HASH_TYPE_ZZZ, date, server_secret, u, ut, v, mpin_id, None, epoch_time)
         if DEBUG:
             print "y2 ", y2.encode("hex")
         if rtn != 0:
@@ -1571,16 +1581,16 @@ if __name__ == "__main__":
                 print "ERROR: Generating T %s" % rtn
 
         if MPIN_ZZZ_FULL:
-            HM = hash_all(HASH_TYPE_MPIN_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)
+            HM = hash_all(HASH_TYPE_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)
 
             rtn, client_aes_key = client_key(
-                HASH_TYPE_MPIN_ZZZ, pc1, pc2, PIN, r, x, HM, T)
+                HASH_TYPE_ZZZ, pc1, pc2, PIN, r, x, HM, T)
             if rtn != 0:
                 print "ERROR: Generating client_aes_key %s" % rtn
             print "Client AES Key: %s" % client_aes_key.encode("hex")
 
             rtn, server_aes_key = server_key(
-                HASH_TYPE_MPIN_ZZZ, Z, server_secret, w, HM, HID, u, ut)
+                HASH_TYPE_ZZZ, Z, server_secret, w, HM, HID, u, ut)
             if rtn != 0:
                 print "ERROR: Generating server_aes_key %s" % rtn
             print "Server AES Key: %s" % server_aes_key.encode("hex")
@@ -1598,7 +1608,7 @@ if __name__ == "__main__":
 
         # Client first pass
         rtn, x, u, ut, sec = client_1(
-            HASH_TYPE_MPIN_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit)
+            HASH_TYPE_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit)
         if rtn != 0:
             print "client_1  ERROR %s" % rtn
         if DEBUG:
@@ -1606,7 +1616,7 @@ if __name__ == "__main__":
 
         # Server calculates H(ID) and H(T|H(ID)) (if time permits enabled),
         # and maps them to points on the curve HID and HTID resp.
-        HID, HTID = server_1(HASH_TYPE_MPIN_ZZZ, date, mpin_id)
+        HID, HTID = server_1(HASH_TYPE_ZZZ, date, mpin_id)
 
         # Server generates Random number y and sends it to Client
         rtn, y = random_generate(rng)
@@ -1647,16 +1657,16 @@ if __name__ == "__main__":
             if rtn != 0:
                 print "ERROR: Generating T %s" % rtn
 
-            HM = hash_all(HASH_TYPE_MPIN_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)
+            HM = hash_all(HASH_TYPE_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)
 
             rtn, client_aes_key = client_key(
-                HASH_TYPE_MPIN_ZZZ, pc1, pc2, PIN, r, x, HM, T)
+                HASH_TYPE_ZZZ, pc1, pc2, PIN, r, x, HM, T)
             if rtn != 0:
                 print "ERROR: Generating client_aes_key %s" % rtn
             print "Client AES Key: %s" % client_aes_key.encode("hex")
 
             rtn, server_aes_key = server_key(
-                HASH_TYPE_MPIN_ZZZ, Z, server_secret, w, HM, HID, u, ut)
+                HASH_TYPE_ZZZ, Z, server_secret, w, HM, HID, u, ut)
             if rtn != 0:
                 print "ERROR: Generating server_aes_key %s" % rtn
             print "Server AES Key: %s" % server_aes_key.encode("hex")

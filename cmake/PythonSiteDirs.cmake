@@ -27,3 +27,14 @@ execute_process(COMMAND
   python -c "from distutils.sysconfig import get_python_lib; from os.path import dirname; print dirname(get_python_lib())"
   OUTPUT_VARIABLE PYTHON_SITE_LIB
 )
+
+execute_process(COMMAND
+  python3 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"
+  OUTPUT_VARIABLE PYTHON3_SITE_PACKAGES
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(COMMAND
+  python3 -c "from distutils.sysconfig import get_python_lib; from os.path import dirname; print(dirname(get_python_lib()))"
+  OUTPUT_VARIABLE PYTHON3_SITE_LIB
+)
