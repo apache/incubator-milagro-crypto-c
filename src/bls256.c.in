@@ -46,9 +46,19 @@ int BLS_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
     BIG_XXX s,q;
     BIG_XXX_rcopy(q,CURVE_Order_ZZZ);
     ECP8_ZZZ_generator(&G);
-    BIG_XXX_randomnum(s,q,RNG);
-    BIG_XXX_toBytes(S->val,s);
-    S->len=MODBYTES_XXX;
+
+    if (RNG!=NULL)
+    {
+        BIG_XXX_randomnum(s,q,RNG);
+        BIG_XXX_toBytes(S->val,s);
+        S->len=MODBYTES_XXX;
+    }
+    else
+    {
+        S->len=MODBYTES_XXX;
+        BIG_XXX_fromBytes(s,S->val);
+    }
+
     PAIR_ZZZ_G2mul(&G,s);
     ECP8_ZZZ_toOctet(W,&G);
     return BLS_OK;

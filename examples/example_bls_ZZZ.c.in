@@ -53,6 +53,8 @@ int bls(csprng *RNG)
 
     char sk1[BGS_ZZZ];
     octet SK1 = {0,sizeof(sk1),sk1};
+    char pktmp[G2LEN];
+    octet PKTMP = {0,sizeof(pktmp),pktmp};
     char pk1[G2LEN];
     octet PK1 = {0,sizeof(pk1),pk1};
     char sig1[BFS_ZZZ+1];
@@ -72,19 +74,24 @@ int bls(csprng *RNG)
     char sig3[BFS_ZZZ+1];
     octet SIG3 = {0,sizeof(sig3),sig3};
 
-    // Combined signature and public keys
+    // Aggregated signature and public keys
     char pk[G2LEN];
     octet PK = {0,sizeof(pk),pk};
     char sig[BFS_ZZZ+1];
     octet SIG = {0,sizeof(sig),sig};
 
     // Generate key pairs
-    BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK1,&PK1);
+    BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK1,&PKTMP);
     BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK2,&PK2);
     BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK3,&PK3);
 
+    // Generate PK2 using external secret key
+    BLS_ZZZ_KEY_PAIR_GENERATE(NULL,&SK1,&PK1);
+
     printf("Private key SK1: ");
     OCT_output(&SK1);
+    printf("Public key PKTMP: ");
+    OCT_output(&PKTMP);
     printf("Public key PK1: ");
     OCT_output(&PK1);
     printf("Private key SK2: ");
@@ -171,16 +178,16 @@ int bls(csprng *RNG)
         return 1;
     }
 
-    // Verify combined signature. This should fail.
+    // Verify aggregated signature. This should fail.
     rc=BLS_ZZZ_VERIFY(&SIG,message,&PK);
     if (rc==BLS_OK)
     {
-        printf("Success: Combined signature is valid\n");
+        printf("Success: Aggregated signature is valid\n");
         return 1;
     }
     else
     {
-        printf("Error: Combined signature is invalid\n");
+        printf("Error: Aggregated signature is invalid (expected result) \n");
     }
 
     rc = BLS_ZZZ_ADD_G1(&SIG,&SIG3,&SIG);
@@ -192,15 +199,15 @@ int bls(csprng *RNG)
     printf("SIG: ");
     OCT_output(&SIG);
     printf("\n");
-    // Verify combined signature.
+    // Verify aggregated signature.
     rc=BLS_ZZZ_VERIFY(&SIG,message,&PK);
     if (rc==BLS_OK)
     {
-        printf("Success: Combined signature is valid\n");
+        printf("Success: Aggregated signature is valid\n");
     }
     else
     {
-        printf("Error: Combined signature is invalid\n");
+        printf("Error: Aggregated signature is invalid\n");
         return 1;
     }
 
@@ -216,14 +223,14 @@ int bls(csprng *RNG)
     }
     else
     {
-        printf("Error: Invalid Signature\n");
+        printf("Error: Invalid Signature (expected result) \n");
     }
 
     // Change the signature
     message[0]='t';
     SIG1.val[0]=5;
     printf("message %s\n", message);
-    printf("Sig1nature SIG1: ");
+    printf("Signature SIG1: ");
     OCT_output(&SIG1);
     rc=BLS_ZZZ_VERIFY(&SIG1,message,&PK1);
     if (rc==BLS_OK)
@@ -233,7 +240,7 @@ int bls(csprng *RNG)
     }
     else
     {
-        printf("Error: Invalid Signature\n");
+        printf("Error: Invalid Signature  (expected result) \n");
     }
 
     /* clear memory */
@@ -254,17 +261,17 @@ int main()
     char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
     char seed[16] = {0};
     octet SEED = {sizeof(seed),sizeof(seed),seed};
-    
+
     // CSPRNG
     csprng RNG;
 
-    // fake random source 
+    // fake random source
     OCT_fromHex(&SEED,seedHex);
     printf("SEED: ");
     OCT_output(&SEED);
     printf("\n");
 
-    // initialise strong RNG 
+    // initialise strong RNG
     CREATE_CSPRNG(&RNG,&SEED);
 
     printf("\nTesting BLS signature for curve ZZZ\n");

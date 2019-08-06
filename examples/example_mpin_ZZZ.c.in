@@ -351,13 +351,13 @@ int main()
     // CSPRNG
     csprng RNG;
 
-    // fake random source 
+    // fake random source
     OCT_fromHex(&SEED,seedHex);
     printf("SEED: ");
     OCT_output(&SEED);
     printf("\n");
 
-    // initialise strong RNG 
+    // initialise strong RNG
     CREATE_CSPRNG(&RNG,&SEED);
 
     mpin(&RNG);

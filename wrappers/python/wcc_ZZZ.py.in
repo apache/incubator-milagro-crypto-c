@@ -83,24 +83,25 @@ PFS = @NB@
 CURVE_SECURITY = @CS@
 
 if CURVE_SECURITY == 128:
-    G2 = 4*PFS
+    G2 = 4 * PFS
     HASH_TYPE_ZZZ = 32
-    AESKEY_ZZZ = 16    
-    
+    AESKEY_ZZZ = 16
+
 if CURVE_SECURITY == 192:
-    G2 = 8*PFS
-    HASH_TYPE_ZZZ = 48    
+    G2 = 8 * PFS
+    HASH_TYPE_ZZZ = 48
     AESKEY_ZZZ = 24
-    
+
 if CURVE_SECURITY == 256:
-    G2 = 16*PFS
+    G2 = 16 * PFS
     HASH_TYPE_ZZZ = 64
     AESKEY_ZZZ = 32
-    
+
 G1 = 2 * PFS + 1
 
 # AES-GCM IV length
 IVL = 12
+
 
 def toHex(octetValue):
     """Converts an octet type into a string
@@ -301,7 +302,7 @@ if __name__ == "__main__":
     if DEBUG:
         print "IdB: %s" % toHex(IdB)
         print "HIdB: %s" % toHex(HIdB)
-        
+
     # Generate master secret for MILAGRO and Customer
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG, MS1)
     if rtn != 0:
