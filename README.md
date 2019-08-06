@@ -51,7 +51,6 @@ In order to build this library, the following packages are required:
 * [Doxygen](http://doxygen.org) is required to build the source code documentation.
 * [Python](https://www.python.org/) language is required to build the Python language wrapper.
 
-
 The above packages can be installed in different ways, depending on the Operating System used:
 
 * **Debian/Ubuntu Linux**
@@ -195,7 +194,7 @@ Post install append the PATH system variable to point to the install ./lib:
 The build can be configured using by setting flags on the command line i.e.
 
 ```
-cmake -G "MinGW Makefiles" -D BUILD_PYTHON=on ..
+cmake -G "MinGW Makefiles" -D WORD_SIZE=64  -D BUILD_PYTHON=on ..
 ```
 
 ##### Uninstall software
