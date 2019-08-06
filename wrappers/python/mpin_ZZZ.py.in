@@ -55,7 +55,7 @@ extern void KILL_CSPRNG(csprng *R);
 extern void OCT_clear(octet *O);
 
 extern void HASH_ID(int h,octet *ID,octet *HID);
-extern unsigned int MPIN_ZZZ_GET_TIME(void);
+extern unsigned int GET_TIME(void);
 extern void MPIN_ZZZ_GET_Y(int h,int t,octet *O,octet *Y);
 extern int MPIN_ZZZ_EXTRACT_PIN(int h,octet *ID,int pin,octet *CS);
 extern int MPIN_ZZZ_CLIENT(int h,int d,octet *ID,csprng *R,octet *x,int pin,octet *T,octet *V,octet *U,octet *UT,octet *TP, octet* MESSAGE, int t, octet *y);
@@ -217,7 +217,7 @@ def get_time():
     Raises:
 
     """
-    return libamcl_mpin_ZZZ.MPIN_ZZZ_GET_TIME()
+    return libamcl_mpin_ZZZ.GET_TIME()
 
 
 def create_csprng(seed):
@@ -968,8 +968,7 @@ def server_2(epoch_date, HID, HTID, y, server_secret, u, ut, v, pa):
     return error_code, e_hex.decode("hex"), f_hex.decode("hex")
 
 
-def server(hash_type, epoch_date, server_secret,
-           u, ut, v, mpin_id, message, epoch_time, pa):
+def server(hash_type, epoch_date, server_secret, u, ut, v, mpin_id, message, epoch_time, pa):
     """Perform server side of the one-pass version of the M-Pin protocol
 
     Perform server side of the one-pass version of the M-Pin protocol. If Time
@@ -1547,6 +1546,8 @@ if __name__ == "__main__":
         # Client MPIN
         rtn, x, u, ut, v, y = client(
             HASH_TYPE_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit, None, epoch_time)
+        if DEBUG:
+            print "y1 ", y.encode("hex")        
         if rtn != 0:
             print "MPIN_ZZZ_CLIENT ERROR %s" % rtn
 
@@ -1556,7 +1557,7 @@ if __name__ == "__main__":
 
         # Server MPIN
         rtn, HID, HTID, E, F, y2 = server(
-            HASH_TYPE_ZZZ, date, server_secret, u, ut, v, mpin_id, None, epoch_time)
+            HASH_TYPE_ZZZ, date, server_secret, u, ut, v, mpin_id, None, epoch_time, None)
         if DEBUG:
             print "y2 ", y2.encode("hex")
         if rtn != 0:
@@ -1701,8 +1702,6 @@ if __name__ == "__main__":
     del cs2
     del client_secret
     del token
-    del pc1
-    del pc2
     del x
     del u
     del ut
@@ -1729,5 +1728,7 @@ if __name__ == "__main__":
         del HM
         del client_aes_key
         del server_aes_key
+        del pc1
+        del pc2
 
     kill_csprng(rng)
