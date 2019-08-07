@@ -108,22 +108,22 @@ PFS = @NB@
 CURVE_SECURITY = @CS@
 
 if CURVE_SECURITY == 128:
-    G2 = 4*PFS
+    G2 = 4 * PFS
     HASH_TYPE_ZZZ = 32
-    AESKEY_ZZZ = 16    
-    
+    AESKEY_ZZZ = 16
+
 if CURVE_SECURITY == 192:
-    G2 = 8*PFS
-    HASH_TYPE_ZZZ = 48    
+    G2 = 8 * PFS
+    HASH_TYPE_ZZZ = 48
     AESKEY_ZZZ = 24
-    
+
 if CURVE_SECURITY == 256:
-    G2 = 16*PFS
+    G2 = 16 * PFS
     HASH_TYPE_ZZZ = 64
     AESKEY_ZZZ = 32
-    
+
 G1 = 2 * PFS + 1
-GT = 3*G2
+GT = 3 * G2
 
 # AES-GCM IV length
 IVL = 12
@@ -968,7 +968,17 @@ def server_2(epoch_date, HID, HTID, y, server_secret, u, ut, v, pa):
     return error_code, e_hex.decode("hex"), f_hex.decode("hex")
 
 
-def server(hash_type, epoch_date, server_secret, u, ut, v, mpin_id, message, epoch_time, pa):
+def server(
+    hash_type,
+    epoch_date,
+    server_secret,
+    u,
+    ut,
+    v,
+    mpin_id,
+    message,
+    epoch_time,
+        pa):
     """Perform server side of the one-pass version of the M-Pin protocol
 
     Perform server side of the one-pass version of the M-Pin protocol. If Time
@@ -1421,8 +1431,6 @@ if __name__ == "__main__":
     MPIN_ZZZ_FULL = True
     PIN_ERROR = True
 
-
-
     if TIME_PERMITS:
         date = today()
     else:
@@ -1547,7 +1555,7 @@ if __name__ == "__main__":
         rtn, x, u, ut, v, y = client(
             HASH_TYPE_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit, None, epoch_time)
         if DEBUG:
-            print "y1 ", y.encode("hex")        
+            print "y1 ", y.encode("hex")
         if rtn != 0:
             print "MPIN_ZZZ_CLIENT ERROR %s" % rtn
 

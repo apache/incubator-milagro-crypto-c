@@ -79,17 +79,17 @@ BFS = @NB@
 
 CURVE_SECURITY = @CS@
 
-G1LEN = BFS+1
+G1LEN = BFS + 1
 
 if CURVE_SECURITY == 128:
-    G2LEN = 4*BFS
+    G2LEN = 4 * BFS
 
 if CURVE_SECURITY == 192:
-    G2LEN = 8*BFS
+    G2LEN = 8 * BFS
 
 if CURVE_SECURITY == 256:
-    G2LEN = 16*BFS
-    
+    G2LEN = 16 * BFS
+
 
 def to_hex(octet_value):
     """Converts an octet type into a string
@@ -113,10 +113,11 @@ def to_hex(octet_value):
     while i < octet_value.len:
         val.append(octet_value.val[i])
         i = i + 1
-    out=b''
+    out = b''
     for x in val:
         out = out + x
     return out.hex()
+
 
 def make_octet(length, value=None):
     """Generates an octet pointer
@@ -148,6 +149,7 @@ def make_octet(length, value=None):
         oct_ptr.max = length
         oct_ptr.len = length
     return oct_ptr, val
+
 
 def create_csprng(seed):
     """Make a Cryptographically secure pseudo-random number generator instance
@@ -195,7 +197,8 @@ def kill_csprng(rng):
 
     return 0
 
-def key_pair_generate(rng):
+
+def key_pair_generate(rng, sk=None):
     """Generate key pair
 
     Generate key pair
@@ -203,6 +206,7 @@ def key_pair_generate(rng):
     Args::
 
         rng: Pointer to cryptographically secure pseudo-random number generator instance
+        sk: secret key. Externally generated
 
     Returns::
 
@@ -213,20 +217,26 @@ def key_pair_generate(rng):
     Raises:
 
     """
-    sk1, sk1val = make_octet(BGS)
-    pk1, pk1val = make_octet(G2LEN)    
-    error_code = libamcl_bls_ZZZ.BLS_ZZZ_KEY_PAIR_GENERATE(rng, sk1,pk1)
+    if sk:
+        sk1, sk1_val = make_octet(None, sk)
+        rng = ffi.NULL
+    else:
+        sk1, sk1val = make_octet(BGS)
+
+    pk1, pk1val = make_octet(G2LEN)
+    error_code = libamcl_bls_ZZZ.BLS_ZZZ_KEY_PAIR_GENERATE(rng, sk1, pk1)
 
     sk_hex = to_hex(sk1)
-    pk_hex = to_hex(pk1)    
+    pk_hex = to_hex(pk1)
 
     # clear memory
     libamcl_core.OCT_clear(sk1)
-    libamcl_core.OCT_clear(pk1)    
+    libamcl_core.OCT_clear(pk1)
 
     sk = bytes.fromhex(sk_hex)
-    pk = bytes.fromhex(pk_hex)        
+    pk = bytes.fromhex(pk_hex)
     return error_code, sk, pk
+
 
 def sign(message, sk):
     """Calculate a signature
@@ -247,17 +257,18 @@ def sign(message, sk):
 
     """
     sk1, sk1_val = make_octet(None, sk)
-    signature1, signature1_val = make_octet(G1LEN)    
+    signature1, signature1_val = make_octet(G1LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_SIGN(signature1, message, sk1)
 
     signature_hex = to_hex(signature1)
 
     # clear memory
     libamcl_core.OCT_clear(sk1)
-    libamcl_core.OCT_clear(signature1)    
+    libamcl_core.OCT_clear(signature1)
 
     signature = bytes.fromhex(signature_hex)
     return error_code, signature
+
 
 def verify(signature, message, pk):
     """Verify a signature
@@ -283,9 +294,10 @@ def verify(signature, message, pk):
 
     # clear memory
     libamcl_core.OCT_clear(pk1)
-    libamcl_core.OCT_clear(signature1)    
+    libamcl_core.OCT_clear(signature1)
 
     return error_code
+
 
 def add_G1(R1, R2):
     """Add two members from the group G1
@@ -306,19 +318,20 @@ def add_G1(R1, R2):
 
     """
     R11, R11_val = make_octet(None, R1)
-    R21, R21_val = make_octet(None, R2)    
-    R1, R1_val = make_octet(G1LEN)        
+    R21, R21_val = make_octet(None, R2)
+    R1, R1_val = make_octet(G1LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_ADD_G1(R11, R21, R1)
 
     R_hex = to_hex(R1)
-    
+
     # clear memory
     libamcl_core.OCT_clear(R11)
     libamcl_core.OCT_clear(R21)
-    libamcl_core.OCT_clear(R1)    
+    libamcl_core.OCT_clear(R1)
 
     R = bytes.fromhex(R_hex)
     return error_code, R
+
 
 def add_G2(R1, R2):
     """Add two members from the group G2
@@ -339,19 +352,20 @@ def add_G2(R1, R2):
 
     """
     R11, R11_val = make_octet(None, R1)
-    R21, R21_val = make_octet(None, R2)    
-    R1, R1_val = make_octet(G2LEN)        
+    R21, R21_val = make_octet(None, R2)
+    R1, R1_val = make_octet(G2LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_ADD_G2(R11, R21, R1)
 
     R_hex = to_hex(R1)
-    
+
     # clear memory
     libamcl_core.OCT_clear(R11)
     libamcl_core.OCT_clear(R21)
-    libamcl_core.OCT_clear(R1)    
+    libamcl_core.OCT_clear(R1)
 
     R = bytes.fromhex(R_hex)
     return error_code, R
+
 
 if __name__ == "__main__":
     # Print hex values
@@ -368,24 +382,31 @@ if __name__ == "__main__":
     rng = create_csprng(seed)
 
     # Generate key pairs
-    rtn, sk1, pk1 = key_pair_generate(rng)
+    rtn, sk1, pktmp = key_pair_generate(rng)
     if rtn != 0:
-        print("Error: key_pair_generate {}".format(rtn))                
-        raise SystemExit(0)        
+        print("Error: key_pair_generate {}".format(rtn))
+        raise SystemExit(0)
+    print("sk1: {}".format(sk1.hex()))
+    print("pktmp: {}".format(pktmp.hex()))
+
+    rtn, sk1, pk1 = key_pair_generate(rng, sk1)
+    if rtn != 0:
+        print("Error: key_pair_generate {}".format(rtn))
+        raise SystemExit(0)
     print("sk1: {}".format(sk1.hex()))
     print("pk1: {}".format(pk1.hex()))
 
     rtn, sk2, pk2 = key_pair_generate(rng)
     if rtn != 0:
-        print("Error: key_pair_generate {}".format(rtn))        
-        raise SystemExit(0)        
+        print("Error: key_pair_generate {}".format(rtn))
+        raise SystemExit(0)
     print("sk2: {}".format(sk2.hex()))
     print("pk2: {}".format(pk2.hex()))
 
     rtn, sk3, pk3 = key_pair_generate(rng)
     if rtn != 0:
-        print("Error: key_pair_generate {}".format(rtn))        
-        raise SystemExit(0)        
+        print("Error: key_pair_generate {}".format(rtn))
+        raise SystemExit(0)
     print("sk3: {}".format(sk3.hex()))
     print("pk3: {}".format(pk3.hex()))
 
@@ -393,7 +414,7 @@ if __name__ == "__main__":
     rtn, sig1 = sign(message, sk1)
     if rtn != 0:
         print("Error: sign {}".format(rtn))
-        raise SystemExit(0)                
+        raise SystemExit(0)
     print("sig1: {}".format(sig1.hex()))
 
     rtn = verify(sig1, message, pk1)
@@ -405,7 +426,7 @@ if __name__ == "__main__":
     rtn, sig2 = sign(message, sk2)
     if rtn != 0:
         print("Error: sign {}".format(rtn))
-        raise SystemExit(0)                
+        raise SystemExit(0)
     print("sig2: {}".format(sig2.hex()))
 
     rtn = verify(sig2, message, pk2)
@@ -413,13 +434,13 @@ if __name__ == "__main__":
         print("Error: Invalid signature {}".format(rtn))
         raise SystemExit(0)
     print("Success: Signature is valid")
-    
+
     rtn, sig3 = sign(message, sk3)
     if rtn != 0:
         print("Error: sign {}".format(rtn))
-        raise SystemExit(0)                
+        raise SystemExit(0)
     print("sig3: {}".format(sig3.hex()))
-    
+
     rtn = verify(sig3, message, pk3)
     if rtn != 0:
         print("Error: Invalid signature {}".format(rtn))
@@ -431,26 +452,26 @@ if __name__ == "__main__":
     if rtn != 0:
         print("Error: add_G1 {}".format(rtn))
         raise SystemExit(0)
-    print("sig12: {}".format(sig12.hex()))    
+    print("sig12: {}".format(sig12.hex()))
 
     rtn, sig123 = add_G1(sig12, sig3)
     if rtn != 0:
         print("Error: add_G1 {}".format(rtn))
         raise SystemExit(0)
-    print("sig123: {}".format(sig123.hex()))    
+    print("sig123: {}".format(sig123.hex()))
 
     # Add Public keys
     rtn, pk12 = add_G2(pk1, pk2)
     if rtn != 0:
         print("Error: add_G2 {}".format(rtn))
         raise SystemExit(0)
-    print("pk12: {}".format(pk12.hex()))    
+    print("pk12: {}".format(pk12.hex()))
 
     rtn, pk123 = add_G2(pk12, pk3)
     if rtn != 0:
         print("Error: add_G2 {}".format(rtn))
         raise SystemExit(0)
-    print("pk123: {}".format(pk123.hex()))    
+    print("pk123: {}".format(pk123.hex()))
 
     # Verify aggretated values
     rtn = verify(sig123, message, pk123)
@@ -458,12 +479,12 @@ if __name__ == "__main__":
         print("Error: Invalid aggregated signature {}".format(rtn))
         raise SystemExit(0)
     print("Success: Aggregated signature is valid")
-    
-    # Clear memory    
+
+    # Clear memory
     kill_csprng(rng)
     del sk1
-    del pk1    
+    del pk1
     del sk2
-    del pk2    
+    del pk2
     del sk3
-    del pk3    
+    del pk3
