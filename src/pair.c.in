@@ -490,11 +490,11 @@ void PAIR_ZZZ_fexp(FP12_YYY *r)
     FP12_YYY_frob(r,&X);
     FP12_YYY_mul(r,&t0);
 
-    if (FP12_YYY_isunity(r))
-    {
-        FP12_YYY_zero(r);
-        return;
-    }
+//    if (FP12_YYY_isunity(r))
+//    {
+//        FP12_YYY_zero(r);
+//        return;
+//    }
 
     /* Hard part of final exp - see Duquesne & Ghamman eprint 2015/192.pdf */
 #if PAIRING_FRIENDLY_ZZZ==BN

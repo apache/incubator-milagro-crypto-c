@@ -1,3 +1,22 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+*/
+
 #ifndef ECP4_ZZZ_H
 #define ECP4_ZZZ_H
 
@@ -14,7 +33,7 @@ typedef struct
 //   int inf; /**< Infinity Flag */
     FP4_YYY x;   /**< x-coordinate of point */
     FP4_YYY y;   /**< y-coordinate of point */
-    FP4_YYY z;
+    FP4_YYY z;   /**< z-coordinate of point */
 } ECP4_ZZZ;
 
 
@@ -146,22 +165,6 @@ extern void ECP4_ZZZ_neg(ECP4_ZZZ *P);
  */
 extern void ECP4_ZZZ_reduce(ECP4_ZZZ *P);
 
-
-/**	@brief Doubles an ECP4 instance P and returns slope
- *
-	@param P ECP4 instance, on exit =2*P
-	@param lam FP4 instance, slope of line
- */
-//extern int ECP4_ZZZ_sdbl(ECP4_ZZZ *P,FP4_YYY *lam);
-/**	@brief Adds ECP4 instance Q to ECP4 instance P and returns slope
- *
-	@param P ECP4 instance, on exit =P+Q
-	@param Q ECP4 instance to be added to P
-	@param lam FP4 instance, slope of line
- */
-//extern int ECP4_ZZZ_sadd(ECP4_ZZZ *P,ECP4_ZZZ *Q,FP4_YYY *lam);
-
-
 /**	@brief Doubles an ECP4 instance P
  *
 	@param P ECP4 instance, on exit =2*P
@@ -218,7 +221,7 @@ extern void ECP4_ZZZ_mul8(ECP4_ZZZ *P,ECP4_ZZZ *Q,BIG_XXX *b);
 /**	@brief Maps random BIG to curve point of correct order
  *
 	@param P ECP4 instance of correct order
-	@param W OCTET byte array to be mapped
+	@param w OCTET byte array to be mapped
  */
 extern void ECP4_ZZZ_mapit(ECP4_ZZZ *P,octet *w);
 

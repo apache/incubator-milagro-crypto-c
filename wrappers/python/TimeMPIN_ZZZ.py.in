@@ -33,12 +33,11 @@ def time_func(stmt, n=10, setup='from __main__ import *'):
     total_time = t.timeit(n)
     iter_time = total_time / n
     iter_per_sec = n / total_time
-    print "func:%s nIter:%s total_time:%s iter_time:%s iter_per_sec: %s" % (stmt, n, total_time, iter_time, iter_per_sec)
+    print "func:%s nIter:%s total_time:%s iter_time:%s iter_per_sec: %s" % (
+        stmt, n, total_time, iter_time, iter_per_sec)
 
 
 nIter = 100
-
-HASH_TYPE_MPIN_ZZZ = mpin_ZZZ.SHA256
 
 if __name__ == "__main__":
     # Print hex values
@@ -65,7 +64,7 @@ if __name__ == "__main__":
     mpin_id = "alice@milagro.com"
 
     # Hash mpin_id
-    hash_mpin_id = mpin_ZZZ.hash_id(HASH_TYPE_MPIN_ZZZ, mpin_id)
+    hash_mpin_id = mpin_ZZZ.hash_id(mpin_ZZZ.HASH_TYPE_ZZZ, mpin_id)
     if DEBUG:
         print "mpin_id: %s" % mpin_id.encode("hex")
         print "hash_mpin_id: %s" % hash_mpin_id.encode("hex")
@@ -127,16 +126,16 @@ if __name__ == "__main__":
     if DEBUG:
         print "Date %s" % date
     time_func(
-        'rtn, tp1 = mpin_ZZZ.get_client_permit(HASH_TYPE_MPIN_ZZZ, date, ms1, hash_mpin_id)',
+        'rtn, tp1 = mpin_ZZZ.get_client_permit(mpin_ZZZ.HASH_TYPE_ZZZ, date, ms1, hash_mpin_id)',
         nIter)
     rtn, tp1 = mpin_ZZZ.get_client_permit(
-        HASH_TYPE_MPIN_ZZZ, date, ms1, hash_mpin_id)
+        mpin_ZZZ.HASH_TYPE_ZZZ, date, ms1, hash_mpin_id)
     if rtn != 0:
-        print "get_client_permit(HASH_TYPE_MPIN_ZZZ, date, ms1, hash_mpin_id) Error %s" % rtn
+        print "get_client_permit(mpin_ZZZ.HASH_TYPE_ZZZ, date, ms1, hash_mpin_id) Error %s" % rtn
     rtn, tp2 = mpin_ZZZ.get_client_permit(
-        HASH_TYPE_MPIN_ZZZ, date, ms2, hash_mpin_id)
+        mpin_ZZZ.HASH_TYPE_ZZZ, date, ms2, hash_mpin_id)
     if rtn != 0:
-        print "get_client_permit(HASH_TYPE_MPIN_ZZZ, date, ms2, hash_mpin_id) Error %s" % rtn
+        print "get_client_permit(mpin_ZZZ.HASH_TYPE_ZZZ, date, ms2, hash_mpin_id) Error %s" % rtn
     if DEBUG:
         print "tp1: %s" % tp1.encode("hex")
         print "tp2: %s" % tp2.encode("hex")
@@ -151,12 +150,12 @@ if __name__ == "__main__":
     # Client extracts PIN from secret to create Token
     PIN = 1234
     time_func(
-        'rtn, token = mpin_ZZZ.extract_pin(HASH_TYPE_MPIN_ZZZ, mpin_id, PIN, client_secret)',
+        'rtn, token = mpin_ZZZ.extract_pin(mpin_ZZZ.HASH_TYPE_ZZZ, mpin_id, PIN, client_secret)',
         nIter)
     rtn, token = mpin_ZZZ.extract_pin(
-        HASH_TYPE_MPIN_ZZZ, mpin_id, PIN, client_secret)
+        mpin_ZZZ.HASH_TYPE_ZZZ, mpin_id, PIN, client_secret)
     if rtn != 0:
-        print "extract_pin(HASH_TYPE_MPIN_ZZZ, mpin_id, PIN, token) Error %s" % rtn
+        print "extract_pin(mpin_ZZZ.HASH_TYPE_ZZZ, mpin_id, PIN, token) Error %s" % rtn
     print "Token: %s" % token.encode("hex")
 
     if ONE_PASS:
@@ -176,10 +175,10 @@ if __name__ == "__main__":
 
         # Client MPIN
         time_func(
-            'rtn, x, u, ut, v, y = mpin_ZZZ.client(HASH_TYPE_MPIN_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit, None, epoch_time)',
+            'rtn, x, u, ut, v, y = mpin_ZZZ.client(mpin_ZZZ.HASH_TYPE_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit, None, epoch_time)',
             nIter)
         rtn, x, u, ut, v, y = mpin_ZZZ.client(
-            HASH_TYPE_MPIN_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit, None, epoch_time)
+            mpin_ZZZ.HASH_TYPE_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit, None, epoch_time)
         if rtn != 0:
             print "MPIN_CLIENT ERROR %s" % rtn
 
@@ -192,10 +191,10 @@ if __name__ == "__main__":
 
         # Server MPIN
         time_func(
-            'rtn, HID, HTID, E, F, y2 = mpin_ZZZ.server(HASH_TYPE_MPIN_ZZZ, date, server_secret, u, ut, v, mpin_id, None, epoch_time, None)',
+            'rtn, HID, HTID, E, F, y2 = mpin_ZZZ.server(mpin_ZZZ.HASH_TYPE_ZZZ, date, server_secret, u, ut, v, mpin_id, None, epoch_time, None)',
             nIter)
         rtn, HID, HTID, E, F, y2 = mpin_ZZZ.server(
-            HASH_TYPE_MPIN_ZZZ, date, server_secret, u, ut, v, mpin_id, None, epoch_time, None)
+            mpin_ZZZ.HASH_TYPE_ZZZ, date, server_secret, u, ut, v, mpin_id, None, epoch_time, None)
         if DEBUG:
             print "y2 ", y2.encode("hex")
         if rtn != 0:
@@ -225,22 +224,22 @@ if __name__ == "__main__":
 
         if MPIN_FULL:
             time_func(
-                'HM = mpin_ZZZ.hash_all(HASH_TYPE_MPIN_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)',
+                'HM = mpin_ZZZ.hash_all(mpin_ZZZ.HASH_TYPE_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)',
                 nIter)
             HM = mpin_ZZZ.hash_all(
-                HASH_TYPE_MPIN_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)
+                mpin_ZZZ.HASH_TYPE_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)
 
             time_func(
-                'rtn, client_aes_key = mpin_ZZZ.client_key(HASH_TYPE_MPIN_ZZZ, pc1, pc2, PIN, r, x, HM, T)',
+                'rtn, client_aes_key = mpin_ZZZ.client_key(mpin_ZZZ.HASH_TYPE_ZZZ, pc1, pc2, PIN, r, x, HM, T)',
                 nIter)
             rtn, client_aes_key = mpin_ZZZ.client_key(
-                HASH_TYPE_MPIN_ZZZ, pc1, pc2, PIN, r, x, HM, T)
+                mpin_ZZZ.HASH_TYPE_ZZZ, pc1, pc2, PIN, r, x, HM, T)
             if rtn != 0:
                 print "ERROR: Generating client_aes_key %s" % rtn
             print "Client AES Key: %s" % client_aes_key.encode("hex")
 
             rtn, server_aes_key = mpin_ZZZ.server_key(
-                HASH_TYPE_MPIN_ZZZ, Z, server_secret, w, HM, HID, u, ut)
+                mpin_ZZZ.HASH_TYPE_ZZZ, Z, server_secret, w, HM, HID, u, ut)
             if rtn != 0:
                 print "ERROR: Generating server_aes_key %s" % rtn
             print "Server AES Key: %s" % server_aes_key.encode("hex")
@@ -258,10 +257,10 @@ if __name__ == "__main__":
 
         # Client first pass
         time_func(
-            'rtn, x, u, ut, sec = mpin_ZZZ.client_1(HASH_TYPE_MPIN_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit)',
+            'rtn, x, u, ut, sec = mpin_ZZZ.client_1(mpin_ZZZ.HASH_TYPE_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit)',
             nIter)
         rtn, x, u, ut, sec = mpin_ZZZ.client_1(
-            HASH_TYPE_MPIN_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit)
+            mpin_ZZZ.HASH_TYPE_ZZZ, date, mpin_id, rng, None, PIN, token, time_permit)
         if rtn != 0:
             print "client_1  ERROR %s" % rtn
         if DEBUG:
@@ -270,9 +269,9 @@ if __name__ == "__main__":
         # Server calculates H(ID) and H(T|H(ID)) (if time permits enabled),
         # and maps them to points on the curve HID and HTID resp.
         time_func(
-            'HID, HTID = mpin_ZZZ.server_1(HASH_TYPE_MPIN_ZZZ, date, mpin_id)',
+            'HID, HTID = mpin_ZZZ.server_1(mpin_ZZZ.HASH_TYPE_ZZZ, date, mpin_id)',
             nIter)
-        HID, HTID = mpin_ZZZ.server_1(HASH_TYPE_MPIN_ZZZ, date, mpin_id)
+        HID, HTID = mpin_ZZZ.server_1(mpin_ZZZ.HASH_TYPE_ZZZ, date, mpin_id)
 
         # Server generates Random number y and sends it to Client
         time_func('rtn, y = mpin_ZZZ.random_generate(rng)', nIter)
@@ -324,25 +323,25 @@ if __name__ == "__main__":
                 print "ERROR: Generating T %s" % rtn
 
             time_func(
-                'HM = mpin_ZZZ.hash_all(HASH_TYPE_MPIN_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)',
+                'HM = mpin_ZZZ.hash_all(mpin_ZZZ.HASH_TYPE_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)',
                 nIter)
             HM = mpin_ZZZ.hash_all(
-                HASH_TYPE_MPIN_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)
+                mpin_ZZZ.HASH_TYPE_ZZZ, hash_mpin_id, u, ut, v, y, Z, T)
 
             time_func(
-                'rtn, client_aes_key = mpin_ZZZ.client_key(HASH_TYPE_MPIN_ZZZ, pc1, pc2, PIN, r, x, HM, T)',
+                'rtn, client_aes_key = mpin_ZZZ.client_key(mpin_ZZZ.HASH_TYPE_ZZZ, pc1, pc2, PIN, r, x, HM, T)',
                 nIter)
             rtn, client_aes_key = mpin_ZZZ.client_key(
-                HASH_TYPE_MPIN_ZZZ, pc1, pc2, PIN, r, x, HM, T)
+                mpin_ZZZ.HASH_TYPE_ZZZ, pc1, pc2, PIN, r, x, HM, T)
             if rtn != 0:
                 print "ERROR: Generating client_aes_key %s" % rtn
             print "Client AES Key: %s" % client_aes_key.encode("hex")
 
             time_func(
-                'rtn, server_aes_key = mpin_ZZZ.server_key(HASH_TYPE_MPIN_ZZZ, Z, server_secret, w, HM, HID, u, ut)',
+                'rtn, server_aes_key = mpin_ZZZ.server_key(mpin_ZZZ.HASH_TYPE_ZZZ, Z, server_secret, w, HM, HID, u, ut)',
                 nIter)
             rtn, server_aes_key = mpin_ZZZ.server_key(
-                HASH_TYPE_MPIN_ZZZ, Z, server_secret, w, HM, HID, u, ut)
+                mpin_ZZZ.HASH_TYPE_ZZZ, Z, server_secret, w, HM, HID, u, ut)
             if rtn != 0:
                 print "ERROR: Generating server_aes_key %s" % rtn
             print "Server AES Key: %s" % server_aes_key.encode("hex")

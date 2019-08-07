@@ -188,8 +188,8 @@ foreach(curve ${AMCL_CURVE})
       if(curve STREQUAL "BN254CX")
 	     amcl_curve_test(${curve} test_mpin_vectors_dta_${TC}    test_mpin_vectors_dta_ZZZ.c.in      amcl_mpin_${TC} "SUCCESS" "mpin/BN254_CX.txt")
       endif()
-      if(curve STREQUAL "BLS383")
-	     amcl_curve_test(${curve} test_mpin_vectors_${TC}    test_mpin_vectors_ZZZ.c.in      amcl_mpin_${TC} "SUCCESS" "mpin/BLS383.txt")
+      if(curve STREQUAL "BLS381")
+	     amcl_curve_test(${curve} test_mpin_vectors_${TC}    test_mpin_vectors_ZZZ.c.in      amcl_mpin_${TC} "SUCCESS" "mpin/BLS381.txt")
       endif()
     endif()
 
@@ -204,6 +204,13 @@ foreach(curve ${AMCL_CURVE})
       amcl_curve_test(${curve} test_wcc_bad_receiver_key_${TC} test_wcc_bad_receiver_key_ZZZ.c.in amcl_wcc_${TC} "SUCCESS")
     endif()
 
+    ################################################
+    # BLS Tests
+    ################################################
+    if(BUILD_BLS)
+      amcl_curve_test(${curve} test_bls_${TC} test_bls_ZZZ.c.in amcl_bls_${TC} "SUCCESS")
+    endif()
+    
   endif()
 endforeach()
 
