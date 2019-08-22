@@ -58,6 +58,8 @@ extern int BLS_ZZZ_SIGN(octet *SIG,char *m,octet *S);
 extern int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W);
 extern int BLS_ZZZ_ADD_G1(octet *R1,octet *R2,octet *R);
 extern int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W);
+extern int BLS_ZZZ_MUL_G1(octet *P,octet *R,octet *T);
+extern int BLS_ZZZ_MUL_G2(octet *P,octet *R,octet *T);
 
 
 """)
@@ -367,6 +369,74 @@ def add_G2(R1, R2):
     return error_code, R
 
 
+def mult_G1(P, R):
+    """Multiple a member from the group G1 by an integer
+
+    Multiple a member from the group G1 by an integer
+
+    Args::
+
+        P:   integer value
+        R:   member of G1
+
+    Returns::
+
+        T:          member of G1. T=P*R
+        error_code: Zero for success or else an error code
+
+    Raises:
+
+    """
+    P1, P1_val = make_octet(None, P)
+    R1, R1_val = make_octet(None, R)
+    T1, T1_val = make_octet(G1LEN)
+    error_code = libamcl_bls_ZZZ.BLS_ZZZ_MUL_G1(P1, R1, T1)
+
+    T_hex = to_hex(T1)
+
+    # clear memory
+    libamcl_core.OCT_clear(P1)
+    libamcl_core.OCT_clear(R1)
+    libamcl_core.OCT_clear(T1)
+
+    T = bytes.fromhex(T_hex)
+    return error_code, T
+
+
+def mult_G2(P, R):
+    """Multiple a member from the group G2 by an integer
+
+    Multiple a member from the group G2 by an integer
+
+    Args::
+
+        P:   integer value
+        R:   member of G1
+
+    Returns::
+
+        T:          member of G1. T=P*R
+        error_code: Zero for success or else an error code
+
+    Raises:
+
+    """
+    P1, P1_val = make_octet(None, P)
+    R1, R1_val = make_octet(None, R)
+    T1, T1_val = make_octet(G2LEN)
+    error_code = libamcl_bls_ZZZ.BLS_ZZZ_MUL_G2(P1, R1, T1)
+
+    T_hex = to_hex(T1)
+
+    # clear memory
+    libamcl_core.OCT_clear(P1)
+    libamcl_core.OCT_clear(R1)
+    libamcl_core.OCT_clear(T1)
+
+    T = bytes.fromhex(T_hex)
+    return error_code, T
+
+
 if __name__ == "__main__":
     # Print hex values
     DEBUG = False
@@ -479,6 +549,23 @@ if __name__ == "__main__":
         print("Error: Invalid aggregated signature {}".format(rtn))
         raise SystemExit(0)
     print("Success: Aggregated signature is valid")
+
+    # Multiply signature and public key
+    rtn, sigmult = mult_G1(sk1, sig123)
+    if rtn != 0:
+        print("Error: mult_G1 {}".format(rtn))
+        raise SystemExit(0)
+
+    rtn, pkmult = mult_G2(sk1, pk123)
+    if rtn != 0:
+        print("Error: mult_G2 {}".format(rtn))
+        raise SystemExit(0)
+
+    rtn = verify(sigmult, message, pkmult)
+    if rtn != 0:
+        print("Error: Invalid multiplied signature {}".format(rtn))
+        raise SystemExit(0)
+    print("Success: Multiplied signature is valid")
 
     # Clear memory
     kill_csprng(rng)
