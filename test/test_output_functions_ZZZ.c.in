@@ -304,7 +304,7 @@ int read_ECP8_ZZZ(ECP8_ZZZ *ecp8, char* stringx)
 
 void read_OCT(octet *oct, char* string, int len)
 {
-    char buff[len-1];
+    char buff[len];
     strncpy(buff,string,len-1);
     buff[len-1] = '\0';
     OCT_fromHex(oct,buff);
