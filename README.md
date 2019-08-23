@@ -53,19 +53,25 @@ In order to build this library, the following packages are required:
 
 The above packages can be installed in different ways, depending on the Operating System used:
 
-* **Debian/Ubuntu Linux**
-
-
-    sudo apt-get install -y git cmake build-essential python python-dev python-pip libffi-dev doxygen doxygen-latex parallel
-    sudo pip install cffi
-
-
-* **RedHat/CentOS/Fedora Linux**
+* **Ubuntu 18.04 Linux**
 
 ```
-sudo yum groupinstall "Development Tools" "Development Libraries"
-sudo yum install -y git cmake python libpython-devel python-pip libffi-devel doxygen doxygen-latex parallel
-sudo pip install cffi
+sudo dpkg --add-architecture i386
+sudo apt-get install -y astyle ca-certificates cmake doxygen doxygen-latex g++ \
+     g++-multilib gcc git lcov make mingw-w64 parallel python-pip python-setuptools\
+     python3-pip python3-setuptools wine-stable wine64
+sudo pip install cffi autopep8
+sudo pip3 install cffi 
+```
+
+* **Fedora 30 Linux**
+
+Python is not supported for this operating systems. 
+
+```
+sudo dnf config-manager --add-repo https://dl.winehq.org/wine-builds/fedora/30/winehq.repo
+sudo dnf install -y @development-tools cmake libffi-devel libasan parallel mingw64-gcc \
+     mingw32-gcc lcov winehq-stable libstdc++-*.i686 glibc-*.i686 libgcc.i686
 ```
 
 * **MacOS**
