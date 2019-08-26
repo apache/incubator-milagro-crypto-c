@@ -209,6 +209,7 @@ foreach(curve ${AMCL_CURVE})
     ################################################
     if(BUILD_BLS)
       amcl_curve_test(${curve} test_bls_${TC} test_bls_ZZZ.c.in amcl_bls_${TC} "SUCCESS")
+      amcl_curve_test(${curve} test_bls_sss_${TC} test_bls_sss_ZZZ.c.in amcl_bls_${TC} "SUCCESS")      
     endif()
     
   endif()
