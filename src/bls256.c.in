@@ -25,6 +25,61 @@ under the License.
 #include <time.h>
 #include "bls256_ZZZ.h"
 
+// Polynomial interpolation coefficients
+static int recover_coefficients(int k, octet* X, octet* COEFS)
+{
+    BIG_XXX r;
+    BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
+
+    BIG_XXX x2[k];
+    BIG_XXX coefs[k];
+
+    for(int i=0; i<k; i++)
+    {
+        BIG_XXX_fromBytes(x2[i],X[i].val);
+    }
+
+    for(int i=0; i<k; i++)
+    {
+        BIG_XXX numerator;
+        BIG_XXX_one(numerator);
+        BIG_XXX denominator;
+        BIG_XXX_one(denominator);
+        for(int j=0; j<k; j++)
+        {
+            // others = all - current
+            // current = x2[i]
+            if (i != j)
+            {
+                // numerator = numerator * other
+                BIG_XXX_modmul(numerator,numerator,x2[j],r);
+
+                // other - current
+                BIG_XXX s;
+                BIG_XXX c;
+
+                // c = -current
+                BIG_XXX_sub(c,r,x2[i]);
+                BIG_XXX_add(s,x2[j],c);
+
+                // denominator = denominator * s
+                BIG_XXX_modmul(denominator,denominator,s,r);
+
+            }
+
+        }
+        BIG_XXX_moddiv(coefs[i], numerator, denominator, r);
+    }
+
+    // Output coefficients
+    for(int i=0; i<k; i++)
+    {
+        BIG_XXX_toBytes(COEFS[i].val,coefs[i]);
+    }
+    return 0;
+
+}
+
 /* hash a message to an ECP point, using SHA3 */
 static void BLS_HASHIT(ECP_ZZZ *P,char *m)
 {
@@ -151,3 +206,204 @@ int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W)
 
     return BLS_OK;
 }
+
+/* T=P*R in group G1 */
+int BLS_ZZZ_MUL_G1(octet *P,octet *R,octet *T)
+{
+    BIG_XXX p;
+    ECP_ZZZ R1;
+
+    P->len=MODBYTES_XXX;
+    BIG_XXX_fromBytes(p,P->val);
+
+    if (!ECP_ZZZ_fromOctet(&R1,R))
+    {
+        return BLS_INVALID_G1;
+    }
+
+    PAIR_ZZZ_G1mul(&R1,p);
+    ECP_ZZZ_toOctet(T,&R1,true);
+
+    return BLS_OK;
+}
+
+/* T=P*R in group G2 */
+int BLS_ZZZ_MUL_G2(octet *P,octet *R,octet *T)
+{
+    BIG_XXX p;
+    ECP8_ZZZ R1;
+
+    P->len=MODBYTES_XXX;
+    BIG_XXX_fromBytes(p,P->val);
+
+    if (!ECP8_ZZZ_fromOctet(&R1,R))
+    {
+        return BLS_INVALID_G2;
+    }
+
+    PAIR_ZZZ_G2mul(&R1,p);
+    ECP8_ZZZ_toOctet(T,&R1);
+
+    return BLS_OK;
+}
+
+int BLS_ZZZ_MAKE_SHARES(int k, int n, csprng *RNG, octet* X, octet* Y, octet* SKI, octet* SKO)
+{
+    BIG_XXX y2[n];
+    BIG_XXX r;
+    BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
+
+    // Generate polynomial: f(x) = a_0 + a_1x + a_2x^2 ... a_{k-1}x^{k-1}
+    BIG_XXX poly[k];
+    for(int i=0; i<k; i++)
+    {
+        BIG_XXX_randomnum(poly[i],r,RNG);
+    }
+
+    // Use predefined secret
+    if (SKI != NULL)
+    {
+        BIG_XXX_fromBytes(poly[0],SKI->val);
+    }
+
+    /* Calculate f(x) = a_0 + a_1x + a_2x^2 ... a_{k-1}x^{k-1}
+       a0 is the secret */
+    int x=0;
+    for(int j=0; j<n; j++)
+    {
+        x++;
+        BIG_XXX xb;
+        BIG_XXX_zero(y2[j]);
+        BIG_XXX_zero(xb);
+        BIG_XXX_inc(xb,x);
+
+        // Output X shares
+        BIG_XXX_toBytes(X[j].val,xb);
+
+        // y2[j] is the accmulator
+        for(int i=k-1; i>=0; i--)
+        {
+            BIG_XXX_modmul(y2[j],y2[j],xb,r);
+            BIG_XXX_add(y2[j],poly[i],y2[j]);
+        }
+    }
+
+    // Output Y shares
+    for(int j=0; j<n; j++)
+    {
+        BIG_XXX_toBytes(Y[j].val,y2[j]);
+    }
+
+    // Output secret
+    BIG_XXX_toBytes(SKO->val,poly[0]);
+
+    return BLS_OK;
+}
+
+int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
+{
+    int rc=0;
+    BIG_XXX r;
+    BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
+
+    BIG_XXX y[k];
+    BIG_XXX coefs[k];
+
+    BIG_XXX secret;
+    BIG_XXX prod;
+    BIG_XXX_zero(secret);
+
+    char coefs2[k][BGS_ZZZ];
+    octet COEFS[k];
+    for(int i=0; i<k; i++)
+    {
+        memset(&coefs2[i], 0, sizeof(coefs2[i]));
+        COEFS[i].max = BGS_ZZZ;
+        COEFS[i].len = BGS_ZZZ;
+        COEFS[i].val = coefs2[i];
+    }
+
+    rc = recover_coefficients(k, X, COEFS);
+    if (rc)
+      {
+	return rc;
+      }
+
+    for(int i=0; i<k; i++)
+    {
+        BIG_XXX_fromBytes(y[i],Y[i].val);
+        BIG_XXX_fromBytes(coefs[i],COEFS[i].val);
+        BIG_XXX_modmul(prod,y[i],coefs[i],r);
+        BIG_XXX_add(secret, secret, prod);
+
+        if (BIG_XXX_comp(secret,r) == 1)
+        {
+            BIG_XXX_sub(secret,secret,r);
+        }
+    }
+
+    // Output secret
+    BIG_XXX_toBytes(SK->val,secret);
+
+    return BLS_OK;
+}
+
+int BLS_ZZZ_RECOVER_SIGNATURE(int k, octet* X, octet* Y, octet* SIG)
+{
+    int rc = 0;
+    char product[k][BFS_ZZZ+1];
+    octet PRODUCT[k];
+
+    char coefs[k][BGS_ZZZ];
+    octet COEFS[k];
+    for(int i=0; i<k; i++)
+    {
+        memset(&coefs[i], 0, sizeof(coefs[i]));
+        COEFS[i].max = BGS_ZZZ;
+        COEFS[i].len = BGS_ZZZ;
+        COEFS[i].val = coefs[i];
+    }
+
+    rc = recover_coefficients(k, X, COEFS);
+    if (rc)
+      {
+	return rc;
+      }
+
+    
+    for(int i=0; i<k; i++)
+    {
+        memset(&product[i], 0, sizeof(product[i]));
+        PRODUCT[i].max = BFS_ZZZ+1;
+        PRODUCT[i].len = BFS_ZZZ+1;
+        PRODUCT[i].val = product[i];
+    }
+
+    for(int i=0; i<k; i++)
+    {
+        rc = BLS_ZZZ_MUL_G1(&COEFS[i], &Y[i], &PRODUCT[i]);
+        if (rc != BLS_OK)
+        {
+            return rc;
+        }
+    }
+
+    BLS_ZZZ_ADD_G1(&PRODUCT[0],&PRODUCT[1],SIG);
+    if (rc != BLS_OK)
+    {
+        return rc;
+    }
+
+    for(int i=2; i<k; i++)
+    {
+        BLS_ZZZ_ADD_G1(&PRODUCT[i],SIG,SIG);
+        if (rc != BLS_OK)
+        {
+            return rc;
+        }
+    }
+
+    return BLS_OK;
+}
+
+

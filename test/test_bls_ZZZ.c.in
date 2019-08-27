@@ -44,7 +44,7 @@
 
 static char message[]="test message";
 
-int bls(csprng *RNG)
+int test(csprng *RNG)
 {
     int rc;
 
@@ -278,8 +278,8 @@ int main()
     // initialise strong RNG
     CREATE_CSPRNG(&RNG,&SEED);
 
-    printf("\nTesting BLS signature for curve ZZZ\n");
-    if (!bls(&RNG))
+    printf("\nTest BLS for curve ZZZ\n");
+    if (!test(&RNG))
     {
         printf("SUCCESS\n");
     }

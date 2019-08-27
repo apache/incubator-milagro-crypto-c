@@ -16,9 +16,18 @@ specific language governing permissions and limitations
 under the License.
 */
 
-/* Build executable after installation:
+/* 
+  BLS example code. 
+  
+  Build executable after installation:
 
-  gcc -O0 -g ./testbls_ZZZ.c $(pkg-config --libs --cflags amcl) -o testbls_ZZZ
+  1. Change headers;
+    
+    #include "bls_ZZZ.h" -> #include <amcl/bls_ZZZ.h>
+
+  2. Build code
+
+    gcc -O0 -g ./example_bls_ZZZ.c $(pkg-config --libs --cflags amcl) -o example_bls_ZZZ
 
 */
 
@@ -269,12 +278,11 @@ int main()
     OCT_fromHex(&SEED,seedHex);
     printf("SEED: ");
     OCT_output(&SEED);
-    printf("\n");
 
     // initialise strong RNG
     CREATE_CSPRNG(&RNG,&SEED);
 
-    printf("\nTesting BLS signature for curve ZZZ\n");
+    printf("\nBLS example for curve ZZZ\n");
     bls(&RNG);
 
     KILL_CSPRNG(&RNG);
