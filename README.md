@@ -82,8 +82,20 @@ sudo pip3 install cffi autopep8
 
 ```
 sudo dnf config-manager --add-repo https://dl.winehq.org/wine-builds/fedora/30/winehq.repo
-sudo dnf install -y @development-tools cmake libffi-devel libasan parallel mingw64-gcc \
-     mingw32-gcc lcov winehq-stable libstdc++-*.i686 glibc-*.i686 libgcc.i686
+sudo dnf install -y @development-tools \
+    cmake \
+    libffi-devel \
+    libasan \
+    parallel \
+    mingw64-gcc \
+    mingw32-gcc \
+    lcov \
+    winehq-stable \
+    libstdc++-*.i686 \
+    glibc-*.i686 \
+    libgcc.i686
+
+sudo pip3 install cffi autopep8
 ```
 
 * **MacOS**
