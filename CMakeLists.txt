@@ -724,7 +724,7 @@ endif()
 
 if(BUILD_PYTHON)
   message(STATUS "Build Python wrappers")
-  add_subdirectory(wrappers/python)
+  add_subdirectory(python)
 endif()
 
 if(BUILD_TESTING)

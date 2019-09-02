@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Licensed to the Apache Software Foundation (ASF) under one
@@ -103,7 +103,7 @@ G1 = 2 * PFS + 1
 IVL = 12
 
 
-def toHex(octetValue):
+def to_hex(octet_value):
     """Converts an octet type into a string
 
     Add all the values in an octet into an array. This arrays is then
@@ -111,7 +111,7 @@ def toHex(octetValue):
 
     Args::
 
-        octetValue. An octet type
+        octet_value. An octet pointer type
 
     Returns::
 
@@ -122,10 +122,13 @@ def toHex(octetValue):
     """
     i = 0
     val = []
-    while i < octetValue[0].len:
-        val.append(octetValue[0].val[i])
+    while i < octet_value.len:
+        val.append(octet_value.val[i])
         i = i + 1
-    return ''.join(val).encode("hex")
+    out = b''
+    for x in val:
+        out = out + x
+    return out.hex()
 
 
 if __name__ == "__main__":
@@ -133,8 +136,8 @@ if __name__ == "__main__":
     DEBUG = False
 
     # Seed
-    seedHex = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
-    seed = seedHex.decode("hex")
+    seed_hex = "78d0fb6705ce77dee47d03eb5b9c5d30"
+    seed = bytes.fromhex(seed_hex)
 
     # Master Secret Shares
     MS1 = ffi.new("octet*")
@@ -150,12 +153,13 @@ if __name__ == "__main__":
     MS2[0].len = PGS
 
     # Alice Identity
-    alice_id = raw_input("Please enter Alice's identity:")
+    alice_id = input("Please enter Alice's identity:")
+    alice_id_b = alice_id.encode("utf-8")
     IdA = ffi.new("octet*")
-    IdAval = ffi.new("char [%s]" % len(alice_id), alice_id)
+    IdAval = ffi.new("char [%s]" % len(alice_id_b), alice_id_b)
     IdA[0].val = IdAval
-    IdA[0].max = len(alice_id)
-    IdA[0].len = len(alice_id)
+    IdA[0].max = len(alice_id_b)
+    IdA[0].len = len(alice_id_b)
 
     # Hash value of IdA
     HIdA = ffi.new("octet*")
@@ -165,12 +169,13 @@ if __name__ == "__main__":
     HIdA[0].len = PFS
 
     # Bob Identity
-    bob_id = raw_input("Please enter Bob's identity:")
+    bob_id = input("Please enter Bob's identity:")
+    bob_id_b = bob_id.encode("utf-8")
     IdB = ffi.new("octet*")
-    IdBval = ffi.new("char [%s]" % len(bob_id), bob_id)
+    IdBval = ffi.new("char [%s]" % len(bob_id_b), bob_id_b)
     IdB[0].val = IdBval
-    IdB[0].max = len(bob_id)
-    IdB[0].len = len(bob_id)
+    IdB[0].max = len(bob_id_b)
+    IdB[0].len = len(bob_id_b)
 
     # Hash value of IdB
     HIdB = ffi.new("octet*")
@@ -285,7 +290,7 @@ if __name__ == "__main__":
     SEED[0].len = len(seed)
     SEED[0].max = len(seed)
     if DEBUG:
-        print "SEED: %s" % toHex(SEED)
+        print("SEED: %s" % to_hex(SEED))
 
     # random number generator
     RNG = ffi.new("csprng*")
@@ -294,105 +299,114 @@ if __name__ == "__main__":
     # Hash IdA
     libamcl_core.HASH_ID(HASH_TYPE_ZZZ, IdA, HIdA)
     if DEBUG:
-        print "IdA: %s" % toHex(IdA)
-        print "HIdA: %s" % toHex(HIdA)
+        print("IdA: {}".format(to_hex(IdA)))
+        print("HIdA: {}".format(to_hex(HIdA)))
 
     # Hash IdB
     libamcl_core.HASH_ID(HASH_TYPE_ZZZ, IdB, HIdB)
     if DEBUG:
-        print "IdB: %s" % toHex(IdB)
-        print "HIdB: %s" % toHex(HIdB)
+        print("IdB: {}".format(to_hex(IdB)))
+        print("HIdB: {}".format(to_hex(HIdB)))
 
     # Generate master secret for MILAGRO and Customer
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG, MS1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,MS1) Error %s", rtn
+        print("libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,MS1) Error {}".format(rtn))
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG, MS2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,MS2) Error %s" % rtn
+        print("libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,MS2) Error {}".format(rtn))
     if DEBUG:
-        print "MS1: %s" % toHex(MS1)
-        print "MS2: %s" % toHex(MS2)
+        print("MS1: {}".format(to_hex(MS1)))
+        print("MS2: {}".format(to_hex(MS2)))
 
     # Generate Alice's sender key shares
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS1, HIdA, A1KeyG1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS1,HIdA,A1KeyG1) Error %s" % rtn
+        print(
+            "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS1,HIdA,A1KeyG1) Error {}".format(rtn))
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS2, HIdA, A2KeyG1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS2,HIdA,A2KeyG1) Error %s" % rtn
+        print(
+            "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS2,HIdA,A2KeyG1) Error {}".format(rtn))
     if DEBUG:
-        print "A1KeyG1: %s" % toHex(A1KeyG1)
-        print "A2KeyG1: %s" % toHex(A2KeyG1)
+        print("A1KeyG1: {}".format(to_hex(A1KeyG1)))
+        print("A2KeyG1: {}".format(to_hex(A2KeyG1)))
 
     # Combine Alices's sender key shares
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RECOMBINE_G1(A1KeyG1, A2KeyG1, AKeyG1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_RECOMBINE_G1(A1KeyG1, A2KeyG1, AKeyG1) Error %s" % rtn
-    print "AKeyG1: %s" % toHex(AKeyG1)
+        print(
+            "libamcl_wcc_ZZZ.WCC_ZZZ_RECOMBINE_G1(A1KeyG1, A2KeyG1, AKeyG1) Error {}".format(rtn))
+    print("AKeyG1: {}".format(to_hex(AKeyG1)))
 
     # Generate Bob's receiver secret key shares
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS1, HIdB, B1KeyG2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS1,HIdB,B1KeyG2) Error %s" % rtn
+        print(
+            "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS1,HIdB,B1KeyG2) Error {}".format(rtn))
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS2, HIdB, B2KeyG2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS2,HIdB,B2KeyG2) Error %s" % rtn
+        print(
+            "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS2,HIdB,B2KeyG2) Error {}".format(rtn))
     if DEBUG:
-        print "B1KeyG2: %s" % toHex(B1KeyG2)
-        print "B2KeyG2: %s" % toHex(B2KeyG2)
+        print("B1KeyG2: {}".format(to_hex(B1KeyG2)))
+        print("B2KeyG2: {}".format(to_hex(B2KeyG2)))
 
     # Combine Bobs's receiver secret key shares
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RECOMBINE_G2(B1KeyG2, B2KeyG2, BKeyG2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_RECOMBINE_G2(B1KeyG2, B2KeyG2, BKeyG2) Error %s" % rtn
-    print "BKeyG2: %s" % toHex(BKeyG2)
+        print(
+            "libamcl_wcc_ZZZ.WCC_ZZZ_RECOMBINE_G2(B1KeyG2, B2KeyG2, BKeyG2) Error {}".format(rtn))
+    print("BKeyG2: {}".format(to_hex(BKeyG2)))
 
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG, X)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,X) Error %s", rtn
+        print("libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,X) Error {}".format(rtn))
     if DEBUG:
-        print "X: %s" % toHex(X)
+        print("X: {}".format(to_hex(X)))
 
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(X, HIdA, PaG1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(X,HIdA,PaG1) Error %s", rtn
+        print(
+            "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(X,HIdA,PaG1) Error {}".format(rtn))
     if DEBUG:
-        print "PaG1: %s" % toHex(PaG1)
+        print("PaG1: {}".format(to_hex(PaG1)))
 
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG, W)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,W) Error %s", rtn
+        print("libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,W) Error {}".format(rtn))
     if DEBUG:
-        print "W: %s" % toHex(W)
+        print("W: {}".format(to_hex(W)))
 
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(W, HIdA, PgG1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(W, HIdA, PgG1) Error %s", rtn
+        print(
+            "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(W, HIdA, PgG1) Error {}".format(rtn))
     if DEBUG:
-        print "PgG1: %s" % toHex(PgG1)
+        print("PgG1: {}".format(to_hex(PgG1)))
 
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG, Y)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,Y) Error %s", rtn
+        print("libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG,Y) Error {}".format(rtn))
     if DEBUG:
-        print "Y: %s" % toHex(Y)
+        print("Y: {}".format(to_hex(Y)))
 
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(Y, HIdB, PbG2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(Y, HIdB, PbG2) Error %s", rtn
+        print(
+            "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(Y, HIdB, PbG2) Error {}".format(rtn))
     if DEBUG:
-        print "PbG2: %s" % toHex(PbG2)
+        print("PbG2: {}".format(to_hex(PbG2)))
 
     # PIA = Hq(PaG1,PbG2,PgG1,IdB)
     libamcl_wcc_ZZZ.WCC_ZZZ_Hq(HASH_TYPE_ZZZ, PaG1, PbG2, PgG1, IdB, PIA)
     if DEBUG:
-        print "PIA: %s" % toHex(PIA)
+        print("PIA: {}".format(to_hex(PIA)))
 
     # PIB = Hq(PbG2,PaG1,PgG1,IdA)
     libamcl_wcc_ZZZ.WCC_ZZZ_Hq(HASH_TYPE_ZZZ, PbG2, PaG1, PgG1, IdA, PIB)
     if DEBUG:
-        print "PIB: %s" % toHex(PIB)
+        print("PIB: {}".format(to_hex(PIB)))
 
     # Alice calculates AES Key
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_SENDER_KEY(
@@ -406,8 +420,8 @@ if __name__ == "__main__":
         IdB,
         KEY1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_SENDER_KEY(HASH_TYPE_ZZZ, X, PIA, PIB, PbG2, PgG1, AKeyG1, IdB, KEY1) Error %s" % rtn
-    print "{0}'s AES Key: {1}".format(alice_id, toHex(KEY1))
+        print("libamcl_wcc_ZZZ.WCC_ZZZ_SENDER_KEY(HASH_TYPE_ZZZ, X, PIA, PIB, PbG2, PgG1, AKeyG1, IdB, KEY1) Error {}".format(rtn))
+    print("{}'s AES Key: {}".format(alice_id, to_hex(KEY1)))
 
     # Bob calculates AES Key
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RECEIVER_KEY(
@@ -422,7 +436,7 @@ if __name__ == "__main__":
         IdA,
         KEY2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_ZZZ, Y, W, PIA, PIB, PaG1, PgG1, BKeyG2, IdA, KEY2) Error %s" % rtn
-    print "{0}'s AES Key: {1}".format(bob_id, toHex(KEY2))
+        print("libamcl_wcc_ZZZ.WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_ZZZ, Y, W, PIA, PIB, PaG1, PgG1, BKeyG2, IdA, KEY2) Error {}".format(rtn))
+    print("{}'s AES Key: {}".format(bob_id, to_hex(KEY2)))
 
     libamcl_core.KILL_CSPRNG(RNG)

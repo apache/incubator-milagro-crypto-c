@@ -28,9 +28,9 @@ foreach(curve ${AMCL_CURVE})
     amcl_configure_file_curve(TimeMPIN_ZZZ.py.in        TimeMPIN_${TC}.py        ${curve} __no_install)
     amcl_configure_file_curve(TestMPINInstall_ZZZ.py.in TestMPINInstall_${TC}.py ${curve} __no_install)
 
-    install(FILES "${amcl_mpin_${TC}_GEN_PYS}" DESTINATION ${PYTHON_SITE_PACKAGES})
+    install(FILES "${amcl_mpin_${TC}_GEN_PYS}" DESTINATION ${PYTHON3_SITE_PACKAGES})
   
-    add_test(test_python_mpin_install_${TC} python TestMPINInstall_${TC}.py)
+    add_test(test_python_mpin_install_${TC} python3 TestMPINInstall_${TC}.py)
 
     # Set the LD_LIBRARY_PATH or equivalent to the libraries can be
     # loaded when running the test.
@@ -48,7 +48,7 @@ foreach(curve ${AMCL_CURVE})
 
   if(TARGET amcl_wcc_${TC})
     amcl_configure_file_curve(wcc_ZZZ.py.in wcc_${TC}.py ${curve} amcl_wcc_${TC}_GEN_PYS)
-    install(FILES "${amcl_wcc_${TC}_GEN_PYS}" DESTINATION ${PYTHON_SITE_PACKAGES})
+    install(FILES "${amcl_wcc_${TC}_GEN_PYS}" DESTINATION ${PYTHON3_SITE_PACKAGES})
   endif()
 
   if(TARGET amcl_bls_${TC})

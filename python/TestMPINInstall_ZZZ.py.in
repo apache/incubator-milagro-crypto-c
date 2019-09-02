@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Licensed to the Apache Software Foundation (ASF) under one
@@ -20,7 +20,6 @@ under the License.
 """
 import os
 import unittest
-import json
 import hashlib
 import mpin_ZZZ
 
@@ -30,22 +29,15 @@ class TestMPIN(unittest.TestCase):
 
     def setUp(self):
 
-        # Form MPin ID
-        endUserData = {
-            "issued": "2013-10-19T06:12:28Z",
-            "userID": "alice@milagro.com",
-            "mobile": 1,
-            "salt": "e985da112a378c222cfc2f7226097b0c"
-        }
-        self.mpin_id = json.dumps(endUserData)
+        self.mpin_id = b'alice@milagro.com'
 
         # Hash value of MPIN_ID
         self.hash_mpin_id = mpin_ZZZ.hash_id(
             mpin_ZZZ.HASH_TYPE_ZZZ, self.mpin_id)
 
         # Assign a seed value
-        seedHex = "3ade3d4a5c698e8910bf92f25d97ceeb7c25ed838901a5cb5db2cf25434c1fe76c7f79b7af2e5e1e4988e4294dbd9bd9fa3960197fb7aec373609fb890d74b16a4b14b2ae7e23b75f15d36c21791272372863c4f8af39980283ae69a79cf4e48e908f9e0"
-        self.seed = seedHex.decode("hex")
+        seed_hex = "78d0fb6705ce77dee47d03eb5b9c5d30"
+        self.seed = bytes.fromhex(seed_hex)
 
         self.date = 16238
 
@@ -287,7 +279,7 @@ class TestMPIN(unittest.TestCase):
             # Generate client secret shares
             rtn, cs1 = mpin_ZZZ.get_client_secret(ms1, hash_mpin_id)
             self.assertEqual(rtn, 0)
-            cs1Hex = cs1.encode("hex")
+            cs1Hex = cs1.hex()
             if cs1Hex in s:
                 match = 1
             self.assertEqual(match, 0)
@@ -318,7 +310,6 @@ class TestMPIN(unittest.TestCase):
         match = 0
         for i in range(1, 208900):
             random = mpin_ZZZ.generate_random(rng, 4)
-            # print i, "  ", random.encode("hex")
             if random in s:
                 match = 1
                 break
@@ -338,7 +329,7 @@ class TestMPIN(unittest.TestCase):
         header = os.urandom(32)
 
         # Plaintext input
-        plaintext1 = "A test message"
+        plaintext1 = b"A test message"
 
         ciphertext, tag1 = mpin_ZZZ.aes_gcm_encrypt(
             key, iv, header, plaintext1)
@@ -362,14 +353,16 @@ class TestMPIN(unittest.TestCase):
         header = os.urandom(32)
 
         # Plaintext input
-        plaintext1 = "A test message"
+        plaintext1 = b"A test message"
 
         ciphertext, tag1 = mpin_ZZZ.aes_gcm_encrypt(
             key, iv, header, plaintext1)
 
-        new = list(ciphertext)
+        ciphertext_hex = ciphertext.hex()
+        new = list(ciphertext_hex)
         new[0] = "a" if (new[0] != "a") else "b"
-        ciphertext_bad = ''.join(new)
+        ciphertext_bad_hex = ''.join(new)
+        ciphertext_bad = bytes.fromhex(ciphertext_bad_hex)
 
         plaintext2, tag2 = mpin_ZZZ.aes_gcm_decrypt(
             key, iv, header, ciphertext_bad)
@@ -390,14 +383,16 @@ class TestMPIN(unittest.TestCase):
         header = os.urandom(32)
 
         # Plaintext input
-        plaintext1 = "A test message"
+        plaintext1 = b"A test message"
 
         ciphertext, tag1 = mpin_ZZZ.aes_gcm_encrypt(
             key, iv, header, plaintext1)
 
-        new = list(header)
+        header_hex = header.hex()
+        new = list(header_hex)
         new[0] = "a" if (new[0] != "a") else "b"
-        header_bad = ''.join(new)
+        header_bad_hex = ''.join(new)
+        header_bad = bytes.fromhex(header_bad_hex)
 
         plaintext2, tag2 = mpin_ZZZ.aes_gcm_decrypt(
             key, iv, header_bad, ciphertext)

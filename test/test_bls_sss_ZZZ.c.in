@@ -70,7 +70,7 @@ int test(csprng *RNG)
     octet X[n];
     char y[n][BGS_ZZZ];
     octet Y[n];
-    
+
     for(int i=0; i<n; i++)
     {
         memset(&y[i], 0, sizeof(y[i]));
@@ -82,7 +82,7 @@ int test(csprng *RNG)
         X[i].len = BGS_ZZZ;
         X[i].val = x[i];
     }
-    
+
     // Generate key pair
     BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SKI,&PKI);
 
@@ -103,7 +103,7 @@ int test(csprng *RNG)
     if (rc!=BLS_OK)
     {
         printf("Test Failed Invalid Signature\n");
-	return 1;
+        return 1;
     }
     printf("Test Passed valid signature is valid\n");
 
@@ -111,10 +111,10 @@ int test(csprng *RNG)
     rc = BLS_ZZZ_MAKE_SHARES(k, n, RNG, X, Y, &SKI, &SKO);
     if (rc!=BLS_OK)
     {
-        printf("Test Failed BLS_ZZZ_MAKE_SHARES\n");      
-	return 1;
+        printf("Test Failed BLS_ZZZ_MAKE_SHARES\n");
+        return 1;
     }
-    printf("Test Passed BLS_ZZZ_MAKE_SHARES\n");    
+    printf("Test Passed BLS_ZZZ_MAKE_SHARES\n");
 
     for(int i=0; i<n; i++)
     {
@@ -123,35 +123,35 @@ int test(csprng *RNG)
         printf("Y[%d] ", i);
         OCT_output(&Y[i]);
     }
-    
+
     printf("SKO: ");
     OCT_output(&SKO);
-    
+
     if (!OCT_comp(&SKI,&SKO))
     {
-        printf("Test Failed SKI != SKO\n");      
+        printf("Test Failed SKI != SKO\n");
         return 1;
     }
     printf("Test Passed SKI == SKO\n");
-	
+
     // Recover BLS secret key
     rc = BLS_ZZZ_RECOVER_SECRET(k, X, Y, &SKR);
     if (rc!=BLS_OK)
     {
         printf("Test Failed BLS_ZZZ_RECOVER_SECRET\n");
-	return 1;
+        return 1;
     }
-    printf("Test Passed BLS_ZZZ_RECOVER_SECRET\n");    
+    printf("Test Passed BLS_ZZZ_RECOVER_SECRET\n");
     printf("SKR: ");
     OCT_output(&SKR);
-    
+
     if (!OCT_comp(&SKR,&SKO))
     {
-        printf("Test Failed SKR != SKO\n");            
+        printf("Test Failed SKR != SKO\n");
         return 1;
     }
     printf("Test Passed SKR == SKO\n");
-    
+
     // Generate public keys and signatures using shares
     char pks[n][G2LEN];
     octet PKS[n];
@@ -189,19 +189,19 @@ int test(csprng *RNG)
     if (rc!=BLS_OK)
     {
         printf("Test Failed BLS_ZZZ_RECOVER_SIGNATURE\n");
-	return 1;
+        return 1;
     }
-    printf("Test Passed BLS_ZZZ_RECOVER_SIGNATURE\n");    
+    printf("Test Passed BLS_ZZZ_RECOVER_SIGNATURE\n");
     printf("SIGR: ");
     OCT_output(&SIGR);
-    
+
     if (!OCT_comp(&SIGR,&SIGI))
     {
-        printf("Test Failed SIGR != SIGI\n");            
+        printf("Test Failed SIGR != SIGI\n");
         return 1;
     }
     printf("Test Passed SIGR == SIGI\n");
-    
+
     return 0;
 }
 
