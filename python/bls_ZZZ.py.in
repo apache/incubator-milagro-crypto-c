@@ -93,11 +93,10 @@ if CURVE_SECURITY == 256:
     G2LEN = 16 * BFS
 
 
-def to_hex(octet_value):
+def to_str(octet_value):
     """Converts an octet type into a string
 
-    Add all the values in an octet into an array. This arrays is then
-    converted to a string and hex encoded.
+    Add all the values in an octet into an array.
 
     Args::
 
@@ -118,7 +117,7 @@ def to_hex(octet_value):
     out = b''
     for x in val:
         out = out + x
-    return out.hex()
+    return out
 
 
 def make_octet(length, value=None):
@@ -228,15 +227,13 @@ def key_pair_generate(rng, sk=None):
     pk1, pk1val = make_octet(G2LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_KEY_PAIR_GENERATE(rng, sk1, pk1)
 
-    sk_hex = to_hex(sk1)
-    pk_hex = to_hex(pk1)
+    sk = to_str(sk1)
+    pk = to_str(pk1)
 
     # clear memory
     libamcl_core.OCT_clear(sk1)
     libamcl_core.OCT_clear(pk1)
 
-    sk = bytes.fromhex(sk_hex)
-    pk = bytes.fromhex(pk_hex)
     return error_code, sk, pk
 
 
@@ -262,13 +259,12 @@ def sign(message, sk):
     signature1, signature1_val = make_octet(G1LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_SIGN(signature1, message, sk1)
 
-    signature_hex = to_hex(signature1)
+    signature = to_str(signature1)
 
     # clear memory
     libamcl_core.OCT_clear(sk1)
     libamcl_core.OCT_clear(signature1)
 
-    signature = bytes.fromhex(signature_hex)
     return error_code, signature
 
 
@@ -324,14 +320,13 @@ def add_G1(R1, R2):
     R1, R1_val = make_octet(G1LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_ADD_G1(R11, R21, R1)
 
-    R_hex = to_hex(R1)
+    R = to_str(R1)
 
     # clear memory
     libamcl_core.OCT_clear(R11)
     libamcl_core.OCT_clear(R21)
     libamcl_core.OCT_clear(R1)
 
-    R = bytes.fromhex(R_hex)
     return error_code, R
 
 
@@ -358,14 +353,13 @@ def add_G2(R1, R2):
     R1, R1_val = make_octet(G2LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_ADD_G2(R11, R21, R1)
 
-    R_hex = to_hex(R1)
+    R = to_str(R1)
 
     # clear memory
     libamcl_core.OCT_clear(R11)
     libamcl_core.OCT_clear(R21)
     libamcl_core.OCT_clear(R1)
 
-    R = bytes.fromhex(R_hex)
     return error_code, R
 
 
@@ -392,14 +386,13 @@ def mult_G1(P, R):
     T1, T1_val = make_octet(G1LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_MUL_G1(P1, R1, T1)
 
-    T_hex = to_hex(T1)
+    T = to_str(T1)
 
     # clear memory
     libamcl_core.OCT_clear(P1)
     libamcl_core.OCT_clear(R1)
     libamcl_core.OCT_clear(T1)
 
-    T = bytes.fromhex(T_hex)
     return error_code, T
 
 
@@ -426,14 +419,13 @@ def mult_G2(P, R):
     T1, T1_val = make_octet(G2LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_MUL_G2(P1, R1, T1)
 
-    T_hex = to_hex(T1)
+    T = to_str(T1)
 
     # clear memory
     libamcl_core.OCT_clear(P1)
     libamcl_core.OCT_clear(R1)
     libamcl_core.OCT_clear(T1)
 
-    T = bytes.fromhex(T_hex)
     return error_code, T
 
 

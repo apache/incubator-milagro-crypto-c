@@ -325,9 +325,9 @@ int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
 
     rc = recover_coefficients(k, X, COEFS);
     if (rc)
-      {
-	return rc;
-      }
+    {
+        return rc;
+    }
 
     for(int i=0; i<k; i++)
     {
@@ -366,11 +366,11 @@ int BLS_ZZZ_RECOVER_SIGNATURE(int k, octet* X, octet* Y, octet* SIG)
 
     rc = recover_coefficients(k, X, COEFS);
     if (rc)
-      {
-	return rc;
-      }
+    {
+        return rc;
+    }
 
-    
+
     for(int i=0; i<k; i++)
     {
         memset(&product[i], 0, sizeof(product[i]));

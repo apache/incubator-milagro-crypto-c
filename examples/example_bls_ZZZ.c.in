@@ -16,13 +16,13 @@ specific language governing permissions and limitations
 under the License.
 */
 
-/* 
-  BLS example code. 
-  
+/*
+  BLS example code.
+
   Build executable after installation:
 
   1. Change headers;
-    
+
     #include "bls_ZZZ.h" -> #include <amcl/bls_ZZZ.h>
 
   2. Build code

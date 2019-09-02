@@ -243,7 +243,7 @@ format:
 	astyle --style=allman --recursive --suffix=none 'examples/*.c'
 	astyle --style=allman --recursive --suffix=none 'examples/*.c.in'
 	astyle --style=allman --recursive --suffix=none 'benchmark/*.c.in'
-	autopep8 --in-place --aggressive --aggressive ./wrappers/python/*.py.in
+	autopep8 --in-place --aggressive --aggressive ./python/*.py.in
 
 # Remove any build artifact
 clean:

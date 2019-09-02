@@ -16,13 +16,13 @@ specific language governing permissions and limitations
 under the License.
 */
 
-/* 
-  BLS Shamir Secret Sharing example code. 
-  
+/*
+  BLS Shamir Secret Sharing example code.
+
   Build executable after installation:
 
   1. Change headers;
-    
+
     #include "bls_ZZZ.h" -> #include <amcl/bls_ZZZ.h>
 
   2. Build code
@@ -82,7 +82,7 @@ int bls_sss(csprng *RNG)
     octet X[n];
     char y[n][BGS_ZZZ];
     octet Y[n];
-    
+
     for(int i=0; i<n; i++)
     {
         memset(&y[i], 0, sizeof(y[i]));
@@ -94,7 +94,7 @@ int bls_sss(csprng *RNG)
         X[i].len = BGS_ZZZ;
         X[i].val = x[i];
     }
-    
+
     // Generate key pair
     BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SKI,&PKI);
 
@@ -115,7 +115,7 @@ int bls_sss(csprng *RNG)
     if (rc!=BLS_OK)
     {
         printf("Error: Invalid Signature\n");
-	return 1;
+        return 1;
     }
     printf("Success: Signature is valid\n");
 
@@ -124,8 +124,8 @@ int bls_sss(csprng *RNG)
     if (rc!=BLS_OK)
     {
         printf("Error: BLS_ZZZ_MAKE_SHARES\n");
-	return 1;
-    }    
+        return 1;
+    }
 
     for(int i=0; i<n; i++)
     {
@@ -134,32 +134,32 @@ int bls_sss(csprng *RNG)
         printf("Y[%d] ", i);
         OCT_output(&Y[i]);
     }
-    
+
     printf("SKO: ");
     OCT_output(&SKO);
-    
+
     if (!OCT_comp(&SKI,&SKO))
     {
         printf("FAILURE SKI != SKO");
         return 1;
     }
-    
+
     // Recover BLS secret key
     rc = BLS_ZZZ_RECOVER_SECRET(k, X, Y, &SKR);
     if (rc!=BLS_OK)
     {
         printf("Error: BLS_ZZZ_RECOVER_SECRET\n");
-	return 1;
-    }    
+        return 1;
+    }
     printf("SKR: ");
     OCT_output(&SKR);
-    
+
     if (!OCT_comp(&SKR,&SKO))
     {
         printf("FAILURE SKR != SKO");
         return 1;
     }
-    
+
     // Generate public keys and signatures using shares
     char pks[n][G2LEN];
     octet PKS[n];
@@ -197,17 +197,17 @@ int bls_sss(csprng *RNG)
     if (rc!=BLS_OK)
     {
         printf("Error: BLS_ZZZ_RECOVER_SIGNATURE\n");
-	return 1;
-    }    
+        return 1;
+    }
     printf("SIGR: ");
     OCT_output(&SIGR);
-    
+
     if (!OCT_comp(&SIGR,&SIGI))
     {
         printf("FAILURE SIGR != SIGI");
         return 1;
     }
-    
+
     return 0;
 }
 

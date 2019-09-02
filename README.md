@@ -57,16 +57,28 @@ The above packages can be installed in different ways, depending on the Operatin
 
 ```
 sudo dpkg --add-architecture i386
-sudo apt-get install -y astyle ca-certificates cmake doxygen doxygen-latex g++ \
-     g++-multilib gcc git lcov make mingw-w64 parallel python-pip python-setuptools\
-     python3-pip python3-setuptools wine-stable wine64
-sudo pip install cffi autopep8
-sudo pip3 install cffi 
+
+echo "add repositories cache"
+sudo apt-get update -y
+
+echo "install packages"
+sudo apt-get install -y \
+     build-essential \
+     cmake \
+     doxygen \
+     parallel \
+     mingw-w64 \
+     wine64 \
+     wine32 \
+     lcov \
+     python3-dev \
+     python3-pip \
+     gcc-multilib
+
+sudo pip3 install cffi autopep8
 ```
 
 * **Fedora 30 Linux**
-
-Python is not supported for this operating systems. 
 
 ```
 sudo dnf config-manager --add-repo https://dl.winehq.org/wine-builds/fedora/30/winehq.repo
@@ -123,8 +135,8 @@ program. To build and run the example use this script;
 NOTE: The default build is for 64 bit machines
 
 ```
-git clone https://github.com/milagro-crypto/milagro-crypto-c
-cd milagro-crypto-c
+git clone https://github.com/apache/incubator-milagro-crypto-c.git
+cd incubator-milagro-crypto-c
 mkdir -p target/build
 cd target/build
 cmake ../..
@@ -182,7 +194,7 @@ make package
 Start a command prompt as an administrator
 
 ```
-git clone https://github.com/milagro-crypto/milagro-crypto-c
+git clone https://github.com/apache/incubator-milagro-crypto-c.git
 cd milagro-crypto-c
 mkdir target\build
 cd target\build
