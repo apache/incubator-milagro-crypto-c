@@ -136,7 +136,7 @@ int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK);
  *
 	@param  k   Threshold
 	@param  X   Output X values
-	@param  Y   Output Y values. Valid BLS secret keys
+	@param  Y   Output Y values. Valid BLS signatures
 	@param  SIG Signature that is recovered
 	@return     Zero for success or else an error code
  */
