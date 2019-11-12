@@ -27,10 +27,9 @@ under the License.
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <amcl/ff_8192.h>
-#include <amcl/ff_4096.h>
-#include <amcl/ff_2048.h>
-#include <amcl/randapi.h>
+#include "ff_8192.h"
+#include "ff_4096.h"
+#include "ff_2048.h"
 
 #define HASH_TYPE SHA256  /**< Hash function used */
 

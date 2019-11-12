@@ -23,11 +23,10 @@ under the License.
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <amcl/ff_8192.h>
-#include <amcl/ff_4096.h>
-#include <amcl/ff_2048.h>
-#include <amcl/randapi.h>
-#include <amcl/paillier.h>
+#include "ff_8192.h"
+#include "ff_4096.h"
+#include "ff_2048.h"
+#include "paillier.h"
 
 /* Truncates an octet string */
 void OCT_truncate(octet *y,octet *x)
@@ -55,14 +54,15 @@ int FF_4096_divide(BIG_512_60 x[], BIG_512_60 y[], BIG_512_60 z[])
     BIG_512_60 d[FFLEN_4096];
     BIG_512_60 q[FFLEN_4096];
 
-    FF_4096_one(q,FFLEN_4096);
-    FF_4096_zero(d,FFLEN_4096);
     FF_4096_zero(z,FFLEN_4096);
-    FF_4096_add(d,d,x,FFLEN_4096);
 
-    while(FF_4096_comp(d,y,FFLEN_4096) <= 0)
+    while(FF_4096_comp(x,y,FFLEN_4096) <= 0)
     {
-        // left shift the denominator until bigger that remainder
+        // (Re)set values for d and q
+        FF_4096_one(q,FFLEN_4096);
+        FF_4096_copy(d,x,FFLEN_4096);
+
+        // Left shift the denominator until bigger that remainder
         while(FF_4096_comp(d,y,FFLEN_4096) == -1)
         {
             FF_4096_shl(d,FFLEN_4096);
@@ -82,11 +82,6 @@ int FF_4096_divide(BIG_512_60 x[], BIG_512_60 y[], BIG_512_60 z[])
 
         // z = z + q i.e. update quotient
         FF_4096_add(z,z,q,FFLEN_4096);
-
-        // Reset values
-        FF_4096_one(q,FFLEN_4096);
-        FF_4096_zero(d,FFLEN_4096);
-        FF_4096_add(d,d,x,FFLEN_4096);
     }
 
     return 0;
@@ -97,20 +92,17 @@ int PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, octet* N, octet* G, octet
 {
     BIG_1024_58 p[HFLEN_2048];
     BIG_1024_58 q[HFLEN_2048];
-    BIG_1024_58 p1[HFLEN_2048];
-    BIG_1024_58 q1[HFLEN_2048];
 
     // Public key
     BIG_1024_58 n[FFLEN_2048];
     BIG_1024_58 g[FFLEN_2048];
 
-    // secret key
+    // Secret key
     BIG_1024_58 l[FFLEN_2048];
     BIG_1024_58 m[FFLEN_2048];
 
     if (RNG!=NULL)
     {
-
         // p
         FF_2048_random(p,RNG,HFLEN_2048);
         while (FF_2048_lastbits(p,2)!=3)
@@ -122,10 +114,6 @@ int PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, octet* N, octet* G, octet
             FF_2048_inc(p,4,HFLEN_2048);
         }
 
-        // p1=p-1
-        FF_2048_copy(p1,p,HFLEN_2048);
-        FF_2048_dec(p1,1,HFLEN_2048);
-
         // q
         FF_2048_random(q,RNG,HFLEN_2048);
         while (FF_2048_lastbits(q,2)!=3)
@@ -136,21 +124,11 @@ int PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, octet* N, octet* G, octet
         {
             FF_2048_inc(q,4,HFLEN_2048);
         }
-
-        // q1 = q-1
-        FF_2048_copy(q1,q,HFLEN_2048);
-        FF_2048_dec(q1,1,HFLEN_2048);
     }
     else
     {
         FF_2048_fromOctet(p,P,HFLEN_2048);
         FF_2048_fromOctet(q,Q,HFLEN_2048);
-
-        FF_2048_copy(p1,p,HFLEN_2048);
-        FF_2048_dec(p1,1,HFLEN_2048);
-
-        FF_2048_copy(q1,q,HFLEN_2048);
-        FF_2048_dec(q1,1,HFLEN_2048);
     }
 
     // n = p * q
@@ -160,15 +138,27 @@ int PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, octet* N, octet* G, octet
     FF_2048_copy(g,n,FFLEN_2048);
     FF_2048_inc(g,1,FFLEN_2048);
 
-    // l = (p-1) * (q-1)
-    FF_2048_mul(l,p1,q1,HFLEN_2048);
+    // Decrement p and q in place. They need to
+    // be restored before being returned
+    FF_2048_dec(p,1,HFLEN_2048);
+    FF_2048_dec(q,1,HFLEN_2048);
 
-    // m = ( (p-1) * (q-1) ^{-1} mod n
+    // l = (p-1) * (q-1)
+    FF_2048_mul(l,p,q,HFLEN_2048);
+
+    // m = ((p-1) * (q-1))^{-1} mod n
     FF_2048_invmodp(m,l,n,FFLEN_2048);
 
+    // Restore p and q for output
+    FF_2048_inc(p,1,HFLEN_2048);
+    FF_2048_inc(q,1,HFLEN_2048);
+
     // Output
-    FF_2048_toOctet(P, p, HFLEN_2048);
-    FF_2048_toOctet(Q, q, HFLEN_2048);
+    if (P != NULL)
+        FF_2048_toOctet(P, p, HFLEN_2048);
+
+    if (Q != NULL)
+        FF_2048_toOctet(Q, q, HFLEN_2048);
 
     FF_2048_toOctet(N, n, FFLEN_2048);
     FF_2048_toOctet(G, g, FFLEN_2048);
@@ -338,7 +328,6 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
         R->len = FS_2048;
         R2.len = FS_2048;
         OCT_truncate(R,&R2);
-
     }
 
 #ifdef DEBUG
@@ -388,17 +377,16 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
 {
     // Public key
     BIG_512_60 n[FFLEN_4096];
-    BIG_512_60 n8[FFLEN_8192];
 
     // secret key
     BIG_512_60 l[FFLEN_4096];
-    BIG_512_60 m[FFLEN_8192];
+    BIG_512_60 m[FFLEN_4096];
 
     // Ciphertext
     BIG_512_60 ct[FFLEN_4096];
 
     // Plaintext
-    BIG_512_60 pt[FFLEN_8192];
+    BIG_512_60 pt[FFLEN_4096];
 
     // n2 = n^2
     BIG_512_60 n2[FFLEN_4096];
@@ -408,7 +396,6 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
 
     // ctln = ctl / n
     BIG_512_60 ctln[FFLEN_4096];
-    BIG_512_60 ctln8[FFLEN_8192];
 
     // Convert n from FF_2048 to FF_4096
     char noct[FS_4096] = {0};
@@ -422,19 +409,11 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     OCT_joctet(&LOCT, L);
     FF_4096_fromOctet(l,&LOCT,FFLEN_4096);
 
-    // Convert m from FF_2048 to FF_8192
-    char moct[FS_8192] = {0};
-    int len = FS_2048 * 3;
-    octet MOCT = {len,FS_8192,moct};
+    // Convert m from FF_2048 to FF_4096
+    char moct[FS_4096] = {0};
+    octet MOCT = {FS_2048,FS_4096,moct};
     OCT_joctet(&MOCT, M);
-    FF_8192_fromOctet(m,&MOCT,FFLEN_8192);
-
-    // Convert n from FF_2048 to FF_8192
-    char noct8[FS_8192] = {0};
-    len = FS_2048 * 3;
-    octet NOCT8 = {len,FS_8192,noct8};
-    OCT_joctet(&NOCT8, N);
-    FF_8192_fromOctet(n8,&NOCT8,FFLEN_8192);
+    FF_4096_fromOctet(m,&MOCT,FFLEN_4096);
 
     FF_4096_fromOctet(ct,CT,FFLEN_4096);
 
@@ -442,7 +421,7 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     FF_4096_sqr(n2, n, FFLEN_4096);
 
     // ct^l mod n^2 - 1
-    FF_4096_pow(ctl, ct,l,n2,FFLEN_4096);
+    FF_4096_pow(ctl,ct,l,n2,FFLEN_4096);
     FF_4096_dec(ctl,1,FFLEN_4096);
 
 #ifdef DEBUG
@@ -452,46 +431,38 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
 #endif
 
     // ctln = ctl / n
+    // note that ctln fits into a FF_2048 element,
+    // since ctln = ctl/n < n^2 / n = n
     FF_4096_divide(n, ctl, ctln);
 
-    // Convert ctln from FF_4096 to FF_8192
-    char ctln1[FS_4096] = {0};
-    octet CTLN1 = {0,FS_4096,ctln1};
-    FF_4096_toOctet(&CTLN1, ctln, FFLEN_4096);
-    char ctln2[FS_8192] = {0};
-    octet CTLN2 = {FS_4096,FS_8192,ctln2};
-    OCT_joctet(&CTLN2, &CTLN1);
-    FF_8192_fromOctet(ctln8,&CTLN2,FFLEN_8192);
-
     // pt = ctln * m mod n
-    FF_8192_mul(pt,ctln8,m,FFLEN_8192);
+    // the result fits into a FF_4096 element,
+    // since both m and ctln fit into a FF_2048 element
+    FF_4096_mul(pt, ctln, m, FFLEN_4096);
 #ifdef DEBUG
     printf("pt1 ");
-    FF_8192_output(pt,FFLEN_8192);
+    FF_4096_output(pt,FFLEN_4096);
     printf("\n\n");
 #endif
-    FF_8192_mod(pt,n8,FFLEN_8192);
+    FF_4096_mod(pt,n,FFLEN_4096);
 
-    // Output. Convert pt from FF_8192 to FF_2046
-    char pt2[FS_8192] = {0};
-    octet PT2 = {0,FS_8192,pt2};
-    FF_8192_toOctet(&PT2, pt, FFLEN_8192);
+    // Output. Convert pt from FF_4096 to FF_2046
+    char pt2[FS_4096] = {0};
+    octet PT2 = {0,FS_4096,pt2};
+    FF_4096_toOctet(&PT2, pt, FFLEN_4096);
     PT->len = FS_2048;
-    PT2.len = FS_2048*3;
+    PT2.len = FS_2048;
     OCT_truncate(PT,&PT2);
 
 #ifdef DEBUG
     printf("PAILLIER_DECRYPT n ");
     FF_4096_output(n,FFLEN_4096);
     printf("\n\n");
-    printf("PAILLIER_DECRYPT n8 ");
-    FF_8192_output(n8,FFLEN_8192);
-    printf("\n\n");
     printf("PAILLIER_DECRYPT l ");
     FF_4096_output(l,FFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_DECRYPT m ");
-    FF_8192_output(m,FFLEN_8192);
+    FF_4096_output(m,FFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_DECRYPT ct ");
     FF_4096_output(ct,FFLEN_4096);
@@ -500,7 +471,7 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     FF_4096_output(ctln,FFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_DECRYPT pt ");
-    FF_8192_output(pt,FFLEN_8192);
+    FF_4096_output(pt,FFLEN_4096);
     printf("\n\n");
 #endif
 
@@ -599,7 +570,6 @@ int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
 */
 int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
 {
-
     // Public key
     BIG_512_60 n[FFLEN_4096];
 
