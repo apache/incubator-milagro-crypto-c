@@ -265,3 +265,18 @@ if(BUILD_X509)
     endforeach()
   endforeach()
 endif()
+
+################################################
+# Paillier Tests
+################################################
+
+if(BUILD_PAILLIER)
+  set(deps "amcl_core;amcl_paillier")
+
+  amcl_test(test_paillier_consistency test_paillier_consistency.c "${deps}" "SUCCESS")
+  amcl_test(test_paillier_decrypt test_paillier_decrypt.c "${deps}" "SUCCESS" "paillier/decrypt.txt")
+  amcl_test(test_paillier_encrypt test_paillier_encrypt.c "${deps}" "SUCCESS" "paillier/encrypt.txt")
+  amcl_test(test_paillier_add test_paillier_add.c "${deps}" "SUCCESS" "paillier/add.txt")
+  amcl_test(test_paillier_mult test_paillier_mult.c "${deps}" "SUCCESS" "paillier/mult.txt")
+  amcl_test(test_paillier_keygen test_paillier_keygen.c "${deps}" "SUCCESS" "paillier/keygen.txt")
+endif()
