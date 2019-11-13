@@ -221,46 +221,6 @@ int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W)
     return BLS_OK;
 }
 
-/* T=P*R in group G1 */
-int BLS_ZZZ_MUL_G1(octet *P,octet *R,octet *T)
-{
-    BIG_XXX p;
-    ECP_ZZZ R1;
-
-    P->len=MODBYTES_XXX;
-    BIG_XXX_fromBytes(p,P->val);
-
-    if (!ECP_ZZZ_fromOctet(&R1,R))
-    {
-        return BLS_INVALID_G1;
-    }
-
-    PAIR_ZZZ_G1mul(&R1,p);
-    ECP_ZZZ_toOctet(T,&R1,true);
-
-    return BLS_OK;
-}
-
-/* T=P*R in group G2 */
-int BLS_ZZZ_MUL_G2(octet *P,octet *R,octet *T)
-{
-    BIG_XXX p;
-    ECP2_ZZZ R1;
-
-    P->len=MODBYTES_XXX;
-    BIG_XXX_fromBytes(p,P->val);
-
-    if (!ECP2_ZZZ_fromOctet(&R1,R))
-    {
-        return BLS_INVALID_G2;
-    }
-
-    PAIR_ZZZ_G2mul(&R1,p);
-    ECP2_ZZZ_toOctet(T,&R1);
-
-    return BLS_OK;
-}
-
 int BLS_ZZZ_MAKE_SHARES(int k, int n, csprng *RNG, octet* X, octet* Y, octet* SKI, octet* SKO)
 {
     BIG_XXX r;
