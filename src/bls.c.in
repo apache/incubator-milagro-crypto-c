@@ -26,13 +26,12 @@ under the License.
 #include "bls_ZZZ.h"
 
 // Polynomial interpolation coefficients
-static int recover_coefficients(int k, octet* X, octet* COEFS)
+static void recover_coefficients(int k, octet* X, BIG_XXX* coefs)
 {
     BIG_XXX r;
     BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
 
     BIG_XXX x2[k];
-    BIG_XXX coefs[k];
 
     for(int i=0; i<k; i++)
     {
@@ -70,13 +69,6 @@ static int recover_coefficients(int k, octet* X, octet* COEFS)
         }
         BIG_XXX_moddiv(coefs[i], numerator, denominator, r);
     }
-
-    // Output coefficients
-    for(int i=0; i<k; i++)
-    {
-        BIG_XXX_toBytes(COEFS[i].val,coefs[i]);
-    }
-    return 0;
 
 }
 
@@ -302,38 +294,28 @@ int BLS_ZZZ_MAKE_SHARES(int k, int n, csprng *RNG, octet* X, octet* Y, octet* SK
 
 int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
 {
-    int rc=0;
     BIG_XXX r;
     BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
 
-    BIG_XXX y[k];
+    BIG_XXX y;
     BIG_XXX coefs[k];
 
     BIG_XXX secret;
     BIG_XXX prod;
     BIG_XXX_zero(secret);
 
-    char coefs2[k][BGS_ZZZ];
-    octet COEFS[k];
-    for(int i=0; i<k; i++)
-    {
-        memset(&coefs2[i], 0, sizeof(coefs2[i]));
-        COEFS[i].max = BGS_ZZZ;
-        COEFS[i].len = BGS_ZZZ;
-        COEFS[i].val = coefs2[i];
-    }
-
-    rc = recover_coefficients(k, X, COEFS);
-    if (rc)
-    {
-        return rc;
-    }
+    recover_coefficients(k, X, coefs);
 
     for(int i=0; i<k; i++)
     {
-        BIG_XXX_fromBytes(y[i],Y[i].val);
-        BIG_XXX_fromBytes(coefs[i],COEFS[i].val);
-        BIG_XXX_modmul(prod,y[i],coefs[i],r);
+        // TODO
+        // This is validating the input as we go, giving the opportunity
+        // for an attacker to forge a malicious input which would only
+        // fail after most of the computation is done.
+        //
+        // Might want to change this sacrificing some memory
+        BIG_XXX_fromBytes(y,Y[i].val);
+        BIG_XXX_modmul(prod,y,coefs[i],r);
         BIG_XXX_add(secret, secret, prod);
 
         if (BIG_XXX_comp(secret,r) == 1)
@@ -350,58 +332,32 @@ int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
 
 int BLS_ZZZ_RECOVER_SIGNATURE(int k, octet* X, octet* Y, octet* SIG)
 {
-    int rc = 0;
-    char product[k][BFS_ZZZ+1];
-    octet PRODUCT[k];
+    BIG_XXX coefs[k];
+    ECP_ZZZ y;
 
-    char coefs[k][BGS_ZZZ];
-    octet COEFS[k];
-    for(int i=0; i<k; i++)
-    {
-        memset(&coefs[i], 0, sizeof(coefs[i]));
-        COEFS[i].max = BGS_ZZZ;
-        COEFS[i].len = BGS_ZZZ;
-        COEFS[i].val = coefs[i];
-    }
+    ECP_ZZZ sig;
+    ECP_ZZZ_inf(&sig);
 
-    rc = recover_coefficients(k, X, COEFS);
-    if (rc)
-    {
-        return rc;
-    }
-
+    recover_coefficients(k, X, coefs);
 
     for(int i=0; i<k; i++)
     {
-        memset(&product[i], 0, sizeof(product[i]));
-        PRODUCT[i].max = BFS_ZZZ+1;
-        PRODUCT[i].len = BFS_ZZZ+1;
-        PRODUCT[i].val = product[i];
-    }
-
-    for(int i=0; i<k; i++)
-    {
-        rc = BLS_ZZZ_MUL_G1(&COEFS[i], &Y[i], &PRODUCT[i]);
-        if (rc != BLS_OK)
+        // TODO
+        // This is validating the input as we go, giving the opportunity
+        // for an attacker to forge a malicious input which would only
+        // fail after most of the computation is done.
+        //
+        // Might want to change this sacrificing some memory
+        if (!ECP_ZZZ_fromOctet(&y,&Y[i]))
         {
-            return rc;
+            return BLS_INVALID_G1;
         }
+
+        PAIR_ZZZ_G1mul(&y,coefs[i]);
+        ECP_ZZZ_add(&sig,&y);
     }
 
-    BLS_ZZZ_ADD_G1(&PRODUCT[0],&PRODUCT[1],SIG);
-    if (rc != BLS_OK)
-    {
-        return rc;
-    }
-
-    for(int i=2; i<k; i++)
-    {
-        BLS_ZZZ_ADD_G1(&PRODUCT[i],SIG,SIG);
-        if (rc != BLS_OK)
-        {
-            return rc;
-        }
-    }
+    ECP_ZZZ_toOctet(SIG, &sig, true);
 
     return BLS_OK;
 }
