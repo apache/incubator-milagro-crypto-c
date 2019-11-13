@@ -261,7 +261,6 @@ int BLS_ZZZ_MUL_G2(octet *P,octet *R,octet *T)
 
 int BLS_ZZZ_MAKE_SHARES(int k, int n, csprng *RNG, octet* X, octet* Y, octet* SKI, octet* SKO)
 {
-    BIG_XXX y2[n];
     BIG_XXX r;
     BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
 
@@ -280,34 +279,43 @@ int BLS_ZZZ_MAKE_SHARES(int k, int n, csprng *RNG, octet* X, octet* Y, octet* SK
 
     /* Calculate f(x) = a_0 + a_1x + a_2x^2 ... a_{k-1}x^{k-1}
        a0 is the secret */
-    int x=0;
+    BIG_XXX x;
+    BIG_XXX_zero(x);
+
+    BIG_XXX y;
+
     for(int j=0; j<n; j++)
     {
-        x++;
-        BIG_XXX xb;
-        BIG_XXX_zero(y2[j]);
-        BIG_XXX_zero(xb);
-        BIG_XXX_inc(xb,x);
+        BIG_XXX_inc(x,1);
 
         // Output X shares
-        BIG_XXX_toBytes(X[j].val,xb);
+        BIG_XXX_toBytes(X[j].val,x);
+        X[j].len = MODBYTES_XXX;
 
-        // y2[j] is the accmulator
+        // y is the accumulator
+        BIG_XXX_zero(y);
+
         for(int i=k-1; i>=0; i--)
         {
-            BIG_XXX_modmul(y2[j],y2[j],xb,r);
-            BIG_XXX_add(y2[j],poly[i],y2[j]);
+            BIG_XXX_modmul(y,y,x,r);
+            BIG_XXX_add(y,y,poly[i]);
         }
-    }
 
-    // Output Y shares
-    for(int j=0; j<n; j++)
-    {
-        BIG_XXX_toBytes(Y[j].val,y2[j]);
+        // Normalise input for comp
+        BIG_XXX_norm(y);
+        if(BIG_XXX_comp(y,r) == 1)
+        {
+            BIG_XXX_sub(y,y,r);
+        }
+
+        // Output Y shares
+        BIG_XXX_toBytes(Y[j].val,y);
+        Y[j].len = MODBYTES_XXX;
     }
 
     // Output secret
     BIG_XXX_toBytes(SKO->val,poly[0]);
+    SKO->len = MODBYTES_XXX;
 
     return BLS_OK;
 }
