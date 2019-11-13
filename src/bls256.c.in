@@ -128,6 +128,7 @@ int BLS_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
 
     PAIR_ZZZ_G2mul(&G,s);
     ECP8_ZZZ_toOctet(W,&G);
+
     return BLS_OK;
 }
 
@@ -140,6 +141,7 @@ int BLS_ZZZ_SIGN(octet *SIG,char *m,octet *S)
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G1mul(&D,s);
     ECP_ZZZ_toOctet(SIG,&D,true); /* compress output */
+
     return BLS_OK;
 }
 
@@ -172,6 +174,7 @@ int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W)
     {
         return BLS_FAIL;
     }
+
     return BLS_OK;
 }
 
@@ -336,13 +339,8 @@ int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
 
     for(int i=0; i<k; i++)
     {
-        // TODO
-        // This is validating the input as we go, giving the opportunity
-        // for an attacker to forge a malicious input which would only
-        // fail after most of the computation is done.
-        //
-        // Might want to change this sacrificing some memory
         BIG_XXX_fromBytes(y,Y[i].val);
+
         BIG_XXX_modmul(prod,y,coefs[i],r);
         BIG_XXX_add(secret, secret, prod);
 
@@ -354,6 +352,7 @@ int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
 
     // Output secret
     BIG_XXX_toBytes(SK->val,secret);
+    SK->len = MODBYTES_XXX;
 
     return BLS_OK;
 }
@@ -370,12 +369,6 @@ int BLS_ZZZ_RECOVER_SIGNATURE(int k, octet* X, octet* Y, octet* SIG)
 
     for(int i=0; i<k; i++)
     {
-        // TODO
-        // This is validating the input as we go, giving the opportunity
-        // for an attacker to forge a malicious input which would only
-        // fail after most of the computation is done.
-        //
-        // Might want to change this sacrificing some memory
         if (!ECP_ZZZ_fromOctet(&y,&Y[i]))
         {
             return BLS_INVALID_G1;
@@ -389,5 +382,3 @@ int BLS_ZZZ_RECOVER_SIGNATURE(int k, octet* X, octet* Y, octet* SIG)
 
     return BLS_OK;
 }
-
-
