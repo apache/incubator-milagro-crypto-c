@@ -38,36 +38,57 @@ static void recover_coefficients(int k, octet* X, BIG_XXX* coefs)
         BIG_XXX_fromBytes(x2[i],X[i].val);
     }
 
+    // Compute numerators in place using partial products
+    // to achieve it in O(n)
+    // c_i = x_0 * ... * x_(i-1) * x_(i+1) * ... * x_(k-1)
+
+    // Compute partial left products
+    // leave c_0 alone since it only has a right partial product
+    BIG_XXX_copy(coefs[1], x2[0]);
+
+    for(int i=2; i < k; i++)
+    {
+        // lp_i = x_0 * ... * x_(i-1) = lp_(i-1) * x_(i-1)
+        BIG_XXX_modmul(coefs[i], coefs[i-1], x2[i-1], r);
+    }
+
+    // Compute partial right products and combine
+
+    // Store partial right products in c_0 so at the end
+    // of the procedure c_0 = x_1 * ... x_(k-1)
+    BIG_XXX_copy(coefs[0], x2[k-1]);
+
+    for(int i=k-2; i > 0; i--)
+    {
+        // c_i = lp_i * rp_i
+        BIG_XXX_modmul(coefs[i], coefs[i], coefs[0], r);
+
+        // rp_(i-1) = x_i * ... * x_k = x_i * rp_i
+        BIG_XXX_modmul(coefs[0], coefs[0], x2[i], r);
+    }
+
+    BIG_XXX cneg;
+    BIG_XXX denominator;
+    BIG_XXX s;
+
     for(int i=0; i<k; i++)
     {
-        BIG_XXX numerator;
-        BIG_XXX_one(numerator);
-        BIG_XXX denominator;
         BIG_XXX_one(denominator);
+
+        // cneg = -x_i mod r
+        BIG_XXX_sub(cneg, r, x2[i]);
+
         for(int j=0; j<k; j++)
         {
-            // others = all - current
-            // current = x2[i]
             if (i != j)
             {
-                // numerator = numerator * other
-                BIG_XXX_modmul(numerator,numerator,x2[j],r);
-
-                // other - current
-                BIG_XXX s;
-                BIG_XXX c;
-
-                // c = -current
-                BIG_XXX_sub(c,r,x2[i]);
-                BIG_XXX_add(s,x2[j],c);
-
-                // denominator = denominator * s
+                // denominator = denominator * (x_j - x_i)
+                BIG_XXX_add(s,x2[j],cneg);
                 BIG_XXX_modmul(denominator,denominator,s,r);
-
             }
-
         }
-        BIG_XXX_moddiv(coefs[i], numerator, denominator, r);
+
+        BIG_XXX_moddiv(coefs[i], coefs[i], denominator, r);
     }
 }
 
