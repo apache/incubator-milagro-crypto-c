@@ -80,15 +80,20 @@ static int recover_coefficients(int k, octet* X, octet* COEFS)
 
 }
 
-/* hash a message to an ECP point, using SHA3 */
-static void BLS_HASHIT(ECP_ZZZ *P,char *m)
+/* hash a message, M, to an ECP point, using SHA3 */
+static void BLS_HASHIT(ECP_ZZZ *P,octet *M)
 {
     int i;
+    int j;
     sha3 hs;
     char h[MODBYTES_XXX];
     octet HM= {0,sizeof(h),h};
     SHA3_init(&hs,SHAKE256);
-    for (i=0; m[i]!=0; i++) SHA3_process(&hs,m[i]);
+    for (i=0; i<M->len; i++)
+    {
+        j = (unsigned char) M->val[i];
+        SHA3_process(&hs,j);
+    }
     SHA3_shake(&hs,HM.val,MODBYTES_XXX);
     HM.len=MODBYTES_XXX;
     ECP_ZZZ_mapit(P,&HM);
@@ -119,12 +124,12 @@ int BLS_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
     return BLS_OK;
 }
 
-/* Sign message m using private key S to produce signature SIG */
-int BLS_ZZZ_SIGN(octet *SIG,char *m,octet *S)
+/* Sign message M using private key S to produce signature SIG */
+int BLS_ZZZ_SIGN(octet *SIG,octet *M,octet *S)
 {
     BIG_XXX s;
     ECP_ZZZ D;
-    BLS_HASHIT(&D,m);
+    BLS_HASHIT(&D,M);
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G1mul(&D,s);
     // compress output
@@ -132,13 +137,13 @@ int BLS_ZZZ_SIGN(octet *SIG,char *m,octet *S)
     return BLS_OK;
 }
 
-/* Verify signature of message m, the signature SIG, and the public key W */
-int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W)
+/* Verify signature of message M, the signature SIG, and the public key W */
+int BLS_ZZZ_VERIFY(octet *SIG,octet *M,octet *W)
 {
     FP12_YYY v;
     ECP2_ZZZ G,PK;
     ECP_ZZZ D,HM;
-    BLS_HASHIT(&HM,m);
+    BLS_HASHIT(&HM,M);
 
     if (!ECP_ZZZ_fromOctet(&D,SIG))
     {
