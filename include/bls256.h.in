@@ -58,7 +58,7 @@ int BLS_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W);
 /**	@brief Calculate a signature
  *
 	@param SIG  signature
-	@param m    message to be signed
+	@param M    message to be signed
 	@param S    Private key
 	@return     Zero for success or else an error code
  */
@@ -67,7 +67,7 @@ int BLS_ZZZ_SIGN(octet *SIG,octet *M,octet *S);
 /**	@brief Verify a signature
  *
 	@param SIG  signature
-	@param m    message whose signature is to be verified.
+	@param M    message whose signature is to be verified.
 	@param W    Public key
 	@return     Zero for success or else an error code
  */
