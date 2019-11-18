@@ -62,7 +62,7 @@ int bls_sss(csprng *RNG)
 
     char m[2000];
     octet M = {0,sizeof(m),m};
-    
+
     char ski[BGS_ZZZ];
     octet SKI = {0,sizeof(ski),ski};
     char pki[G2LEN];
@@ -106,7 +106,7 @@ int bls_sss(csprng *RNG)
     printf("\n");
 
     OCT_jstring(&M,"test message");
-    
+
     // Sign the message
     BLS_ZZZ_SIGN(&SIGI,&M,&SKI);
 

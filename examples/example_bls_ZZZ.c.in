@@ -60,7 +60,7 @@ int bls(csprng *RNG)
 
     char m[2000];
     octet M = {0,sizeof(m),m};
-    
+
     char sk1[BGS_ZZZ];
     octet SK1 = {0,sizeof(sk1),sk1};
     char pktmp[G2LEN];
@@ -115,7 +115,7 @@ int bls(csprng *RNG)
     printf("\n");
 
     OCT_jstring(&M,"test message");
-    
+
     // Sign the message
     BLS_ZZZ_SIGN(&SIG1,&M,&SK1);
     BLS_ZZZ_SIGN(&SIG2,&M,&SK2);
