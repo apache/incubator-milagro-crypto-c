@@ -25,6 +25,7 @@ under the License.
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "randapi.h"
 #include "ff_8192.h"
 #include "ff_4096.h"
 #include "ff_2048.h"
