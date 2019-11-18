@@ -42,13 +42,14 @@
 #define G2LEN 16*BFS_ZZZ
 #endif
 
-static char message[]="test message";
-
 int test(csprng *RNG)
 {
     int rc;
     int n=4;
     int k=3;
+
+    char m[2000];
+    octet M = {0,sizeof(m),m};
 
     char ski[BGS_ZZZ];
     octet SKI = {0,sizeof(ski),ski};
@@ -93,13 +94,13 @@ int test(csprng *RNG)
     printf("\n");
 
     // Sign the message
-    BLS_ZZZ_SIGN(&SIGI,message,&SKI);
+    BLS_ZZZ_SIGN(&SIGI,&M,&SKI);
 
     printf("SIGI: ");
     OCT_output(&SIGI);
 
     // Verify signature
-    rc=BLS_ZZZ_VERIFY(&SIGI,message,&PKI);
+    rc=BLS_ZZZ_VERIFY(&SIGI,&M,&PKI);
     if (rc!=BLS_OK)
     {
         printf("Test Failed Invalid Signature\n");
@@ -168,7 +169,7 @@ int test(csprng *RNG)
         PKS[i].len = G2LEN;
         PKS[i].val = pks[i];
         BLS_ZZZ_KEY_PAIR_GENERATE(NULL,&Y[i],&PKS[i]);
-        BLS_ZZZ_SIGN(&SIGS[i],message,&Y[i]);
+        BLS_ZZZ_SIGN(&SIGS[i],&M,&Y[i]);
     }
 
     for(int i=0; i<n; i++)

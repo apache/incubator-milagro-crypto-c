@@ -42,12 +42,14 @@
 #define G2LEN 16*BFS_ZZZ
 #endif
 
-static char message[]="test message";
 
 int test(csprng *RNG)
 {
     int rc;
 
+    char m[2000];
+    octet M = {0,sizeof(m),m};
+    
     char sk1[BGS_ZZZ];
     octet SK1 = {0,sizeof(sk1),sk1};
     char pktmp[G2LEN];
@@ -107,10 +109,12 @@ int test(csprng *RNG)
     OCT_output(&PK2);
     printf("\n");
 
+    OCT_jstring(&M,"test message");
+    
     // Sign the message
-    BLS_ZZZ_SIGN(&SIG1,message,&SK1);
-    BLS_ZZZ_SIGN(&SIG2,message,&SK2);
-    BLS_ZZZ_SIGN(&SIG3,message,&SK3);
+    BLS_ZZZ_SIGN(&SIG1,&M,&SK1);
+    BLS_ZZZ_SIGN(&SIG2,&M,&SK2);
+    BLS_ZZZ_SIGN(&SIG3,&M,&SK3);
 
     printf("SIG1: ");
     OCT_output(&SIG1);
@@ -121,7 +125,7 @@ int test(csprng *RNG)
     printf("\n");
 
     // Verify signature
-    rc=BLS_ZZZ_VERIFY(&SIG1,message,&PK1);
+    rc=BLS_ZZZ_VERIFY(&SIG1,&M,&PK1);
     if (rc==BLS_OK)
     {
         printf("Test Passed valid Signature / message\n");
@@ -133,7 +137,7 @@ int test(csprng *RNG)
     }
 
     // Verify signature
-    rc=BLS_ZZZ_VERIFY(&SIG2,message,&PK2);
+    rc=BLS_ZZZ_VERIFY(&SIG2,&M,&PK2);
     if (rc==BLS_OK)
     {
         printf("Test Passed valid Signature / message\n");
@@ -145,7 +149,7 @@ int test(csprng *RNG)
     }
 
     // Verify signature
-    rc=BLS_ZZZ_VERIFY(&SIG3,message,&PK3);
+    rc=BLS_ZZZ_VERIFY(&SIG3,&M,&PK3);
     if (rc==BLS_OK)
     {
         printf("Test Passed valid Signature / message\n");
@@ -182,7 +186,7 @@ int test(csprng *RNG)
     }
 
     // Verify aggregated signature. This should fail.
-    rc=BLS_ZZZ_VERIFY(&SIG,message,&PK);
+    rc=BLS_ZZZ_VERIFY(&SIG,&M,&PK);
     if (rc==BLS_FAIL)
     {
         printf("Test Passed invalid signature SIG = SIG1 + SIG2 \n");
@@ -204,7 +208,7 @@ int test(csprng *RNG)
     printf("\n");
 
     // Verify aggregated signature.
-    rc=BLS_ZZZ_VERIFY(&SIG,message,&PK);
+    rc=BLS_ZZZ_VERIFY(&SIG,&M,&PK);
     if (rc==BLS_OK)
     {
         printf("Test Passed valid Signature SIG = SIG1 + SIG2 + SIG3\n");
@@ -217,9 +221,9 @@ int test(csprng *RNG)
 
 
     // change the message
-    message[0]='Z';
-    printf("message %s\n", message);
-    rc=BLS_ZZZ_VERIFY(&SIG1,message,&PK1);
+    M.val[0]='Z';
+    printf("message %s\n", M.val);
+    rc=BLS_ZZZ_VERIFY(&SIG1,&M,&PK1);
     if (rc==BLS_FAIL)
     {
         printf("Test Passed valid signature / invalid message\n");
@@ -232,12 +236,12 @@ int test(csprng *RNG)
 
 
     // Change the signature
-    message[0]='t';
+    M.val[0]='t';
     SIG1.val[0]=5;
-    printf("message %s\n", message);
+    printf("message %s\n", M.val);
     printf("Signature SIG1: ");
     OCT_output(&SIG1);
-    rc=BLS_ZZZ_VERIFY(&SIG1,message,&PK1);
+    rc=BLS_ZZZ_VERIFY(&SIG1,&M,&PK1);
     if (rc==BLS_INVALID_G1)
     {
         printf("Test Passed invalid signature / valid message\n");
