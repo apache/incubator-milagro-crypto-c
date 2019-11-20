@@ -28,27 +28,6 @@ under the License.
 #include "ff_2048.h"
 #include "paillier.h"
 
-/* Truncates an octet string */
-void OCT_truncate(octet *y,octet *x)
-{
-    /* y < x */
-    int i=0;
-    int j=0;
-    if (x==NULL) return;
-    if (y==NULL) return;
-
-    for (i=0; i<y->len; i++)
-    {
-        j=x->len+i;
-        if (i>=y->max)
-        {
-            y->len=y->max;
-            return;
-        }
-        y->val[i]=x->val[j];
-    }
-}
-
 int FF_4096_divide(BIG_512_60 x[], BIG_512_60 y[], BIG_512_60 z[])
 {
     BIG_512_60 d[FFLEN_4096];
@@ -203,7 +182,6 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
 
     // n2 = n^2
     BIG_512_60 n2[FFLEN_4096];
-    BIG_512_60 n28[FFLEN_8192];
 
     // Random r < n
     BIG_1024_58 n1[FFLEN_2048];
@@ -213,29 +191,14 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     // plaintext
     BIG_512_60 pt[FFLEN_4096];
 
-    // g^pt mod n^2
-    BIG_512_60 gpt[FFLEN_4096];
-    BIG_512_60 gpt8[FFLEN_8192];
-
-    // r^n mod n^2
-    BIG_512_60 rn[FFLEN_4096];
-    BIG_512_60 rn8[FFLEN_8192];
-
     // ciphertext
-    BIG_512_60 ct[FFLEN_8192];
+    BIG_512_60 ct[FFLEN_4096];
 
-    // Convert n from FF_2048 to FF_4096
-    char noct[FS_4096] = {0};
-    octet NOCT = {FS_2048,FS_4096,noct};
-    OCT_joctet(&NOCT, N);
-    FF_4096_fromOctet(n,&NOCT,FFLEN_4096);
+    FF_4096_zero(n, FFLEN_4096);
+    FF_4096_fromOctet(n,N,HFLEN_4096);
 
-    // Convert g from FF_2048 to FF_4096
-    char goct[FS_4096] = {0};
-    octet GOCT = {FS_2048,FS_4096,goct};
-    OCT_joctet(&GOCT, G);
-    FF_4096_fromOctet(g,&GOCT,FFLEN_4096);
-
+    FF_4096_zero(g, FFLEN_4096);
+    FF_4096_fromOctet(g,G,HFLEN_4096);
 
     // In production generate R from RNG
     if (RNG!=NULL)
@@ -245,27 +208,21 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
         FF_2048_randomnum(r1,n1,RNG,FFLEN_2048);
 
         // Convert r from FF_2048 to FF_4096
-        char r1oct[FS_2048] = {0};
-        octet R1OCT = {0,FS_2048,r1oct};
-        FF_2048_toOctet(&R1OCT, r1, FFLEN_2048);
+        char roct[FS_2048] = {0};
+        octet ROCT = {0,FS_2048,roct};
+        FF_2048_toOctet(&ROCT, r1, FFLEN_2048);
 
-        char roct[FS_4096] = {0};
-        octet ROCT = {FS_2048,FS_4096,roct};
-        OCT_joctet(&ROCT, &R1OCT);
-        FF_4096_fromOctet(r,&ROCT,FFLEN_4096);
+        FF_4096_zero(r, FFLEN_4096);
+        FF_4096_fromOctet(r,&ROCT,HFLEN_4096);
     }
     else
     {
-        // Convert r from FF_2048 to FF_4096
-        char roct[FS_4096] = {0};
-        octet ROCT = {FS_2048,FS_4096,roct};
-        OCT_joctet(&ROCT, R);
-        FF_4096_fromOctet(r,&ROCT,FFLEN_4096);
+        FF_4096_zero(r, FFLEN_4096);
+        FF_4096_fromOctet(r,R,HFLEN_4096);
     }
 
     FF_4096_zero(pt, FFLEN_4096);
     FF_4096_fromOctet(pt,PT,HFLEN_4096);
-
 
     // n2 = n^2
     FF_4096_sqr(n2, n, HFLEN_4096);
@@ -280,12 +237,7 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     // Output R for Debug
     if (R!=NULL)
     {
-        char r2[FS_4096] = {0};
-        octet R2 = {0,FS_4096,r2};
-        FF_4096_toOctet(&R2, r, FFLEN_4096);
-        R->len = FS_2048;
-        R2.len = FS_2048;
-        OCT_truncate(R,&R2);
+        FF_4096_toOctet(R, r, HFLEN_4096);
     }
 
 #ifdef DEBUG
@@ -355,28 +307,20 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     // ctln = ctl / n
     BIG_512_60 ctln[FFLEN_4096];
 
-    // Convert n from FF_2048 to FF_4096
-    char noct[FS_4096] = {0};
-    octet NOCT = {FS_2048,FS_4096,noct};
-    OCT_joctet(&NOCT, N);
-    FF_4096_fromOctet(n,&NOCT,FFLEN_4096);
+    FF_4096_zero(n, FFLEN_4096);
+    FF_4096_fromOctet(n,N,HFLEN_4096);
 
-    // Convert l from FF_2048 to FF_4096
-    char loct[FS_4096] = {0};
-    octet LOCT = {FS_2048,FS_4096,loct};
-    OCT_joctet(&LOCT, L);
-    FF_4096_fromOctet(l,&LOCT,FFLEN_4096);
+    FF_4096_zero(l, FFLEN_4096);
+    FF_4096_fromOctet(l,L,HFLEN_4096);
 
-    // Convert m from FF_2048 to FF_4096
-    char moct[FS_4096] = {0};
-    octet MOCT = {FS_2048,FS_4096,moct};
-    OCT_joctet(&MOCT, M);
-    FF_4096_fromOctet(m,&MOCT,FFLEN_4096);
+    FF_4096_zero(m, FFLEN_4096);
+    FF_4096_fromOctet(m,M,HFLEN_4096);
 
     FF_4096_fromOctet(ct,CT,FFLEN_4096);
 
     // n2 = n^2
-    FF_4096_sqr(n2, n, FFLEN_4096);
+    FF_4096_sqr(n2, n, HFLEN_4096);
+    FF_4096_norm(n2, FFLEN_4096);
 
     // ct^l mod n^2 - 1
     FF_4096_pow(ctl,ct,l,n2,FFLEN_4096);
@@ -396,7 +340,7 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     // pt = ctln * m mod n
     // the result fits into a FF_4096 element,
     // since both m and ctln fit into a FF_2048 element
-    FF_4096_mul(pt, ctln, m, FFLEN_4096);
+    FF_4096_mul(pt, ctln, m, HFLEN_4096);
 #ifdef DEBUG
     printf("pt1 ");
     FF_4096_output(pt,FFLEN_4096);
@@ -404,13 +348,8 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
 #endif
     FF_4096_mod(pt,n,FFLEN_4096);
 
-    // Output. Convert pt from FF_4096 to FF_2046
-    char pt2[FS_4096] = {0};
-    octet PT2 = {0,FS_4096,pt2};
-    FF_4096_toOctet(&PT2, pt, FFLEN_4096);
-    PT->len = FS_2048;
-    PT2.len = FS_2048;
-    OCT_truncate(PT,&PT2);
+    // Output
+    FF_4096_toOctet(PT, pt, HFLEN_4096);
 
 #ifdef DEBUG
     printf("PAILLIER_DECRYPT n ");
@@ -455,24 +394,14 @@ int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
     BIG_512_60 ct2[FFLEN_8192];
     BIG_512_60 ct[FFLEN_8192];
 
-    // Convert n from FF_2048 to FF_8192
-    char noct[FS_8192] = {0};
-    octet NOCT = {FS_2048*3,FS_8192,noct};
-    OCT_joctet(&NOCT, N);
-    FF_8192_fromOctet(n,&NOCT,FFLEN_8192);
+    FF_8192_zero(n,FFLEN_8192);
+    FF_8192_fromOctet(n,N,FFLEN_8192/4);
 
-    // Convert ct1 from FF_4096 to FF_8192
-    char ct1oct[FS_8192] = {0};
-    octet CT1OCT = {FS_4096,FS_8192,ct1oct};
-    OCT_joctet(&CT1OCT, CT1);
+    FF_8192_zero(ct1,FFLEN_8192);
+    FF_8192_fromOctet(ct1,CT1,HFLEN_8192);
 
-    FF_8192_fromOctet(ct1,&CT1OCT,FFLEN_8192);
-
-    // Convert ct2 from FF_4096 to FF_8192
-    char ct2oct[FS_8192] = {0};
-    octet CT2OCT = {FS_4096,FS_8192,ct2oct};
-    OCT_joctet(&CT2OCT, CT2);
-    FF_8192_fromOctet(ct2,&CT2OCT,FFLEN_8192);
+    FF_8192_zero(ct2,FFLEN_8192);
+    FF_8192_fromOctet(ct2,CT2,HFLEN_8192);
 
     // n2 = n^2
     FF_8192_sqr(n2, n, HFLEN_8192);
@@ -487,7 +416,7 @@ int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
 #endif
 
     // ct = ct1 * ct2 mod n^2
-    FF_8192_mul(ct,ct1,ct2,FFLEN_8192);
+    FF_8192_mul(ct,ct1,ct2,HFLEN_8192);
 
 #ifdef DEBUG
     printf("PAILLIER_ADD ct1 * ct2 ");
@@ -497,14 +426,8 @@ int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
 
     FF_8192_mod(ct,n2,FFLEN_8192);
 
-    // Output. Convert ct from FF_8192 to FF_4096
-    char cto2[FS_8192] = {0};
-    octet CTO2 = {0,FS_8192,cto2};
-    FF_8192_toOctet(&CTO2, ct, FFLEN_8192);
-    CT->len = FS_4096;
-    CTO2.len = FS_4096;
-    OCT_truncate(CT,&CTO2);
-
+    // Output
+    FF_8192_toOctet(CT, ct, HFLEN_8192);
 
 #ifdef DEBUG
     printf("PAILLIER_ADD n ");
@@ -544,21 +467,17 @@ int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
     BIG_512_60 ct[FFLEN_4096];
 
     // Convert n from FF_2048 to FF_4096
-    char noct[FS_4096] = {0};
-    octet NOCT = {FS_2048,FS_4096,noct};
-    OCT_joctet(&NOCT, N);
-    FF_4096_fromOctet(n,&NOCT,FFLEN_4096);
+    FF_4096_zero(n, FFLEN_4096);
+    FF_4096_fromOctet(n,N,HFLEN_4096);
 
-    // Convert pt from FF_2048 to FF_4096
-    char ptoct[FS_4096] = {0};
-    octet PTOCT = {FS_2048,FS_4096,ptoct};
-    OCT_joctet(&PTOCT, PT);
-    FF_4096_fromOctet(pt,&PTOCT,FFLEN_4096);
+    FF_4096_zero(pt, FFLEN_4096);
+    FF_4096_fromOctet(pt,PT,HFLEN_4096);
 
-    // n2 = n^2
-    FF_4096_sqr(n2, n, FFLEN_4096);
     FF_4096_fromOctet(ct1,CT1,FFLEN_4096);
 
+    // n2 = n^2
+    FF_4096_sqr(n2, n, HFLEN_4096);
+    FF_4096_norm(n2, FFLEN_4096);
 
     // ct1^pt mod n^2
     FF_4096_pow(ct,ct1,pt,n2,FFLEN_4096);
@@ -586,4 +505,3 @@ int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
 
     return 0;
 }
-

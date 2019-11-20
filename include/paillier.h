@@ -43,16 +43,6 @@ under the License.
 #define HFS_4096 MODBYTES_512_60*HFLEN_4096   /**< Half 4096 field size in bytes */
 #define HFS_2048 MODBYTES_1024_58*HFLEN_2048  /**< Half 2048 field size in bytes */
 
-/*! \brief Truncates an octet string
- *
- *  Add the top x->len bytes of y to x
- *
- *  @param  y       Output octet
- *  @param  x       Input octet
- *  @return         Returns 0 or else error code
- */
-void OCT_truncate(octet *y,octet *x);
-
 /*! \brief quotient of y divided by x
  *
  *  <ol>
