@@ -302,6 +302,6 @@ extern void FF_WWW_pow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *y,BIG_XXX f,BIG
 	@param m FF modulus
 	@param n size of FF in BIGs
  */
-extern void FF_WWW_bpow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e,BIG_XXX *y,BIG_XXX *f,BIG_XXX *p,int n);
+extern void FF_WWW_bpow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e,BIG_XXX *y,BIG_XXX *f,BIG_XXX *m,int n);
 
 #endif
