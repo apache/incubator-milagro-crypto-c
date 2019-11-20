@@ -236,8 +236,6 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     OCT_joctet(&GOCT, G);
     FF_4096_fromOctet(g,&GOCT,FFLEN_4096);
 
-    // n2 = n^2
-    FF_4096_sqr(n2, n, FFLEN_4096);
 
     // In production generate R from RNG
     if (RNG!=NULL)
@@ -265,59 +263,19 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
         FF_4096_fromOctet(r,&ROCT,FFLEN_4096);
     }
 
-    // Convert pt from FF_2048 to FF_4096
-    char ptoct[FS_4096] = {0};
-    octet PTOCT = {FS_2048,FS_4096,ptoct};
-    OCT_joctet(&PTOCT, PT);
-    FF_4096_fromOctet(pt,&PTOCT,FFLEN_4096);
+    FF_4096_zero(pt, FFLEN_4096);
+    FF_4096_fromOctet(pt,PT,HFLEN_4096);
 
-    // g^pt mod n^2
-    FF_4096_pow(gpt,g,pt,n2,FFLEN_4096);
 
-    // r^n mod n^2
-    FF_4096_pow(rn,r,n,n2,FFLEN_4096);
+    // n2 = n^2
+    FF_4096_sqr(n2, n, HFLEN_4096);
+    FF_4096_norm(n2, FFLEN_4096);
 
-    // Convert gpt from FF_4096 to FF_8192
-    char gpt1[FS_4096] = {0};
-    octet GPT1 = {0,FS_4096,gpt1};
-    FF_4096_toOctet(&GPT1, gpt, FFLEN_4096);
+    // ct = g^pt * r^n mod n2
+    FF_4096_bpow2(ct, g, pt, r, n, n2, FFLEN_4096);
 
-    char gpt2[FS_8192] = {0};
-    octet GPT2 = {FS_4096,FS_8192,gpt2};
-    OCT_joctet(&GPT2, &GPT1);
-    FF_8192_fromOctet(gpt8,&GPT2,FFLEN_8192);
-
-    // Convert rn from FF_4096 to FF_8192
-    char rn1[FS_4096] = {0};
-    octet RN1 = {0,FS_4096,rn1};
-    FF_4096_toOctet(&RN1, rn, FFLEN_4096);
-
-    char rn2[FS_8192] = {0};
-    octet RN2 = {FS_4096,FS_8192,rn2};
-    OCT_joctet(&RN2, &RN1);
-    FF_8192_fromOctet(rn8,&RN2,FFLEN_8192);
-
-    // Convert n2 from FF_4096 to FF_8192
-    char n21[FS_4096] = {0};
-    octet N21 = {0,FS_4096,n21};
-    FF_4096_toOctet(&N21, n2, FFLEN_4096);
-
-    char n22[FS_8192] = {0};
-    octet N22 = {FS_4096,FS_8192,n22};
-    OCT_joctet(&N22, &N21);
-    FF_8192_fromOctet(n28,&N22,FFLEN_8192);
-
-    // ct = g^{pt}.r^n mod n^2
-    FF_8192_mul(ct,gpt8,rn8,FFLEN_8192);
-    FF_8192_mod(ct,n28,FFLEN_8192);
-
-    // Output. Convert ct from FF_8192 to FF_4096
-    char ct2[FS_8192] = {0};
-    octet CT2 = {0,FS_8192,ct2};
-    FF_8192_toOctet(&CT2, ct, FFLEN_8192);
-    CT->len = FS_4096;
-    CT2.len = FS_4096;
-    OCT_truncate(CT,&CT2);
+    // Output
+    FF_4096_toOctet(CT, ct, FFLEN_4096);
 
     // Output R for Debug
     if (R!=NULL)
