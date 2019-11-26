@@ -301,7 +301,7 @@ endif()
 ##################################################
 
 if(BUILD_PAILLIER)
-  foreach(level 2048 4096 8192)
+  foreach(level 2048 4096)
     amcl_rsa_field(BD "${level}")
     amcl_rsa_field(TFF "${level}")
 

@@ -7,7 +7,7 @@ WORD_SIZE:=64
 AMCL_CURVE:=ED25519,NIST256,GOLDILOCKS,BLS381
 
 # RSA security level: 2048 3072 4096 (8192 for Paillier)
-AMCL_RSA:=2048,4096,8192
+AMCL_RSA:=2048,4096
 
 # Build type Debug Release Coverage ASan Check CheckFull
 CMAKE_BUILD_TYPE:=Release

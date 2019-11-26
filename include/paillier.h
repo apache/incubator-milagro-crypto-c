@@ -27,34 +27,17 @@ under the License.
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "ff_8192.h"
 #include "ff_4096.h"
 #include "ff_2048.h"
 
-#define HASH_TYPE SHA256  /**< Hash function used */
-
 // Field size
-#define FS_8192 MODBYTES_512_60*FFLEN_8192    /**< 8192 field size in bytes */
 #define FS_4096 MODBYTES_512_60*FFLEN_4096    /**< 4096 field size in bytes */
 #define FS_2048 MODBYTES_1024_58*FFLEN_2048   /**< 2048 field size in bytes */
 
 // Half field size
-#define HFS_8192 MODBYTES_512_60*HFLEN_8192   /**< Half 8192 field size in bytes */
 #define HFS_4096 MODBYTES_512_60*HFLEN_4096   /**< Half 4096 field size in bytes */
 #define HFS_2048 MODBYTES_1024_58*HFLEN_2048  /**< Half 2048 field size in bytes */
 
-/*! \brief quotient of y divided by x
- *
- *  <ol>
- *  <li> \f$ z = y / x \f$
- *  </ol>
- *
- *  @param  x       Demominator
- *  @param  y       Numerator
- *  @param  z       Quotient of y divided by x
- *  @return         Returns 0 or else error code
- */
-int FF_4096_divide(BIG_512_60 x[], BIG_512_60 y[], BIG_512_60 z[]);
 
 /*! \brief Generate the key pair
  *

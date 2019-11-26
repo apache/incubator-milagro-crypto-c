@@ -23,7 +23,6 @@ under the License.
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "ff_8192.h"
 #include "ff_4096.h"
 #include "ff_2048.h"
 #include "paillier.h"
@@ -256,24 +255,9 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     printf("pt ");
     FF_4096_output(pt,FFLEN_4096);
     printf("\n\n");
-    printf("gpt ");
-    FF_4096_output(gpt,FFLEN_4096);
-    printf("\n\n");
-    printf("rn ");
-    FF_4096_output(rn,FFLEN_4096);
-    printf("\n\n");
-    printf("gpt8 ");
-    FF_8192_output(gpt8,FFLEN_8192);
-    printf("\n\n");
-    printf("rn8 ");
-    FF_8192_output(rn8,FFLEN_8192);
-    printf("\n\n");
     printf("ct ");
-    FF_8192_output(ct,FFLEN_8192);
+    FF_4096_output(ct,FFLEN_4096);
     printf("\n\n");
-    printf("CT2: ");
-    OCT_output(&CT2);
-    printf("\n");
     printf("CT: ");
     OCT_output(CT);
     printf("\n");
@@ -384,60 +368,56 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
 int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
 {
     // Public key
-    BIG_512_60 n[FFLEN_8192];
+    BIG_512_60 n[HFLEN_4096];
 
     // n2 = n^2
-    BIG_512_60 n2[FFLEN_8192];
+    BIG_512_60 n2[FFLEN_4096];
 
     // ciphertext
-    BIG_512_60 ct1[FFLEN_8192];
-    BIG_512_60 ct2[FFLEN_8192];
-    BIG_512_60 ct[FFLEN_8192];
+    BIG_512_60 ct1[FFLEN_4096];
+    BIG_512_60 ct2[FFLEN_4096];
+    BIG_512_60 ct[2 * FFLEN_4096];
 
-    FF_8192_zero(n,FFLEN_8192);
-    FF_8192_fromOctet(n,N,FFLEN_8192/4);
-
-    FF_8192_zero(ct1,FFLEN_8192);
-    FF_8192_fromOctet(ct1,CT1,HFLEN_8192);
-
-    FF_8192_zero(ct2,FFLEN_8192);
-    FF_8192_fromOctet(ct2,CT2,HFLEN_8192);
+    FF_4096_fromOctet(n,N,HFLEN_4096);
+    FF_4096_fromOctet(ct1,CT1,FFLEN_4096);
+    FF_4096_fromOctet(ct2,CT2,FFLEN_4096);
 
     // n2 = n^2
-    FF_8192_sqr(n2, n, HFLEN_8192);
+    FF_4096_sqr(n2, n, HFLEN_4096);
+    FF_4096_norm(n2, FFLEN_4096);
 
 #ifdef DEBUG
     printf("PAILLIER_ADD ct1 ");
-    FF_8192_output(ct1,FFLEN_8192);
+    FF_4096_output(ct1,FFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_ADD ct2 ");
-    FF_8192_output(ct2,FFLEN_8192);
+    FF_4096_output(ct2,FFLEN_4096);
     printf("\n\n");
 #endif
 
     // ct = ct1 * ct2 mod n^2
-    FF_8192_mul(ct,ct1,ct2,HFLEN_8192);
+    FF_4096_mul(ct,ct1,ct2,FFLEN_4096);
 
 #ifdef DEBUG
     printf("PAILLIER_ADD ct1 * ct2 ");
-    FF_8192_output(ct,FFLEN_8192);
+    FF_4096_output(ct,2 * FFLEN_4096);
     printf("\n\n");
 #endif
 
-    FF_8192_mod(ct,n2,FFLEN_8192);
+    FF_4096_dmod(ct,ct,n2,FFLEN_4096);
 
     // Output
-    FF_8192_toOctet(CT, ct, HFLEN_8192);
+    FF_4096_toOctet(CT, ct, FFLEN_4096);
 
 #ifdef DEBUG
     printf("PAILLIER_ADD n ");
-    FF_8192_output(n,FFLEN_8192);
+    FF_4096_output(n,HFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_ADD ct1 ");
-    FF_8192_output(ct1,FFLEN_8192);
+    FF_4096_output(ct1,FFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_ADD ct2 ");
-    FF_8192_output(ct2,FFLEN_8192);
+    FF_4096_output(ct2,FFLEN_4096);
     printf("\n\n");
 #endif
 
@@ -452,7 +432,7 @@ int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
 int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
 {
     // Public key
-    BIG_512_60 n[FFLEN_4096];
+    BIG_512_60 n[HFLEN_4096];
 
     // n^2
     BIG_512_60 n2[FFLEN_4096];
@@ -467,7 +447,6 @@ int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
     BIG_512_60 ct[FFLEN_4096];
 
     // Convert n from FF_2048 to FF_4096
-    FF_4096_zero(n, FFLEN_4096);
     FF_4096_fromOctet(n,N,HFLEN_4096);
 
     FF_4096_zero(pt, FFLEN_4096);
@@ -487,7 +466,7 @@ int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
 
 #ifdef DEBUG
     printf("PAILLIER_MULT n: ");
-    FF_4096_output(n,FFLEN_4096);
+    FF_4096_output(n,HFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_MULT n2: ");
     FF_4096_output(n2,FFLEN_4096);

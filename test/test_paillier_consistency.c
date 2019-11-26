@@ -26,9 +26,6 @@ under the License.
 #include <string.h>
 #include <time.h>
 #include "randapi.h"
-#include "ff_8192.h"
-#include "ff_4096.h"
-#include "ff_2048.h"
 #include "paillier.h"
 
 #define NTHREADS 2

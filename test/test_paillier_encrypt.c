@@ -22,9 +22,6 @@
 #include <string.h>
 #include <time.h>
 #include "amcl.h"
-#include "ff_8192.h"
-#include "ff_4096.h"
-#include "ff_2048.h"
 #include "paillier.h"
 
 #define LINE_LEN 2000
