@@ -183,8 +183,6 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     BIG_512_60 n2[FFLEN_4096];
 
     // Random r < n
-    BIG_1024_58 n1[FFLEN_2048];
-    BIG_1024_58 r1[FFLEN_2048];
     BIG_512_60 r[FFLEN_4096];
 
     // plaintext
@@ -199,33 +197,22 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     FF_4096_zero(g, FFLEN_4096);
     FF_4096_fromOctet(g,G,HFLEN_4096);
 
-    // In production generate R from RNG
-    if (RNG!=NULL)
-    {
-        // r < n
-        FF_2048_fromOctet(n1,N,FFLEN_2048);
-        FF_2048_randomnum(r1,n1,RNG,FFLEN_2048);
-
-        // Convert r from FF_2048 to FF_4096
-        char roct[FS_2048] = {0};
-        octet ROCT = {0,FS_2048,roct};
-        FF_2048_toOctet(&ROCT, r1, FFLEN_2048);
-
-        FF_4096_zero(r, FFLEN_4096);
-        FF_4096_fromOctet(r,&ROCT,HFLEN_4096);
-    }
-    else
-    {
-        FF_4096_zero(r, FFLEN_4096);
-        FF_4096_fromOctet(r,R,HFLEN_4096);
-    }
-
     FF_4096_zero(pt, FFLEN_4096);
     FF_4096_fromOctet(pt,PT,HFLEN_4096);
 
     // n2 = n^2
     FF_4096_sqr(n2, n, HFLEN_4096);
     FF_4096_norm(n2, FFLEN_4096);
+
+    // In production generate R from RNG
+    if (RNG!=NULL)
+    {
+        FF_4096_randomnum(r,n2,RNG,FFLEN_4096);
+    }
+    else
+    {
+        FF_4096_fromOctet(r,R,FFLEN_4096);
+    }
 
     // ct = g^pt * r^n mod n2
     FF_4096_bpow2(ct, g, pt, r, n, n2, FFLEN_4096);

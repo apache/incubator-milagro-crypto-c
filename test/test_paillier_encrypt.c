@@ -75,7 +75,7 @@ int main(int argc, char** argv)
     octet GGOLDEN = {0,sizeof(ggolden),ggolden};
     const char* Lline = "G = ";
 
-    char rgolden[FS_2048]= {0};
+    char rgolden[FS_4096]= {0};
     octet RGOLDEN = {0,sizeof(rgolden),rgolden};
     const char* Rline = "R = ";
 
