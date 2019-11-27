@@ -536,7 +536,7 @@ void FF_WWW_invmodp(BIG_XXX r[],BIG_XXX a[],BIG_XXX p[],int n)
     FF_WWW_copy(x1,one,n);
     FF_WWW_zero(x2,n);
 
-// reduce n in here as well!
+    // reduce n in here as well!
     while (FF_WWW_comp(u,one,n)!=0 && FF_WWW_comp(v,one,n)!=0)
     {
         while (FF_WWW_parity(u)==0)
@@ -824,6 +824,47 @@ void FF_WWW_skspow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX p[],int n)
     FF_WWW_redc(r,p,ND,n);
 }
 
+/* r=x^e*y^f mod p - side channel resistant */
+void FF_WWW_skpow2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX p[], int n) {
+    int i,eb,fb;
+#ifndef C99
+    BIG_XXX xn[FFLEN_WWW],yn[FFLEN_WWW],xy[FFLEN_WWW],w[FFLEN_WWW],ND[FFLEN_WWW];
+#else
+    BIG_XXX xn[n],yn[n],xy[n],w[n],ND[n];
+#endif
+
+    FF_WWW_invmod2m(ND,p,n);
+
+    FF_WWW_copy(xn,x,n);
+    FF_WWW_copy(yn,y,n);
+    FF_WWW_nres(xn,p,n);
+    FF_WWW_nres(yn,p,n);
+    FF_WWW_modmul(xy,xn,yn,p,ND,n);
+    FF_WWW_one(w,n);
+    FF_WWW_nres(w,p,n);
+    FF_WWW_one(r,n);
+    FF_WWW_nres(r,p,n);
+
+    for (i=8*MODBYTES_XXX*n-1; i>=0; i--)
+    {
+        eb=BIG_XXX_bit(e[i/BIGBITS_XXX],i%BIGBITS_XXX);
+        fb=BIG_XXX_bit(f[i/BIGBITS_XXX],i%BIGBITS_XXX);
+
+        FF_WWW_cswap(w, xn, eb & (eb ^ fb), n);
+        FF_WWW_cswap(w, yn, fb & (eb ^ fb), n);
+        FF_WWW_cswap(w, xy, eb & fb, n);
+
+        FF_WWW_modsqr(r,r,p,ND,n);
+        FF_WWW_modmul(r,w,r,p,ND,n);
+
+        FF_WWW_cswap(w, xn, eb & (eb ^ fb), n);
+        FF_WWW_cswap(w, yn, fb & (eb ^ fb), n);
+        FF_WWW_cswap(w, xy, eb & fb, n);
+    }
+
+    FF_WWW_redc(r,p,ND,n);
+}
+
 /* raise to an integer power - right-to-left method */
 void FF_WWW_power(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
 {
@@ -907,44 +948,6 @@ void FF_WWW_pow2(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX y[],BIG_XXX f,BIG_XXX
     {
         eb=BIG_XXX_bit(e,i);
         fb=BIG_XXX_bit(f,i);
-        FF_WWW_modsqr(r,r,p,ND,n);
-        if (eb==1)
-        {
-            if (fb==1) FF_WWW_modmul(r,r,xy,p,ND,n);
-            else FF_WWW_modmul(r,r,xn,p,ND,n);
-        }
-        else
-        {
-            if (fb==1) FF_WWW_modmul(r,r,yn,p,ND,n);
-        }
-    }
-    FF_WWW_redc(r,p,ND,n);
-}
-
-/* double exponentiation r=x^e.y^f mod p */
-void FF_WWW_bpow2(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX y[],BIG_XXX f[],BIG_XXX p[],int n)
-{
-    int i,eb,fb;
-#ifndef C99
-    BIG_XXX xn[FFLEN_WWW],yn[FFLEN_WWW],xy[FFLEN_WWW],ND[FFLEN_WWW];
-#else
-    BIG_XXX xn[n],yn[n],xy[n],ND[n];
-#endif
-
-    FF_WWW_invmod2m(ND,p,n);
-
-    FF_WWW_copy(xn,x,n);
-    FF_WWW_copy(yn,y,n);
-    FF_WWW_nres(xn,p,n);
-    FF_WWW_nres(yn,p,n);
-    FF_WWW_modmul(xy,xn,yn,p,ND,n);
-    FF_WWW_one(r,n);
-    FF_WWW_nres(r,p,n);
-
-    for (i=8*MODBYTES_XXX*(n-1); i>=0; i--)
-    {
-        eb=BIG_XXX_bit(e[i/BIGBITS_XXX],i%BIGBITS_XXX);
-        fb=BIG_XXX_bit(f[i/BIGBITS_XXX],i%BIGBITS_XXX);
         FF_WWW_modsqr(r,r,p,ND,n);
         if (eb==1)
         {

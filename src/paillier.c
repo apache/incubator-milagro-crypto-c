@@ -215,7 +215,7 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     }
 
     // ct = g^pt * r^n mod n2
-    FF_4096_bpow2(ct, g, pt, r, n, n2, FFLEN_4096);
+    FF_4096_skpow2(ct, g, pt, r, n, n2, FFLEN_4096);
 
     // Output
     FF_4096_toOctet(CT, ct, FFLEN_4096);
@@ -294,7 +294,7 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     FF_4096_norm(n2, FFLEN_4096);
 
     // ct^l mod n^2 - 1
-    FF_4096_pow(ctl,ct,l,n2,FFLEN_4096);
+    FF_4096_skpow(ctl,ct,l,n2,FFLEN_4096);
     FF_4096_dec(ctl,1,FFLEN_4096);
 
 #ifdef DEBUG
@@ -433,7 +433,6 @@ int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
     // Ciphertext output. ct = ct1 ^ pt mod n^2
     BIG_512_60 ct[FFLEN_4096];
 
-    // Convert n from FF_2048 to FF_4096
     FF_4096_fromOctet(n,N,HFLEN_4096);
 
     FF_4096_zero(pt, FFLEN_4096);
@@ -446,7 +445,7 @@ int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
     FF_4096_norm(n2, FFLEN_4096);
 
     // ct1^pt mod n^2
-    FF_4096_pow(ct,ct1,pt,n2,FFLEN_4096);
+    FF_4096_skpow(ct,ct1,pt,n2,FFLEN_4096);
 
     // output
     FF_4096_toOctet(CT, ct, FFLEN_4096);

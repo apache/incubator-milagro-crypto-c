@@ -245,6 +245,17 @@ extern void FF_WWW_skpow(BIG_XXX *r,BIG_XXX *x,BIG_XXX * e,BIG_XXX *m,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_skspow(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *m,int n);
+/**	@brief Calculate r=x^e.y^f mod m for big e and f, side channel resistant
+ *
+	@param r FF instance, on exit = x^e.y^f mod m
+	@param x FF instance
+	@param e FF exponent
+	@param y FF instance
+	@param f FF exponent
+	@param m FF modulus
+	@param n size of FF in BIGs
+ */
+extern void FF_WWW_skpow2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX m[], int n);
 /**	@brief Calculate r=x^e mod m
  *
 	For very short integer exponent
@@ -292,16 +303,5 @@ extern int FF_WWW_prime(BIG_XXX *x,csprng *R,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_pow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *y,BIG_XXX f,BIG_XXX *m,int n);
-/**	@brief Calculate r=x^e.y^f mod m for big e and f
- *
-	@param r FF instance, on exit = x^e.y^f mod m
-	@param x FF instance
-	@param e FF exponent
-	@param y FF instance
-	@param f FF exponent
-	@param m FF modulus
-	@param n size of FF in BIGs
- */
-extern void FF_WWW_bpow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e,BIG_XXX *y,BIG_XXX *f,BIG_XXX *m,int n);
 
 #endif
