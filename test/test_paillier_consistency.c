@@ -34,22 +34,11 @@ char* PT3GOLDEN_hex = "000000000000000000000000000000000000000000000000000000000
 
 int paillier(csprng *RNG)
 {
-    int rc;
-    char p[FS_2048];
-    octet P = {0,sizeof(p),p};
-    char q[FS_2048];
-    octet Q = {0,sizeof(q),q};
+    BIG_512_60 zero[FFLEN_4096];
 
-    char n[FS_2048] = {0};
-    octet N = {0,sizeof(n),n};
-    char g[FS_2048];
-    octet G = {0,sizeof(g),g};
-
-    char l[FS_2048] = {0};
-    octet L = {0,sizeof(l),l};
-
-    char m[FS_2048] = {0};
-    octet M = {0,sizeof(m),m};
+    // Key material
+    PAILLIER_private_key PRIV;
+    PAILLIER_public_key PUB;
 
     // Plaintext to encrypt
     char ptin[NTHREADS][FS_2048];
@@ -88,62 +77,53 @@ int paillier(csprng *RNG)
     // Initialize octets
     for(int i=0; i<NTHREADS; i++)
     {
-        memset(ptin[i], 0, FS_2048*sizeof(ptin[i][0]));
         PTIN[i].max = FS_2048;
-        PTIN[i].len = 0;
         PTIN[i].val = ptin[i];
+        OCT_clear(&PTIN[i]);
 
-        memset(ptout[i], 0, FS_2048*sizeof(ptout[i][0]));
         PTOUT[i].max = FS_2048;
-        PTOUT[i].len = 0;
         PTOUT[i].val = ptout[i];
+        OCT_clear(&PTOUT[i]);
 
-        memset(ptko[i], 0, FS_2048*sizeof(ptko[i][0]));
         PTK[i].max = FS_2048;
-        PTK[i].len = 0;
         PTK[i].val = ptko[i];
+        OCT_clear(&PTIN[i]);
 
-        memset(cto[i], 0, FS_4096*sizeof(cto[i][0]));
         CT[i].max = FS_4096;
-        CT[i].len = 0;
         CT[i].val = cto[i];
+        OCT_clear(&PTIN[i]);
 
-        memset(cta[i], 0, FS_4096*sizeof(cta[i][0]));
         CTA[i].max = FS_4096;
-        CTA[i].len = 0;
         CTA[i].val = cta[i];
+        OCT_clear(&PTIN[i]);
     }
 
-    printf("Generating public/private key pair\n");
-    rc = PAILLIER_KEY_PAIR(RNG, &P, &Q, &N, &G, &L, &M);
-    if (rc)
-    {
-        fprintf(stderr, "FAILURE PAILLIER_KEY_PAIR rc: %d\n", rc);
-        exit(EXIT_FAILURE);
-    }
+    PAILLIER_KEY_PAIR(RNG, NULL, NULL, &PUB, &PRIV);
 
+#ifdef DEBUG
     printf("P: ");
-    OCT_output(&P);
+    FF_4096_output(PRIV.p, HFLEN_4096);
     printf("\n");
     printf("Q: ");
-    OCT_output(&Q);
+    FF_4096_output(PRIV.q, HFLEN_4096);
     printf("\n");
 
     printf("Public Key \n");
     printf("N: ");
-    OCT_output(&N);
+    FF_4096_output(PUB.n, HFLEN_4096);
     printf("\n");
     printf("G: ");
-    OCT_output(&G);
+    FF_4096_output(PUB.g, HFLEN_4096);
     printf("\n");
 
     printf("Secret Key \n");
     printf("L: ");
-    OCT_output(&L);
+    FF_4096_output(PRIV.l, HFLEN_4096);
     printf("\n");
     printf("M: ");
-    OCT_output(&M);
+    FF_4096_output(PRIV.m, HFLEN_4096);
     printf("\n");
+#endif
 
     // Set plaintext values
     for(int i=0; i<NTHREADS; i++)
@@ -166,66 +146,53 @@ int paillier(csprng *RNG)
 #endif
     }
 
+#ifdef DEBUG
     for(int i=0; i<NTHREADS; i++)
     {
         printf("PTIN[%d] ", i);
         OCT_output(&PTIN[i]);
         printf("\n");
     }
+#endif
 
     // Encrypt plaintext
     for(int i=0; i<NTHREADS; i++)
     {
-        rc = PAILLIER_ENCRYPT(RNG, &N, &G, &PTIN[i], &CT[i], NULL);
-        if (rc)
-        {
-            fprintf(stderr, "FAILURE PAILLIER_ENCRYPT rc: %d\n", rc);
-            exit(EXIT_FAILURE);
-        }
+        PAILLIER_ENCRYPT(RNG, &PUB, &PTIN[i], &CT[i], NULL);
     }
 
+#ifdef DEBUG
     for(int i=0; i<NTHREADS; i++)
     {
         printf("CT[%d] ", i);
         OCT_output(&CT[i]);
         printf("\n");
     }
+#endif
 
     // Decrypt ciphertexts
     for(int i=0; i<NTHREADS; i++)
     {
-        rc = PAILLIER_DECRYPT(&N, &L, &M, &CT[i], &PTOUT[i]);
-        if (rc)
-        {
-            fprintf(stderr, "FAILURE PAILLIER_DECRYPT rc: %d\n", rc);
-            exit(EXIT_FAILURE);
-        }
+        PAILLIER_DECRYPT(&PRIV, &CT[i], &PTOUT[i]);
     }
 
+#ifdef DEBUG
     for(int i=0; i<NTHREADS; i++)
     {
         printf("PTOUT[%d] ", i);
         OCT_output(&PTOUT[i]);
         printf("\n");
     }
+#endif
 
     for(int i=0; i<NTHREADS; i++)
     {
-        rc = PAILLIER_MULT(&N, &CT[i], &PTK[i], &CTA[i]);
-        if (rc)
-        {
-            fprintf(stderr, "FAILURE PAILLIER_MULT rc: %d\n", rc);
-            exit(EXIT_FAILURE);
-        }
+        PAILLIER_MULT(&PUB, &CT[i], &PTK[i], &CTA[i]);
     }
 
-    rc = PAILLIER_ADD(&N, &CTA[0], &CTA[1], &CT3);
-    if (rc)
-    {
-        fprintf(stderr, "FAILURE PAILLIER_ADD rc: %d\n", rc);
-        exit(EXIT_FAILURE);
-    }
+    PAILLIER_ADD(&PUB, &CTA[0], &CTA[1], &CT3);
 
+#ifdef DEBUG
     for(int i=0; i<NTHREADS; i++)
     {
         printf("CTA[%d] ", i);
@@ -235,35 +202,53 @@ int paillier(csprng *RNG)
     printf("CT3: ");
     OCT_output(&CT3);
     printf("\n");
+#endif
 
-    rc = PAILLIER_DECRYPT(&N, &L, &M, &CT3, &PT3);
-    if (rc)
-    {
-        fprintf(stderr, "FAILURE PAILLIER_DECRYPT rc: %d\n", rc);
-        exit(EXIT_FAILURE);
-    }
+    PAILLIER_DECRYPT(&PRIV, &CT3, &PT3);
 
-    OCT_fromHex(&PT3GOLDEN,PT3GOLDEN_hex);
+#ifdef DEBUG
     printf("PT3GOLDEN: ");
     OCT_output(&PT3GOLDEN);
 
     printf("PT3: ");
     OCT_output(&PT3);
     printf("\n");
-
-    rc = OCT_comp(&PT3GOLDEN,&PT3);
-    if(!rc)
+#endif
+    OCT_fromHex(&PT3GOLDEN,PT3GOLDEN_hex);
+    if(!OCT_comp(&PT3GOLDEN,&PT3))
     {
-        fprintf(stderr, "FAILURE PT3 != PT3GOLDEN rc: %d\n", rc);
+        fprintf(stderr, "FAILURE PT3 != PT3GOLDEN\n");
         exit(EXIT_FAILURE);
     }
 
-    OCT_clear(&P);
-    OCT_clear(&Q);
-    OCT_clear(&N);
-    OCT_clear(&G);
-    OCT_clear(&L);
-    OCT_clear(&M);
+    PAILLIER_PRIVATE_KEY_KILL(&PRIV);
+
+    FF_4096_zero(zero, FFLEN_4096);
+
+    if(FF_4096_comp(zero, PRIV.p, HFLEN_4096))
+    {
+        fprintf(stderr, "FAILURE p not cleaned from private key\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if(FF_4096_comp(zero, PRIV.q, HFLEN_4096))
+    {
+        fprintf(stderr, "FAILURE q not cleaned from private key\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if(FF_4096_comp(zero, PRIV.l, FFLEN_4096))
+    {
+        fprintf(stderr, "FAILURE l not cleaned from private key\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if(FF_4096_comp(zero, PRIV.m, FFLEN_4096))
+    {
+        fprintf(stderr, "FAILURE m not cleaned from private key\n");
+        exit(EXIT_FAILURE);
+    }
+
     OCT_clear(&CT3);
     OCT_clear(&PT3);
     for(int i=0; i<NTHREADS; i++)
@@ -295,7 +280,6 @@ int main()
     // initialise strong RNG
     CREATE_CSPRNG(&RNG,&SEED);
 
-    printf("\nPaillier example\n");
     paillier(&RNG);
 
     KILL_CSPRNG(&RNG);

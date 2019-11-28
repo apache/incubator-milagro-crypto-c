@@ -27,7 +27,7 @@ under the License.
 #include "ff_2048.h"
 #include "paillier.h"
 
-int FF_4096_divide(BIG_512_60 x[], BIG_512_60 y[], BIG_512_60 z[])
+void FF_4096_divide(BIG_512_60 x[], BIG_512_60 y[], BIG_512_60 z[])
 {
     BIG_512_60 d[FFLEN_4096];
     BIG_512_60 q[FFLEN_4096];
@@ -61,12 +61,10 @@ int FF_4096_divide(BIG_512_60 x[], BIG_512_60 y[], BIG_512_60 z[])
         // z = z + q i.e. update quotient
         FF_4096_add(z,z,q,FFLEN_4096);
     }
-
-    return 0;
 }
 
 /* generate a Paillier key pair */
-int PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, octet* N, octet* G, octet* L, octet* M)
+void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV)
 {
     BIG_1024_58 p[HFLEN_2048];
     BIG_1024_58 q[HFLEN_2048];
@@ -131,18 +129,49 @@ int PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, octet* N, octet* G, octet
     FF_2048_inc(p,1,HFLEN_2048);
     FF_2048_inc(q,1,HFLEN_2048);
 
-    // Output
-    if (P != NULL)
-        FF_2048_toOctet(P, p, HFLEN_2048);
 
-    if (Q != NULL)
-        FF_2048_toOctet(Q, q, HFLEN_2048);
+    // Output Private Key
+    char oct[FS_2048];
+    octet OCT = {0,FS_2048, oct};
 
-    FF_2048_toOctet(N, n, FFLEN_2048);
-    FF_2048_toOctet(G, g, FFLEN_2048);
+    FF_2048_toOctet(&OCT, p, HFLEN_2048);
+    OCT_pad(&OCT,HFS_4096);
+    FF_4096_fromOctet(PRIV->p, &OCT, HFLEN_4096);
+    OCT_empty(&OCT);
 
-    FF_2048_toOctet(L, l, FFLEN_2048);
-    FF_2048_toOctet(M, m, FFLEN_2048);
+    FF_2048_toOctet(&OCT, q, HFLEN_2048);
+    OCT_pad(&OCT,HFS_4096);
+    FF_4096_fromOctet(PRIV->q, &OCT, HFLEN_4096);
+    OCT_empty(&OCT);
+
+    FF_2048_toOctet(&OCT, n, FFLEN_2048);
+    FF_4096_zero(PRIV->n, FFLEN_4096);
+    FF_4096_fromOctet(PRIV->n, &OCT, HFLEN_4096);
+    OCT_empty(&OCT);
+
+    FF_2048_toOctet(&OCT, g, FFLEN_2048);
+    FF_4096_zero(PRIV->g, FFLEN_4096);
+    FF_4096_fromOctet(PRIV->g, &OCT, HFLEN_4096);
+    OCT_empty(&OCT);
+
+    FF_2048_toOctet(&OCT, l, FFLEN_2048);
+    FF_4096_zero(PRIV->l, FFLEN_4096);
+    FF_4096_fromOctet(PRIV->l, &OCT, HFLEN_4096);
+    OCT_empty(&OCT);
+
+    FF_2048_toOctet(&OCT, m, FFLEN_2048);
+    FF_4096_zero(PRIV->m, FFLEN_4096);
+    FF_4096_fromOctet(PRIV->m, &OCT, HFLEN_4096);
+    OCT_empty(&OCT);
+
+    // Precompute n^2
+    FF_4096_sqr(PRIV->n2, PRIV->n, HFLEN_4096);
+    FF_4096_norm(PRIV->n2, FFLEN_4096);
+
+    // Output Public Key
+    FF_4096_copy(PUB->n , PRIV->n , FFLEN_4096);
+    FF_4096_copy(PUB->g , PRIV->g , FFLEN_4096);
+    FF_4096_copy(PUB->n2, PRIV->n2, FFLEN_4096);
 
 #ifdef DEBUG
     printf("p ");
@@ -167,21 +196,27 @@ int PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, octet* N, octet* G, octet
     printf("\n");
 #endif
 
-    return 0;
+    // Clean secret keys from memory
+    FF_2048_zero(p,HFLEN_2048);
+    FF_2048_zero(q,HFLEN_2048);
+    FF_2048_zero(l,FFLEN_2048);
+    FF_2048_zero(m,FFLEN_2048);
+}
+
+/* Clean secrets from private key */
+void PAILLIER_PRIVATE_KEY_KILL(PAILLIER_private_key *PRIV)
+{
+    FF_4096_zero(PRIV->l, FFLEN_4096);
+    FF_4096_zero(PRIV->m, FFLEN_4096);
+    FF_4096_zero(PRIV->p, HFLEN_4096/2);
+    FF_4096_zero(PRIV->q, HFLEN_4096/2);
 }
 
 /* Paillier encrypt
  R is for testing
 */
-int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octet* R)
+void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* CT, octet* R)
 {
-    // Public key
-    BIG_512_60 n[FFLEN_4096];
-    BIG_512_60 g[FFLEN_4096];
-
-    // n2 = n^2
-    BIG_512_60 n2[FFLEN_4096];
-
     // Random r < n
     BIG_512_60 r[FFLEN_4096];
 
@@ -191,23 +226,13 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     // ciphertext
     BIG_512_60 ct[FFLEN_4096];
 
-    FF_4096_zero(n, FFLEN_4096);
-    FF_4096_fromOctet(n,N,HFLEN_4096);
-
-    FF_4096_zero(g, FFLEN_4096);
-    FF_4096_fromOctet(g,G,HFLEN_4096);
-
     FF_4096_zero(pt, FFLEN_4096);
     FF_4096_fromOctet(pt,PT,HFLEN_4096);
-
-    // n2 = n^2
-    FF_4096_sqr(n2, n, HFLEN_4096);
-    FF_4096_norm(n2, FFLEN_4096);
 
     // In production generate R from RNG
     if (RNG!=NULL)
     {
-        FF_4096_randomnum(r,n2,RNG,FFLEN_4096);
+        FF_4096_randomnum(r,PUB->n2,RNG,FFLEN_4096);
     }
     else
     {
@@ -215,7 +240,7 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     }
 
     // ct = g^pt * r^n mod n2
-    FF_4096_skpow2(ct, g, pt, r, n, n2, FFLEN_4096);
+    FF_4096_skpow2(ct, PUB->g, pt, r, PUB->n, PUB->n2, FFLEN_4096);
 
     // Output
     FF_4096_toOctet(CT, ct, FFLEN_4096);
@@ -228,13 +253,13 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
 
 #ifdef DEBUG
     printf("n ");
-    FF_4096_output(n,FFLEN_4096);
+    FF_4096_output(PUB->n,FFLEN_4096);
     printf("\n\n");
     printf("g ");
-    FF_4096_output(g,FFLEN_4096);
+    FF_4096_output(PUB->g,FFLEN_4096);
     printf("\n\n");
     printf("n2 ");
-    FF_4096_output(n2,FFLEN_4096);
+    FF_4096_output(PUB->n2,FFLEN_4096);
     printf("\n\n");
     printf("r ");
     FF_4096_output(r,FFLEN_4096);
@@ -250,27 +275,18 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
     printf("\n");
 #endif
 
-    return 0;
+    // Clean memory
+    FF_4096_zero(pt, HFLEN_4096);
 }
 
 /* Paillier decrypt */
-int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
+void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
 {
-    // Public key
-    BIG_512_60 n[FFLEN_4096];
-
-    // secret key
-    BIG_512_60 l[FFLEN_4096];
-    BIG_512_60 m[FFLEN_4096];
-
-    // Ciphertext
+       // Ciphertext
     BIG_512_60 ct[FFLEN_4096];
 
     // Plaintext
     BIG_512_60 pt[FFLEN_4096];
-
-    // n2 = n^2
-    BIG_512_60 n2[FFLEN_4096];
 
     // ctl = ct^l mod n^2
     BIG_512_60 ctl[FFLEN_4096];
@@ -278,23 +294,10 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     // ctln = ctl / n
     BIG_512_60 ctln[FFLEN_4096];
 
-    FF_4096_zero(n, FFLEN_4096);
-    FF_4096_fromOctet(n,N,HFLEN_4096);
-
-    FF_4096_zero(l, FFLEN_4096);
-    FF_4096_fromOctet(l,L,HFLEN_4096);
-
-    FF_4096_zero(m, FFLEN_4096);
-    FF_4096_fromOctet(m,M,HFLEN_4096);
-
     FF_4096_fromOctet(ct,CT,FFLEN_4096);
 
-    // n2 = n^2
-    FF_4096_sqr(n2, n, HFLEN_4096);
-    FF_4096_norm(n2, FFLEN_4096);
-
     // ct^l mod n^2 - 1
-    FF_4096_skpow(ctl,ct,l,n2,FFLEN_4096);
+    FF_4096_skpow(ctl,ct,PRIV->l,PRIV->n2,FFLEN_4096);
     FF_4096_dec(ctl,1,FFLEN_4096);
 
 #ifdef DEBUG
@@ -306,31 +309,31 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     // ctln = ctl / n
     // note that ctln fits into a FF_2048 element,
     // since ctln = ctl/n < n^2 / n = n
-    FF_4096_divide(n, ctl, ctln);
+    FF_4096_divide(PRIV->n, ctl, ctln);
 
     // pt = ctln * m mod n
     // the result fits into a FF_4096 element,
     // since both m and ctln fit into a FF_2048 element
-    FF_4096_mul(pt, ctln, m, HFLEN_4096);
+    FF_4096_mul(pt, ctln, PRIV->m, HFLEN_4096);
 #ifdef DEBUG
     printf("pt1 ");
     FF_4096_output(pt,FFLEN_4096);
     printf("\n\n");
 #endif
-    FF_4096_mod(pt,n,FFLEN_4096);
+    FF_4096_mod(pt,PRIV->n,FFLEN_4096);
 
     // Output
     FF_4096_toOctet(PT, pt, HFLEN_4096);
 
 #ifdef DEBUG
     printf("PAILLIER_DECRYPT n ");
-    FF_4096_output(n,FFLEN_4096);
+    FF_4096_output(PRIV->n,FFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_DECRYPT l ");
-    FF_4096_output(l,FFLEN_4096);
+    FF_4096_output(PRIV->l,FFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_DECRYPT m ");
-    FF_4096_output(m,FFLEN_4096);
+    FF_4096_output(PRIV->m,FFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_DECRYPT ct ");
     FF_4096_output(ct,FFLEN_4096);
@@ -343,8 +346,10 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     printf("\n\n");
 #endif
 
-    return 0;
-
+    // Clean memory
+    FF_4096_zero(ctl, FFLEN_4096);
+    FF_4096_zero(ctln, FFLEN_4096);
+    FF_4096_zero(pt, HFLEN_4096);
 }
 
 /* Homomorphic addition of plaintexts */
@@ -352,26 +357,15 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT)
     ct = ct1 * ct2
     ct = ct % n2
 */
-int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
+void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT)
 {
-    // Public key
-    BIG_512_60 n[HFLEN_4096];
-
-    // n2 = n^2
-    BIG_512_60 n2[FFLEN_4096];
-
     // ciphertext
     BIG_512_60 ct1[FFLEN_4096];
     BIG_512_60 ct2[FFLEN_4096];
     BIG_512_60 ct[2 * FFLEN_4096];
 
-    FF_4096_fromOctet(n,N,HFLEN_4096);
     FF_4096_fromOctet(ct1,CT1,FFLEN_4096);
     FF_4096_fromOctet(ct2,CT2,FFLEN_4096);
-
-    // n2 = n^2
-    FF_4096_sqr(n2, n, HFLEN_4096);
-    FF_4096_norm(n2, FFLEN_4096);
 
 #ifdef DEBUG
     printf("PAILLIER_ADD ct1 ");
@@ -391,14 +385,14 @@ int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
     printf("\n\n");
 #endif
 
-    FF_4096_dmod(ct,ct,n2,FFLEN_4096);
+    FF_4096_dmod(ct,ct,PUB->n2,FFLEN_4096);
 
     // Output
     FF_4096_toOctet(CT, ct, FFLEN_4096);
 
 #ifdef DEBUG
     printf("PAILLIER_ADD n ");
-    FF_4096_output(n,HFLEN_4096);
+    FF_4096_output(PUB->n,HFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_ADD ct1 ");
     FF_4096_output(ct1,FFLEN_4096);
@@ -407,8 +401,6 @@ int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
     FF_4096_output(ct2,FFLEN_4096);
     printf("\n\n");
 #endif
-
-    return 0;
 }
 
 /* Homomorphic multiplation of plaintext
@@ -416,14 +408,8 @@ int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT)
     ct = ct1 ^ pt mod n^2
 
 */
-int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
+void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT)
 {
-    // Public key
-    BIG_512_60 n[HFLEN_4096];
-
-    // n^2
-    BIG_512_60 n2[FFLEN_4096];
-
     // Ciphertext
     BIG_512_60 ct1[FFLEN_4096];
 
@@ -433,29 +419,23 @@ int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
     // Ciphertext output. ct = ct1 ^ pt mod n^2
     BIG_512_60 ct[FFLEN_4096];
 
-    FF_4096_fromOctet(n,N,HFLEN_4096);
-
     FF_4096_zero(pt, FFLEN_4096);
     FF_4096_fromOctet(pt,PT,HFLEN_4096);
 
     FF_4096_fromOctet(ct1,CT1,FFLEN_4096);
 
-    // n2 = n^2
-    FF_4096_sqr(n2, n, HFLEN_4096);
-    FF_4096_norm(n2, FFLEN_4096);
-
     // ct1^pt mod n^2
-    FF_4096_skpow(ct,ct1,pt,n2,FFLEN_4096);
+    FF_4096_skpow(ct,ct1,pt,PUB->n2,FFLEN_4096);
 
     // output
     FF_4096_toOctet(CT, ct, FFLEN_4096);
 
 #ifdef DEBUG
     printf("PAILLIER_MULT n: ");
-    FF_4096_output(n,HFLEN_4096);
+    FF_4096_output(PUB->n,HFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_MULT n2: ");
-    FF_4096_output(n2,FFLEN_4096);
+    FF_4096_output(PUB->n2,FFLEN_4096);
     printf("\n\n");
     printf("PAILLIER_MULT ct1: ");
     FF_4096_output(ct1,FFLEN_4096);
@@ -468,5 +448,6 @@ int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT)
     printf("\n\n");
 #endif
 
-    return 0;
+    // Clean memory
+    FF_4096_zero(pt, HFLEN_4096);
 }

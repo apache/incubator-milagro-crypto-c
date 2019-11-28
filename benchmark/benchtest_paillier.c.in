@@ -110,32 +110,13 @@ static void print_system_info()
 
 int paillier(csprng *RNG)
 {
-    int rc;
-
     int iterations;
     clock_t start;
     double elapsed;
 
-    char p[FS_2048];
-    octet P = {0,sizeof(p),p};
-    char q[FS_2048];
-    octet Q = {0,sizeof(q),q};
-
-    char p1[FS_2048];
-    octet P1 = {0,sizeof(p1),p1};
-    char q1[FS_2048];
-    octet Q1 = {0,sizeof(q1),q1};
-
-    char n[FS_2048] = {0};
-    octet N = {0,sizeof(n),n};
-    char g[FS_2048];
-    octet G = {0,sizeof(g),g};
-
-    char l[FS_2048] = {0};
-    octet L = {0,sizeof(l),l};
-
-    char m[FS_2048] = {0};
-    octet M = {0,sizeof(m),m};
+    // Key material
+    PAILLIER_private_key PRIV;
+    PAILLIER_public_key PUB;
 
     // Plaintext to encrypt
     char ptin[NTHREADS][FS_2048];
@@ -172,30 +153,25 @@ int paillier(csprng *RNG)
     // Initialize octets
     for(int i=0; i<NTHREADS; i++)
     {
-        memset(ptin[i], 0, FS_2048*sizeof(ptin[i][0]));
         PTIN[i].max = FS_2048;
-        PTIN[i].len = 0;
         PTIN[i].val = ptin[i];
+        OCT_clear(&PTIN[i]);
 
-        memset(ptout[i], 0, FS_2048*sizeof(ptout[i][0]));
         PTOUT[i].max = FS_2048;
-        PTOUT[i].len = 0;
         PTOUT[i].val = ptout[i];
+        OCT_clear(&PTOUT[i]);
 
-        memset(ptko[i], 0, FS_2048*sizeof(ptko[i][0]));
         PTK[i].max = FS_2048;
-        PTK[i].len = 0;
         PTK[i].val = ptko[i];
+        OCT_clear(&PTIN[i]);
 
-        memset(cto[i], 0, FS_4096*sizeof(cto[i][0]));
         CT[i].max = FS_4096;
-        CT[i].len = 0;
         CT[i].val = cto[i];
+        OCT_clear(&PTIN[i]);
 
-        memset(cta[i], 0, FS_4096*sizeof(cta[i][0]));
         CTA[i].max = FS_4096;
-        CTA[i].len = 0;
         CTA[i].val = cta[i];
+        OCT_clear(&PTIN[i]);
     }
 
     printf("Timing info\n");
@@ -206,7 +182,7 @@ int paillier(csprng *RNG)
     start=clock();
     do
     {
-        PAILLIER_KEY_PAIR(RNG, &P, &Q, &N, &G, &L, &M);
+        PAILLIER_KEY_PAIR(RNG, NULL, NULL,&PUB, &PRIV);
         iterations++;
         elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
     }
@@ -232,7 +208,7 @@ int paillier(csprng *RNG)
     start=clock();
     do
     {
-        PAILLIER_ENCRYPT(RNG, &N, &G, &PTIN[0], &CT[0], NULL);
+        PAILLIER_ENCRYPT(RNG, &PUB, &PTIN[0], &CT[0], NULL);
         iterations++;
         elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
     }
@@ -241,19 +217,14 @@ int paillier(csprng *RNG)
     printf("PAILLIER_ENCRYPT\t%8d iterations\t",iterations);
     printf("%8.2lf ms per iteration\n",elapsed);
 
-    rc = PAILLIER_ENCRYPT(RNG, &N, &G, &PTIN[1], &CT[1], NULL);
-    if (rc)
-    {
-        fprintf(stderr, "ERROR PAILLIER_ENCRYPT rc: %d\n", rc);
-        exit(EXIT_FAILURE);
-    }
+    PAILLIER_ENCRYPT(RNG, &PUB, &PTIN[1], &CT[1], NULL);
 
     // Multiple by constant
     iterations=0;
     start=clock();
     do
     {
-        PAILLIER_MULT(&N, &CT[0], &PTK[0], &CTA[0]);
+        PAILLIER_MULT(&PUB, &CT[0], &PTK[0], &CTA[0]);
         iterations++;
         elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
     }
@@ -262,19 +233,14 @@ int paillier(csprng *RNG)
     printf("PAILLIER_MULT\t\t%8d iterations\t",iterations);
     printf("%8.2lf ms per iteration\n",elapsed);
 
-    rc = PAILLIER_MULT(&N, &CT[1], &PTK[1], &CTA[1]);
-    if (rc)
-    {
-        fprintf(stderr, "ERROR PAILLIER_MULT rc: %d\n", rc);
-        exit(EXIT_FAILURE);
-    }
+    PAILLIER_MULT(&PUB, &CT[1], &PTK[1], &CTA[1]);
 
     // Homomorphic addition
     iterations=0;
     start=clock();
     do
     {
-        PAILLIER_ADD(&N, &CTA[0], &CTA[1], &CT3);
+        PAILLIER_ADD(&PUB, &CTA[0], &CTA[1], &CT3);
         iterations++;
         elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
     }
@@ -288,7 +254,7 @@ int paillier(csprng *RNG)
     start=clock();
     do
     {
-        PAILLIER_DECRYPT(&N, &L, &M, &CT3, &PT3);
+        PAILLIER_DECRYPT(&PRIV, &CT3, &PT3);
         iterations++;
         elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
     }
@@ -312,22 +278,14 @@ int paillier(csprng *RNG)
     printf("\n");
 #endif
 
-    OCT_clear(&P);
-    OCT_clear(&Q);
-    OCT_clear(&P1);
-    OCT_clear(&Q1);
-    OCT_clear(&N);
-    OCT_clear(&G);
-    OCT_clear(&L);
-    OCT_clear(&M);
-    OCT_clear(&CT3);
+    // Clean sensitive memory
+    PAILLIER_PRIVATE_KEY_KILL(&PRIV);
+
     OCT_clear(&PT3);
     for(int i=0; i<NTHREADS; i++)
     {
         OCT_clear(&PTIN[i]);
         OCT_clear(&PTOUT[i]);
-        OCT_clear(&CT[i]);
-        OCT_clear(&CTA[i]);
     }
     return 0;
 }

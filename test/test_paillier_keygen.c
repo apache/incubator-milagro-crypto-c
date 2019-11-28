@@ -42,6 +42,40 @@ void read_OCTET(octet* OCT, char* string)
     OCT_fromHex(OCT,buff);
 }
 
+void read_FF_4096(BIG_512_60 *x, char* string, int n)
+{
+    int len = strlen(string);
+    char oct[len/2];
+    octet OCT = {0, len/2, oct};
+
+    read_OCTET(&OCT, string);
+    FF_4096_fromOctet(x, &OCT, n);
+}
+
+void compare_FF(char *x_name, char* y_name, BIG_512_60 *x, BIG_512_60 *y, int n)
+{
+    if(FF_4096_comp(x, y, n))
+    {
+        fprintf(stderr, "FAILURE %s != %s\n", x_name, y_name);
+        exit(EXIT_FAILURE);
+    }
+}
+
+void clean_private(PAILLIER_private_key *PRIV)
+{
+    PAILLIER_PRIVATE_KEY_KILL(PRIV);
+    FF_4096_zero(PRIV->n, FFLEN_4096);
+    FF_4096_zero(PRIV->g, FFLEN_4096);
+    FF_4096_zero(PRIV->n2, FFLEN_4096);
+}
+
+void clean_public(PAILLIER_public_key *PUB)
+{
+    FF_4096_zero(PUB->n, FFLEN_4096);
+    FF_4096_zero(PUB->g, FFLEN_4096);
+    FF_4096_zero(PUB->n2, FFLEN_4096);
+}
+
 int main(int argc, char** argv)
 {
     if (argc != 2)
@@ -52,75 +86,45 @@ int main(int argc, char** argv)
 
     int len=0;
     FILE *fp;
-    int rc=0;
 
     char line[LINE_LEN]= {0};
     char * linePtr=NULL;
 
-    int applyVector=0;
     int testSeed=0;
 
-    const char* TESTline = "TEST = ";
+    PAILLIER_private_key PRIV;
+    PAILLIER_public_key PUB;
+
     int testNo=0;
-
-    // Test result
-    int result=0;
-    const char* RESULTline = "RESULT = ";
-
-    char p1[FS_2048]= {0};
-    octet P1 = {0,sizeof(p1),p1};
-    char q1[FS_2048]= {0};
-    octet Q1 = {0,sizeof(q1),q1};
-
-    char n1[FS_2048]= {0};
-    octet N1 = {0,sizeof(n1),n1};
-    char g1[FS_2048]= {0};
-    octet G1 = {0,sizeof(g1),g1};
-
-    char l1[FS_2048]= {0};
-    octet L1 = {0,sizeof(l1),l1};
-
-    char m1[FS_2048]= {0};
-    octet M1 = {0,sizeof(m1),m1};
-
-    char n2[FS_2048]= {0};
-    octet N2 = {0,sizeof(n2),n2};
-    char g2[FS_2048]= {0};
-    octet G2 = {0,sizeof(g2),g2};
-
-    char l2[FS_2048]= {0};
-    octet L2 = {0,sizeof(l2),l2};
-
-    char m2[FS_2048]= {0};
-    octet M2 = {0,sizeof(m2),m2};
+    const char* TESTline = "TEST = ";
 
     char seedgolden[32]= {0};
     octet SEEDGOLDEN = {0,sizeof(seedgolden),seedgolden};
     const char* SEEDline = "SEED = ";
 
-    char pgolden[FS_2048]= {0};
+    char p[FS_2048]={0};
+    char pgolden[HFS_2048]= {0};
+    octet P = {0, sizeof(p),p};
     octet PGOLDEN = {0,sizeof(pgolden),pgolden};
     const char* Pline = "P = ";
 
-    char qgolden[FS_2048]= {0};
+    char q[FS_2048]={0};
+    char qgolden[HFS_2048]={0};
+    octet Q = {0, sizeof(q),q};
     octet QGOLDEN = {0,sizeof(qgolden),qgolden};
     const char* Qline = "Q = ";
 
-    char ngolden[FS_2048]= {0};
-    octet NGOLDEN = {0,sizeof(ngolden),ngolden};
+    PAILLIER_private_key PRIVGOLDEN;
+    PAILLIER_public_key PUBGOLDEN;
     const char* Nline = "N = ";
-
-    char ggolden[FS_2048]= {0};
-    octet GGOLDEN = {0,sizeof(ggolden),ggolden};
     const char* Gline = "G = ";
-
-    char lgolden[FS_2048]= {0};
-    octet LGOLDEN = {0,sizeof(lgolden),lgolden};
     const char* Lline = "L = ";
-
-    char mgolden[FS_2048]= {0};
-    octet MGOLDEN = {0,sizeof(mgolden),mgolden};
     const char* Mline = "M = ";
+
+    // Clean GOLDEN keys, the generated keys should be cleaned
+    // during initialisation
+    clean_private(&PRIVGOLDEN);
+    clean_public(&PUBGOLDEN);
 
     fp = fopen(argv[1], "r");
     if (fp == NULL)
@@ -137,7 +141,6 @@ int main(int argc, char** argv)
             len = strlen(TESTline);
             linePtr = line + len;
             sscanf(linePtr,"%d\n",&testNo);
-            printf("TEST = %d\n",testNo);
         }
 
         // Read SEED
@@ -147,10 +150,6 @@ int main(int argc, char** argv)
             linePtr = line + len;
             read_OCTET(&SEEDGOLDEN,linePtr);
             testSeed = 1;
-#ifdef DEBUG
-            printf("SEED = ");
-            OCT_output(&SEEDGOLDEN);
-#endif
         }
 
         // Read P
@@ -159,10 +158,9 @@ int main(int argc, char** argv)
             len = strlen(Pline);
             linePtr = line + len;
             read_OCTET(&PGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("P = ");
-            OCT_output(&PGOLDEN);
-#endif
+            OCT_copy(&P, &PGOLDEN);
+            OCT_pad(&P, HFS_4096);
+            FF_4096_fromOctet(PRIVGOLDEN.p,&P,HFLEN_4096);
         }
 
         // Read Q
@@ -171,10 +169,9 @@ int main(int argc, char** argv)
             len = strlen(Qline);
             linePtr = line + len;
             read_OCTET(&QGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("Q = ");
-            OCT_output(&QGOLDEN);
-#endif
+            OCT_copy(&Q, &QGOLDEN);
+            OCT_pad(&Q, HFS_4096);
+            FF_4096_fromOctet(PRIVGOLDEN.q,&Q,HFLEN_4096);
         }
 
         // Read N
@@ -182,11 +179,13 @@ int main(int argc, char** argv)
         {
             len = strlen(Nline);
             linePtr = line + len;
-            read_OCTET(&NGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("N = ");
-            OCT_output(&NGOLDEN);
-#endif
+            read_FF_4096(PRIVGOLDEN.n, linePtr, HFLEN_4096);
+
+            FF_4096_sqr(PRIVGOLDEN.n2,PRIVGOLDEN.n, HFLEN_4096);
+            FF_4096_norm(PRIVGOLDEN.n2, FFLEN_4096);
+
+            FF_4096_copy(PUBGOLDEN.n, PRIVGOLDEN.n, HFLEN_4096);
+            FF_4096_copy(PUBGOLDEN.n2, PRIVGOLDEN.n2, FFLEN_4096);
         }
 
         // Read G
@@ -194,11 +193,8 @@ int main(int argc, char** argv)
         {
             len = strlen(Gline);
             linePtr = line + len;
-            read_OCTET(&GGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("G = ");
-            OCT_output(&GGOLDEN);
-#endif
+            read_FF_4096(PRIVGOLDEN.g, linePtr, HFLEN_4096);
+            FF_4096_copy(PUBGOLDEN.g, PRIVGOLDEN.g, HFLEN_4096);
         }
 
         // Read L
@@ -206,41 +202,15 @@ int main(int argc, char** argv)
         {
             len = strlen(Lline);
             linePtr = line + len;
-            read_OCTET(&LGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("L = ");
-            OCT_output(&LGOLDEN);
-#endif
+            read_FF_4096(PRIVGOLDEN.l, linePtr, HFLEN_4096);
         }
 
-        // Read M
+        // Read M and process test vector
         if (!strncmp(line,Mline, strlen(Mline)))
         {
             len = strlen(Mline);
             linePtr = line + len;
-            read_OCTET(&MGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("M = ");
-            OCT_output(&MGOLDEN);
-#endif
-        }
-
-        // Read expected result
-        if (!strncmp(line,RESULTline, strlen(RESULTline)))
-        {
-            len = strlen(RESULTline);
-            linePtr = line + len;
-            sscanf(linePtr,"%d\n",&result);
-            applyVector=1;
-#ifdef DEBUG
-            printf("RESULT = %d\n\n", result);
-#endif
-        }
-
-        if (applyVector)
-        {
-            applyVector=0;
-
+            read_FF_4096(PRIVGOLDEN.m, linePtr, HFLEN_4096);
 
             if (testSeed)
             {
@@ -252,152 +222,62 @@ int main(int argc, char** argv)
                 // initialise strong RNG
                 CREATE_CSPRNG(&RNG,&SEEDGOLDEN);
 
-                rc = PAILLIER_KEY_PAIR(&RNG, &P1, &Q1, &N1, &G1, &L1, &M1);
-                if (rc)
-                {
-                    fprintf(stderr, "FAILURE PAILLIER_KEY_PAIR Test %d rc: %d\n", testNo, rc);
-                    fclose(fp);
-                    exit(EXIT_FAILURE);
-                }
-
-#ifdef DEBUG
-                printf("P1: ");
-                OCT_output(&P1);
-                printf("\n");
-                printf("Q1: ");
-                OCT_output(&Q1);
-                printf("\n");
-
-                printf("Public Key \n");
-                printf("N1: ");
-                OCT_output(&N1);
-                printf("\n");
-                printf("G1: ");
-                OCT_output(&G1);
-                printf("\n");
-
-                printf("Secret Key \n");
-                printf("L1: ");
-                OCT_output(&L1);
-                printf("\n");
-                printf("M1: ");
-                OCT_output(&M1);
-                printf("\n");
-#endif
-
-                // OCT_comp returns 1 for equal
-                rc = !(OCT_comp(&PGOLDEN,&P1));
-                if(rc != result)
-                {
-                    fprintf(stderr, "FAILURE Test %d PGOLDEN rc: %d\n", testNo, rc);
-                    fclose(fp);
-                    exit(EXIT_FAILURE);
-                }
-
-                rc = !(OCT_comp(&QGOLDEN,&Q1));
-                if(rc != result)
-                {
-                    fprintf(stderr, "FAILURE Test %d QGOLDEN rc: %d\n", testNo, rc);
-                    fclose(fp);
-                    exit(EXIT_FAILURE);
-                }
-
-                rc = !(OCT_comp(&NGOLDEN,&N1));
-                if(rc != result)
-                {
-                    fprintf(stderr, "FAILURE Test %d NGOLDEN rc: %d\n", testNo, rc);
-                    fclose(fp);
-                    exit(EXIT_FAILURE);
-                }
-
-                rc = !(OCT_comp(&GGOLDEN,&G1));
-                if(rc != result)
-                {
-                    fprintf(stderr, "FAILURE Test %d GGOLDEN rc: %d\n", testNo, rc);
-                    fclose(fp);
-                    exit(EXIT_FAILURE);
-                }
-
-                rc = !(OCT_comp(&LGOLDEN,&L1));
-                if(rc != result)
-                {
-                    fprintf(stderr, "FAILURE Test %d LGOLDEN rc: %d\n", testNo, rc);
-                    fclose(fp);
-                    exit(EXIT_FAILURE);
-                }
-
-                rc = !(OCT_comp(&MGOLDEN,&M1));
-                if(rc != result)
-                {
-                    fprintf(stderr, "FAILURE Test %d MGOLDEN rc: %d\n", testNo, rc);
-                    fclose(fp);
-                    exit(EXIT_FAILURE);
-                }
-
+                PAILLIER_KEY_PAIR(&RNG, NULL, NULL, &PUB, &PRIV);
             }
-
-
-            rc = PAILLIER_KEY_PAIR(NULL, &PGOLDEN, &QGOLDEN, &N2, &G2, &L2, &M2);
-            if (rc)
+            else
             {
-                fprintf(stderr, "FAILURE PAILLIER_KEY_PAIR Test %d rc: %d\n", testNo, rc);
-                fclose(fp);
-                exit(EXIT_FAILURE);
+                PAILLIER_KEY_PAIR(NULL, &PGOLDEN, &QGOLDEN, &PUB, &PRIV);
             }
 
 #ifdef DEBUG
-            printf("Public Key \n");
-            printf("N2: ");
-            OCT_output(&N2);
-            printf("\n");
-            printf("G2: ");
-            OCT_output(&G2);
-            printf("\n");
-
-            printf("Secret Key \n");
-            printf("L2: ");
-            OCT_output(&L2);
-            printf("\n");
-            printf("M2: ");
-            OCT_output(&M2);
-            printf("\n");
+            printf("SEED = ");
+            OCT_output(&SEEDGOLDEN);
+            printf("\nP = ");
+            FF_4096_output(PRIV.p , HFLEN_4096);
+            printf("\nQ = ");
+            FF_4096_output(PRIV.q , HFLEN_4096);
+            printf("\nL = ");
+            FF_4096_output(PRIV.l , FFLEN_4096);
+            printf("\nM = ");
+            FF_4096_output(PRIV.m , FFLEN_4096);
+            printf("\nN = ");
+            FF_4096_output(PRIV.n , FFLEN_4096);
+            printf("\nG = ");
+            FF_4096_output(PRIV.g , FFLEN_4096);
+            printf("\nN2 = ");
+            FF_4096_output(PRIV.n2, FFLEN_4096);
+            printf("\nPUB N = ");
+            FF_4096_output(PUB.n , FFLEN_4096);
+            printf("\nPUB G = ");
+            FF_4096_output(PUB.g , FFLEN_4096);
+            printf("\nPUB N2 = ");
+            FF_4096_output(PUB.n2, FFLEN_4096);
+            printf("\n\n");
 #endif
-            rc = !(OCT_comp(&NGOLDEN,&N2));
-            if(rc != result)
-            {
-                fprintf(stderr, "FAILURE Test %d NGOLDEN rc: %d\n", testNo, rc);
-                fclose(fp);
-                exit(EXIT_FAILURE);
-            }
 
-            rc = !(OCT_comp(&GGOLDEN,&G2));
-            if(rc != result)
-            {
-                fprintf(stderr, "FAILURE Test %d GGOLDEN rc: %d\n", testNo, rc);
-                fclose(fp);
-                exit(EXIT_FAILURE);
-            }
+            compare_FF("PRIV.p" , "PRIVGOLDEN.p" , PRIV.p , PRIVGOLDEN.p , HFLEN_4096);
+            compare_FF("PRIV.q" , "PRIVGOLDEN.q" , PRIV.q , PRIVGOLDEN.q , HFLEN_4096);
+            compare_FF("PRIV.l" , "PRIVGOLDEN.l" , PRIV.l , PRIVGOLDEN.l , FFLEN_4096);
+            compare_FF("PRIV.m" , "PRIVGOLDEN.m" , PRIV.m , PRIVGOLDEN.m , FFLEN_4096);
+            compare_FF("PRIV.n" , "PRIVGOLDEN.n" , PRIV.n , PRIVGOLDEN.n , FFLEN_4096);
+            compare_FF("PRIV.g" , "PRIVGOLDEN.g" , PRIV.g , PRIVGOLDEN.g , FFLEN_4096);
+            compare_FF("PRIV.n2", "PRIVGOLDEN.n2", PRIV.n2, PRIVGOLDEN.n2, FFLEN_4096);
 
-            rc = !(OCT_comp(&LGOLDEN,&L2));
-            if(rc != result)
-            {
-                fprintf(stderr, "FAILURE Test %d LGOLDEN rc: %d\n", testNo, rc);
-                fclose(fp);
-                exit(EXIT_FAILURE);
-            }
+            compare_FF("PUB.n" , "PUBGOLDEN.n" , PUB.n , PUBGOLDEN.n , FFLEN_4096);
+            compare_FF("PUB.g" , "PUBGOLDEN.g" , PUB.g , PUBGOLDEN.g , FFLEN_4096);
+            compare_FF("PUB.n2", "PUBGOLDEN.n2", PUB.n2, PUBGOLDEN.n2, FFLEN_4096);
 
-            rc = !(OCT_comp(&MGOLDEN,&M2));
-            if(rc != result)
-            {
-                fprintf(stderr, "FAILURE Test %d MGOLDEN rc: %d\n", testNo, rc);
-                fclose(fp);
-                exit(EXIT_FAILURE);
-            }
+            // Clean keys for next test vector
+            clean_private(&PRIV);
+            clean_private(&PRIVGOLDEN);
 
-
+            clean_public(&PUB);
+            clean_public(&PUBGOLDEN);
         }
     }
+
     fclose(fp);
+
     printf("SUCCESS TEST PAILLIER KEYGEN PASSED\n");
     exit(EXIT_SUCCESS);
 }

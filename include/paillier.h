@@ -38,6 +38,29 @@ under the License.
 #define HFS_4096 MODBYTES_512_60*HFLEN_4096   /**< Half 4096 field size in bytes */
 #define HFS_2048 MODBYTES_1024_58*HFLEN_2048  /**< Half 2048 field size in bytes */
 
+/*!
+ * \brief Paillier Public Key
+ */
+typedef struct{
+    BIG_512_60 n[FFLEN_4096]; /**< Paillier Modulus - n = pq */
+    BIG_512_60 g[FFLEN_4096]; /**< Public Base - n+1 */
+
+    BIG_512_60 n2[FFLEN_4096]; /**< Precomputed n^2 */
+}PAILLIER_public_key;
+
+/*!
+ * \brief Paillier Private Key
+ */
+typedef struct{
+    BIG_512_60 n[FFLEN_4096]; /**< Paillier Modulus - n = pq*/
+    BIG_512_60 g[FFLEN_4096]; /**< Public Base - n+1 */
+    BIG_512_60 l[FFLEN_4096]; /**< Private Key (Euler totient of n) */
+    BIG_512_60 m[FFLEN_4096]; /**< Precomputed l^(-1) */
+
+    BIG_512_60 p[HFLEN_4096];  /**< Secret Prime */
+    BIG_512_60 q[HFLEN_4096];  /**< Secret Prime */
+    BIG_512_60 n2[FFLEN_4096]; /**< Precomputed n^2 */
+}PAILLIER_private_key;
 
 /*! \brief Generate the key pair
  *
@@ -53,13 +76,16 @@ under the License.
  *  @param  RNG              Pointer to a cryptographically secure random number generator
  *  @param  P                Prime number. If RNG is NULL then this value is read
  *  @param  Q                Prime number. If RNG is NULL then this value is read
- *  @param  N                Public key (see above)
- *  @param  G                Public key (see above)
- *  @param  L                Private key (see above)
- *  @param  M                Private key (see above)
- *  @return                  Returns 0 or else error code
+ *  @param  PUB              Public key
+ *  @param  PRIV             Private key
  */
-int PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, octet* N, octet* G, octet* L, octet* M);
+void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV);
+
+/*! \brief Clear private key
+ *
+ *  @param PRIV             Private key to clean
+ */
+void PAILLIER_PRIVATE_KEY_KILL(PAILLIER_private_key *PRIV);
 
 /*! \brief Encrypt a plaintext
  *
@@ -72,14 +98,12 @@ int PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, octet* N, octet* G, octet
  *  </ol>
  *
  *  @param  RNG              Pointer to a cryptographically secure random number generator
- *  @param  N                Public key
- *  @param  G                Public key (see above)
+ *  @param  PUB              Public key
  *  @param  PT               Plaintext
  *  @param  CT               Ciphertext
  *  @param  R                R value for testing. If RNG is NULL then this value is read.
- *  @return                  Returns 0 or else error code
  */
-int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octet* R);
+void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* CT, octet* R);
 
 /*! \brief Decrypt ciphertext
  *
@@ -92,14 +116,11 @@ int PAILLIER_ENCRYPT(csprng *RNG, octet* N, octet* G, octet* PT, octet* CT, octe
  *  <li> \f$ pt = ctln * m \pmod{n} \f$
  *  </ol>
  *
- *  @param   N                Public key
- *  @param   L                Private key (see above)
- *  @param   M                Private key (see above)
+ *  @param   PRIV             Private key
  *  @param   CT               Ciphertext
  *  @param   PT               Plaintext
- *  @return                   Returns 0 or else error code
  */
-int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT);
+void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT);
 
 /*! \brief Homomorphic addition of plaintexts
  *
@@ -109,13 +130,13 @@ int PAILLIER_DECRYPT(octet* N, octet* L, octet* M, octet* CT, octet* PT);
  *  <li> \f$ ct = ct1*ct2 \pmod{n^2} \f$
  *  </ol>
  *
- *  @param   N                Public key
+ *  @param   PUB              Public key
  *  @param   CT1              Ciphertext one
  *  @param   CT2              Ciphertext two
  *  @param   CT               Ciphertext
  *  @return                   Returns 0 or else error code
  */
-int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT);
+void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT);
 
 /*! \brief Homomorphic multipication of plaintexts
  *
@@ -125,10 +146,9 @@ int PAILLIER_ADD(octet* N, octet* CT1, octet* CT2, octet* CT);
  *  <li> \f$ ct = ct1^{m2} \pmod{n^2} \f$
  *  </ol>
  *
- *  @param   N                Public key
+ *  @param   PUB              Public key
  *  @param   CT1              Ciphertext one
  *  @param   PT               Plaintext constant
  *  @param   CT               Ciphertext
- *  @return                   Returns 0 or else error code
  */
-int PAILLIER_MULT(octet* N, octet* CT1, octet* PT, octet* CT);
+void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT);

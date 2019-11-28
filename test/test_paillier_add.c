@@ -41,6 +41,16 @@ void read_OCTET(octet* OCT, char* string)
     OCT_fromHex(OCT,buff);
 }
 
+void read_FF_4096(BIG_512_60 *x, char* string, int n)
+{
+    int len = strlen(string);
+    char oct[len/2];
+    octet OCT = {0, len/2, oct};
+
+    read_OCTET(&OCT, string);
+    FF_4096_fromOctet(x, &OCT, n);
+}
+
 int main(int argc, char** argv)
 {
     if (argc != 2)
@@ -55,20 +65,13 @@ int main(int argc, char** argv)
     char line[LINE_LEN]= {0};
     char *linePtr=NULL;
 
-    int applyVector=0;
-
-    const char* TESTline = "TEST = ";
-    int testNo=0;
-
     char ct[FS_4096]= {0};
     octet CT = {0,sizeof(ct),ct};
 
-    // Test result
-    int result = 0;
-    const char* RESULTline = "RESULT = ";
+    int testNo;
+    const char* TESTline = "TEST = ";
 
-    char ngolden[FS_2048]= {0};
-    octet NGOLDEN = {0,sizeof(ngolden),ngolden};
+    PAILLIER_public_key PUB;
     const char* Nline = "N = ";
 
     char ct1golden[FS_4096]= {0};
@@ -98,7 +101,6 @@ int main(int argc, char** argv)
             len = strlen(TESTline);
             linePtr = line + len;
             sscanf(linePtr,"%d\n",&testNo);
-            printf("TEST = %d\n",testNo);
         }
 
         // Read N
@@ -106,10 +108,14 @@ int main(int argc, char** argv)
         {
             len = strlen(Nline);
             linePtr = line + len;
-            read_OCTET(&NGOLDEN,linePtr);
+            read_FF_4096(PUB.n, linePtr, HFLEN_4096);
+
+            FF_4096_sqr(PUB.n2, PUB.n, HFLEN_4096);
+            FF_4096_norm(PUB.n2, FFLEN_4096);
 #ifdef DEBUG
             printf("N = ");
-            OCT_output(&NGOLDEN);
+            FF_4096_output(PUB.n , FFLEN_4096);
+            printf("\n");
 #endif
         }
 
@@ -137,7 +143,7 @@ int main(int argc, char** argv)
 #endif
         }
 
-        // Read CIPHERTEXT
+        // Read CIPHERTEXT and process test vector
         if (!strncmp(line,CTline, strlen(CTline)))
         {
             len = strlen(CTline);
@@ -147,32 +153,8 @@ int main(int argc, char** argv)
             printf("CIPHERTEXT = ");
             OCT_output(&CTGOLDEN);
 #endif
-        }
 
-        // Read expected result
-        if (!strncmp(line,RESULTline, strlen(RESULTline)))
-        {
-            len = strlen(RESULTline);
-            linePtr = line + len;
-            sscanf(linePtr,"%d\n",&result);
-            applyVector=1;
-#ifdef DEBUG
-            printf("RESULT = %d\n\n", result);
-#endif
-        }
-
-        if (applyVector)
-        {
-            applyVector=0;
-
-            int rc = PAILLIER_ADD(&NGOLDEN, &CT1GOLDEN, &CT2GOLDEN, &CT);
-            if (rc)
-            {
-                fprintf(stderr, "FAILURE PAILLIER_ADD rc: %d\n", rc);
-                fclose(fp);
-                exit(EXIT_FAILURE);
-            }
-
+            PAILLIER_ADD(&PUB, &CT1GOLDEN, &CT2GOLDEN, &CT);
 
 #ifdef DEBUG
             printf("CT: ");
@@ -180,22 +162,22 @@ int main(int argc, char** argv)
             printf("\n");
 #endif
 
-            // OCT_comp return 1 for equal
-            rc = !(OCT_comp(&CTGOLDEN,&CT));
-            if(rc != result)
+            if(!(OCT_comp(&CTGOLDEN,&CT)))
             {
 #ifdef DEBUG
                 printf("CTGOLDEN: ");
                 OCT_output(&CTGOLDEN);
                 printf("\n");
 #endif
-                fprintf(stderr, "FAILURE Test %d rc: %d\n", testNo, rc);
+                fprintf(stderr, "FAILURE Test %d\n", testNo);
                 fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
     }
+
     fclose(fp);
+
     printf("SUCCESS TEST PAILLIER ADD PASSED\n");
     exit(EXIT_SUCCESS);
 }
