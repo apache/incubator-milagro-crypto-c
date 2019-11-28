@@ -123,11 +123,10 @@ int main(int argc, char** argv)
         {
             len = strlen(Lline);
             linePtr = line + len;
-            FF_4096_zero(PRIV.l, FFLEN_4096);
             read_FF_4096(PRIV.l, linePtr, HFLEN_4096);
 #ifdef DEBUG
             printf("L = ");
-            FF_4096_output(PRIV.l , FFLEN_4096);
+            FF_4096_output(PRIV.l , HFLEN_4096);
             printf("\n");
 #endif
         }

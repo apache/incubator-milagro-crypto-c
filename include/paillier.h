@@ -54,7 +54,7 @@ typedef struct{
 typedef struct{
     BIG_512_60 n[FFLEN_4096]; /**< Paillier Modulus - n = pq*/
     BIG_512_60 g[FFLEN_4096]; /**< Public Base - n+1 */
-    BIG_512_60 l[FFLEN_4096]; /**< Private Key (Euler totient of n) */
+    BIG_512_60 l[HFLEN_4096]; /**< Private Key (Euler totient of n) */
     BIG_512_60 m[FFLEN_4096]; /**< Precomputed l^(-1) */
 
     BIG_512_60 p[HFLEN_4096];  /**< Secret Prime */

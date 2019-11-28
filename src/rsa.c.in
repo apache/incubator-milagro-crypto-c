@@ -136,8 +136,8 @@ void RSA_WWW_DECRYPT(rsa_private_key_WWW *PRIV,octet *G,octet *F)
     FF_WWW_dmod(jp,g,PRIV->p,HFLEN_WWW);
     FF_WWW_dmod(jq,g,PRIV->q,HFLEN_WWW);
 
-    FF_WWW_skpow(jp,jp,PRIV->dp,PRIV->p,HFLEN_WWW);
-    FF_WWW_skpow(jq,jq,PRIV->dq,PRIV->q,HFLEN_WWW);
+    FF_WWW_skpow(jp,jp,PRIV->dp,PRIV->p,HFLEN_WWW,HFLEN_WWW);
+    FF_WWW_skpow(jq,jq,PRIV->dq,PRIV->q,HFLEN_WWW,HFLEN_WWW);
 
 
     FF_WWW_zero(g,FFLEN_WWW);
