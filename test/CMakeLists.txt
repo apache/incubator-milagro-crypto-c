@@ -219,14 +219,12 @@ endforeach()
 # RSA Tests
 ################################################
 foreach(level ${AMCL_RSA})
-  if (NOT level STREQUAL "8192")
-    amcl_rsa_field(BD "${level}")
-    amcl_rsa_field(TFF "${level}")
+  amcl_rsa_field(BD "${level}")
+  amcl_rsa_field(TFF "${level}")
 
-    amcl_rsa_test(${level} test_big_arithmetics_${BD} test_big_arithmetics_XXX.c.in amcl_rsa_${TFF} "SUCCESS" "big/test_vector_big.txt")
-    amcl_rsa_test(${level} test_big_consistency_${BD} test_big_consistency_XXX.c.in amcl_rsa_${TFF} "SUCCESS")
-    amcl_rsa_test(${level} test_rsa_${TFF}            test_rsa_WWW.c.in             amcl_rsa_${TFF} "SUCCESS")
-  endif()  
+  amcl_rsa_test(${level} test_big_arithmetics_${BD} test_big_arithmetics_XXX.c.in amcl_rsa_${TFF} "SUCCESS" "big/test_vector_big.txt")
+  amcl_rsa_test(${level} test_big_consistency_${BD} test_big_consistency_XXX.c.in amcl_rsa_${TFF} "SUCCESS")
+  amcl_rsa_test(${level} test_rsa_${TFF}            test_rsa_WWW.c.in             amcl_rsa_${TFF} "SUCCESS")
 endforeach()
 
 ################################################
