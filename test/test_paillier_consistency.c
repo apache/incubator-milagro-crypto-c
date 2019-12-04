@@ -32,13 +32,25 @@ under the License.
 
 char* PT3GOLDEN_hex = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001a";
 
+void ff_compare(BIG_512_60 *a, BIG_512_60 *b, char *msg, int n)
+{
+    if(FF_4096_comp(a, b, n))
+    {
+        fprintf(stderr, "FAILURE %s\n", msg);
+        exit(EXIT_FAILURE);
+    }
+}
+
 int paillier(csprng *RNG)
 {
     BIG_512_60 zero[FFLEN_4096];
 
     // Key material
     PAILLIER_private_key PRIV;
-    PAILLIER_public_key PUB;
+    PAILLIER_public_key PUB, PUBIN;
+
+    char pub[HFS_4096];
+    octet PUBOCT = {0,HFS_4096,pub};
 
     // Plaintext to encrypt
     char ptin[NTHREADS][FS_2048];
@@ -99,6 +111,14 @@ int paillier(csprng *RNG)
     }
 
     PAILLIER_KEY_PAIR(RNG, NULL, NULL, &PUB, &PRIV);
+
+    // Check public key i/o functions
+    PAILLIER_PK_toOctet(&PUBOCT, &PUB);
+    PAILLIER_PK_fromOctet(&PUBIN, &PUBOCT);
+
+    ff_compare(PUB.n,  PUBIN.n,  "n not correctly loaded",   FFLEN_4096);
+    ff_compare(PUB.g,  PUBIN.g,  "g not correctly loaded",   FFLEN_4096);
+    ff_compare(PUB.n2, PUBIN.n2, "n^2 not correctly loaded", FFLEN_4096);
 
 #ifdef DEBUG
     printf("P: ");
@@ -224,30 +244,10 @@ int paillier(csprng *RNG)
     PAILLIER_PRIVATE_KEY_KILL(&PRIV);
 
     FF_4096_zero(zero, FFLEN_4096);
-
-    if(FF_4096_comp(zero, PRIV.p, HFLEN_4096))
-    {
-        fprintf(stderr, "FAILURE p not cleaned from private key\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if(FF_4096_comp(zero, PRIV.q, HFLEN_4096))
-    {
-        fprintf(stderr, "FAILURE q not cleaned from private key\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if(FF_4096_comp(zero, PRIV.l, FFLEN_4096))
-    {
-        fprintf(stderr, "FAILURE l not cleaned from private key\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if(FF_4096_comp(zero, PRIV.m, FFLEN_4096))
-    {
-        fprintf(stderr, "FAILURE m not cleaned from private key\n");
-        exit(EXIT_FAILURE);
-    }
+    ff_compare(zero, PRIV.p, "p not cleaned from private key", HFLEN_4096);
+    ff_compare(zero, PRIV.q, "p not cleaned from private key", HFLEN_4096);
+    ff_compare(zero, PRIV.l, "p not cleaned from private key", HFLEN_4096);
+    ff_compare(zero, PRIV.m, "p not cleaned from private key", FFLEN_4096);
 
     OCT_clear(&CT3);
     OCT_clear(&PT3);

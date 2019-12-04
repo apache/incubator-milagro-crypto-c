@@ -152,3 +152,17 @@ void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT);
  *  @param   CT               Ciphertext
  */
 void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT);
+
+/**! \brief Read a public key from its octet representation
+ *
+ * @param   PUB   Public key
+ * @param   PK    Octet representation of the public key
+ */
+void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK);
+
+/**! \brief Write a public key to an octet
+ *
+ * @param   PK    Destination octet
+ * @param   PUB   Public key
+ */
+void PAILLIER_PK_toOctet(octet *PK, PAILLIER_public_key *PUB);

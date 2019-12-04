@@ -410,3 +410,20 @@ void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT)
     // Clean memory
     FF_4096_zero(pt, HFLEN_4096);
 }
+
+void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK)
+{
+    FF_4096_zero(PUB->n, FFLEN_4096);
+    FF_4096_fromOctet(PUB->n, PK, HFLEN_4096);
+
+    FF_4096_sqr(PUB->n2, PUB->n, HFLEN_4096);
+    FF_4096_norm(PUB->n2, FFLEN_4096);
+
+    FF_4096_copy(PUB->g, PUB->n, FFLEN_4096);
+    FF_4096_inc(PUB->g,1,HFLEN_4096);
+}
+
+void PAILLIER_PK_toOctet(octet *PK, PAILLIER_public_key *PUB)
+{
+    FF_4096_toOctet(PK, PUB->n, HFLEN_4096);
+}
