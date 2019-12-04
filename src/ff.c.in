@@ -635,7 +635,7 @@ static void FF_WWW_redc(BIG_XXX a[],BIG_XXX m[],BIG_XXX ND[],int n)
 }
 
 /* U=1/a mod 2^m - Arazi & Qi */
-static void FF_WWW_invmod2m(BIG_XXX U[],BIG_XXX a[],int n)
+void FF_WWW_invmod2m(BIG_XXX U[],BIG_XXX a[],int n)
 {
     int i;
 #ifndef C99

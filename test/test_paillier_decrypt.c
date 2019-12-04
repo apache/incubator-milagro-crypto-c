@@ -111,6 +111,8 @@ int main(int argc, char** argv)
 
             FF_4096_sqr(PRIV.n2,PRIV.n, HFLEN_4096);
             FF_4096_norm(PRIV.n2, FFLEN_4096);
+
+            FF_4096_invmod2m(PRIV.invn,PRIV.n,FFLEN_4096);
 #ifdef DEBUG
             printf("N = ");
             FF_4096_output(PRIV.n , FFLEN_4096);

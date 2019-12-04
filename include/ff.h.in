@@ -211,6 +211,13 @@ extern void FF_WWW_dmod(BIG_XXX *x,BIG_XXX *y,BIG_XXX *z,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_invmodp(BIG_XXX *x,BIG_XXX *y,BIG_XXX *z,int n);
+/** @brief Invert an FF mod 2^(n*BIGBITS)
+ *
+ * @param U FF instance, on exit 1/a mod 2^(n*BIGBITS)
+ * @param a FF instance
+ * @param n size of FF in BIGs
+ */
+extern void FF_WWW_invmod2m(BIG_XXX U[],BIG_XXX a[],int n);
 /**	@brief Create an FF from a random number generator
  *
 	@param x FF instance, on exit x is a random number of length n BIGs with most significant bit a 1

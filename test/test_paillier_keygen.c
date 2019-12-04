@@ -184,6 +184,8 @@ int main(int argc, char** argv)
             FF_4096_sqr(PRIVGOLDEN.n2,PRIVGOLDEN.n, HFLEN_4096);
             FF_4096_norm(PRIVGOLDEN.n2, FFLEN_4096);
 
+            FF_4096_invmod2m(PRIVGOLDEN.invn, PRIVGOLDEN.n, FFLEN_4096);
+
             FF_4096_copy(PUBGOLDEN.n, PRIVGOLDEN.n, HFLEN_4096);
             FF_4096_copy(PUBGOLDEN.n2, PRIVGOLDEN.n2, FFLEN_4096);
         }
@@ -255,16 +257,17 @@ int main(int argc, char** argv)
             printf("\n\n");
 #endif
 
-            compare_FF("PRIV.p" , "PRIVGOLDEN.p" , PRIV.p , PRIVGOLDEN.p , HFLEN_4096);
-            compare_FF("PRIV.q" , "PRIVGOLDEN.q" , PRIV.q , PRIVGOLDEN.q , HFLEN_4096);
-            compare_FF("PRIV.l" , "PRIVGOLDEN.l" , PRIV.l , PRIVGOLDEN.l , FFLEN_4096);
-            compare_FF("PRIV.m" , "PRIVGOLDEN.m" , PRIV.m , PRIVGOLDEN.m , FFLEN_4096);
-            compare_FF("PRIV.n" , "PRIVGOLDEN.n" , PRIV.n , PRIVGOLDEN.n , FFLEN_4096);
-            compare_FF("PRIV.g" , "PRIVGOLDEN.g" , PRIV.g , PRIVGOLDEN.g , FFLEN_4096);
-            compare_FF("PRIV.n2", "PRIVGOLDEN.n2", PRIV.n2, PRIVGOLDEN.n2, FFLEN_4096);
+            compare_FF("PRIV.p",    "PRIVGOLDEN.p",    PRIV.p,    PRIVGOLDEN.p,    HFLEN_4096);
+            compare_FF("PRIV.q",    "PRIVGOLDEN.q",    PRIV.q,    PRIVGOLDEN.q,    HFLEN_4096);
+            compare_FF("PRIV.l",    "PRIVGOLDEN.l",    PRIV.l,    PRIVGOLDEN.l,    FFLEN_4096);
+            compare_FF("PRIV.m",    "PRIVGOLDEN.m",    PRIV.m,    PRIVGOLDEN.m,    FFLEN_4096);
+            compare_FF("PRIV.n",    "PRIVGOLDEN.n",    PRIV.n,    PRIVGOLDEN.n,    FFLEN_4096);
+            compare_FF("PRIV.g",    "PRIVGOLDEN.g",    PRIV.g,    PRIVGOLDEN.g,    FFLEN_4096);
+            compare_FF("PRIV.invn", "PRIVGOLDEN.invn", PRIV.invn, PRIVGOLDEN.invn, FFLEN_4096);
+            compare_FF("PRIV.n2",   "PRIVGOLDEN.n2",   PRIV.n2,   PRIVGOLDEN.n2,   FFLEN_4096);
 
-            compare_FF("PUB.n" , "PUBGOLDEN.n" , PUB.n , PUBGOLDEN.n , FFLEN_4096);
-            compare_FF("PUB.g" , "PUBGOLDEN.g" , PUB.g , PUBGOLDEN.g , FFLEN_4096);
+            compare_FF("PUB.n",  "PUBGOLDEN.n",  PUB.n,  PUBGOLDEN.n,  FFLEN_4096);
+            compare_FF("PUB.g",  "PUBGOLDEN.g",  PUB.g,  PUBGOLDEN.g,  FFLEN_4096);
             compare_FF("PUB.n2", "PUBGOLDEN.n2", PUB.n2, PUBGOLDEN.n2, FFLEN_4096);
 
             // Clean keys for next test vector
@@ -281,4 +284,3 @@ int main(int argc, char** argv)
     printf("SUCCESS TEST PAILLIER KEYGEN PASSED\n");
     exit(EXIT_SUCCESS);
 }
-

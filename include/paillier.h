@@ -57,9 +57,10 @@ typedef struct{
     BIG_512_60 l[HFLEN_4096]; /**< Private Key (Euler totient of n) */
     BIG_512_60 m[FFLEN_4096]; /**< Precomputed l^(-1) */
 
-    BIG_512_60 p[HFLEN_4096];  /**< Secret Prime */
-    BIG_512_60 q[HFLEN_4096];  /**< Secret Prime */
-    BIG_512_60 n2[FFLEN_4096]; /**< Precomputed n^2 */
+    BIG_512_60 p[HFLEN_4096];     /**< Secret Prime */
+    BIG_512_60 q[HFLEN_4096];     /**< Secret Prime */
+    BIG_512_60 invn[FFLEN_4096];  /**< Precomputed inverse of n */
+    BIG_512_60 n2[FFLEN_4096];    /**< Precomputed n^2 */
 }PAILLIER_private_key;
 
 /*! \brief Generate the key pair
@@ -110,8 +111,7 @@ void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* C
  *  These are the decryption steps.
  *
  *  <ol>
- *  <li> \f$ n2  = n*n \f$
- *  <li> \f$ ctl = ct^l \pmod{n2} - 1 \f$
+ *  <li> \f$ ctl = ct^l \pmod{n^2} - 1 \f$
  *  <li> \f$ ctln = ctl / n \f$
  *  <li> \f$ pt = ctln * m \pmod{n} \f$
  *  </ol>
