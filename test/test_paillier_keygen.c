@@ -42,6 +42,16 @@ void read_OCTET(octet* OCT, char* string)
     OCT_fromHex(OCT,buff);
 }
 
+void read_FF_2048(BIG_1024_58 *x, char* string, int n)
+{
+    int len = strlen(string);
+    char oct[len/2];
+    octet OCT = {0, len/2, oct};
+
+    read_OCTET(&OCT, string);
+    FF_2048_fromOctet(x, &OCT, n);
+}
+
 void read_FF_4096(BIG_512_60 *x, char* string, int n)
 {
     int len = strlen(string);
@@ -52,7 +62,7 @@ void read_FF_4096(BIG_512_60 *x, char* string, int n)
     FF_4096_fromOctet(x, &OCT, n);
 }
 
-void compare_FF(char *x_name, char* y_name, BIG_512_60 *x, BIG_512_60 *y, int n)
+void ff_4096_compare(char *x_name, char* y_name, BIG_512_60 *x, BIG_512_60 *y, int n)
 {
     if(FF_4096_comp(x, y, n))
     {
@@ -61,12 +71,13 @@ void compare_FF(char *x_name, char* y_name, BIG_512_60 *x, BIG_512_60 *y, int n)
     }
 }
 
-void clean_private(PAILLIER_private_key *PRIV)
+void ff_2048_compare(char *x_name, char* y_name, BIG_1024_58 *x, BIG_1024_58 *y, int n)
 {
-    PAILLIER_PRIVATE_KEY_KILL(PRIV);
-    FF_4096_zero(PRIV->n, FFLEN_4096);
-    FF_4096_zero(PRIV->g, FFLEN_4096);
-    FF_4096_zero(PRIV->n2, FFLEN_4096);
+    if(FF_2048_comp(x, y, n))
+    {
+        fprintf(stderr, "FAILURE %s != %s\n", x_name, y_name);
+        exit(EXIT_FAILURE);
+    }
 }
 
 void clean_public(PAILLIER_public_key *PUB)
@@ -102,15 +113,11 @@ int main(int argc, char** argv)
     octet SEEDGOLDEN = {0,sizeof(seedgolden),seedgolden};
     const char* SEEDline = "SEED = ";
 
-    char p[FS_2048]={0};
     char pgolden[HFS_2048]= {0};
-    octet P = {0, sizeof(p),p};
     octet PGOLDEN = {0,sizeof(pgolden),pgolden};
     const char* Pline = "P = ";
 
-    char q[FS_2048]={0};
     char qgolden[HFS_2048]={0};
-    octet Q = {0, sizeof(q),q};
     octet QGOLDEN = {0,sizeof(qgolden),qgolden};
     const char* Qline = "Q = ";
 
@@ -118,12 +125,14 @@ int main(int argc, char** argv)
     PAILLIER_public_key PUBGOLDEN;
     const char* Nline = "N = ";
     const char* Gline = "G = ";
-    const char* Lline = "L = ";
-    const char* Mline = "M = ";
+    const char* LPline = "LP = ";
+    const char* MPline = "MP = ";
+    const char* LQline = "LQ = ";
+    const char* MQline = "MQ = ";
 
     // Clean GOLDEN keys, the generated keys should be cleaned
     // during initialisation
-    clean_private(&PRIVGOLDEN);
+    PAILLIER_PRIVATE_KEY_KILL(&PRIVGOLDEN);
     clean_public(&PUBGOLDEN);
 
     fp = fopen(argv[1], "r");
@@ -152,67 +161,125 @@ int main(int argc, char** argv)
             testSeed = 1;
         }
 
-        // Read P
-        if (!strncmp(line,Pline, strlen(Pline)))
-        {
-            len = strlen(Pline);
-            linePtr = line + len;
-            read_OCTET(&PGOLDEN,linePtr);
-            OCT_copy(&P, &PGOLDEN);
-            OCT_pad(&P, HFS_4096);
-            FF_4096_fromOctet(PRIVGOLDEN.p,&P,HFLEN_4096);
-        }
-
-        // Read Q
-        if (!strncmp(line,Qline, strlen(Qline)))
-        {
-            len = strlen(Qline);
-            linePtr = line + len;
-            read_OCTET(&QGOLDEN,linePtr);
-            OCT_copy(&Q, &QGOLDEN);
-            OCT_pad(&Q, HFS_4096);
-            FF_4096_fromOctet(PRIVGOLDEN.q,&Q,HFLEN_4096);
-        }
-
-        // Read N
-        if (!strncmp(line,Nline, strlen(Nline)))
-        {
-            len = strlen(Nline);
-            linePtr = line + len;
-            read_FF_4096(PRIVGOLDEN.n, linePtr, HFLEN_4096);
-
-            FF_4096_sqr(PRIVGOLDEN.n2,PRIVGOLDEN.n, HFLEN_4096);
-            FF_4096_norm(PRIVGOLDEN.n2, FFLEN_4096);
-
-            FF_4096_invmod2m(PRIVGOLDEN.invn, PRIVGOLDEN.n, FFLEN_4096);
-
-            FF_4096_copy(PUBGOLDEN.n, PRIVGOLDEN.n, HFLEN_4096);
-            FF_4096_copy(PUBGOLDEN.n2, PRIVGOLDEN.n2, FFLEN_4096);
-        }
-
         // Read G
-        if (!strncmp(line,Gline, strlen(Gline)))
+        if (!strncmp(line, Gline, strlen(Gline)))
         {
             len = strlen(Gline);
             linePtr = line + len;
-            read_FF_4096(PRIVGOLDEN.g, linePtr, HFLEN_4096);
-            FF_4096_copy(PUBGOLDEN.g, PRIVGOLDEN.g, HFLEN_4096);
+            read_FF_4096(PUBGOLDEN.g, linePtr, HFLEN_4096);
         }
 
-        // Read L
-        if (!strncmp(line,Lline, strlen(Lline)))
+        // Read N
+        if (!strncmp(line, Nline, strlen(Nline)))
         {
-            len = strlen(Lline);
+            len = strlen(Nline);
             linePtr = line + len;
-            read_FF_4096(PRIVGOLDEN.l, linePtr, HFLEN_4096);
+
+            FF_4096_zero(PUBGOLDEN.n, FFLEN_4096);
+            read_FF_4096(PUBGOLDEN.n, linePtr, HFLEN_4096);
+
+            FF_4096_sqr(PUBGOLDEN.n2, PUBGOLDEN.n, HFLEN_4096);
+            FF_4096_norm(PUBGOLDEN.n2, FFLEN_4096);
         }
 
-        // Read M and process test vector
-        if (!strncmp(line,Mline, strlen(Mline)))
+        // Read P
+        if (!strncmp(line, Pline, strlen(Pline)))
         {
-            len = strlen(Mline);
+            len = strlen(Pline);
             linePtr = line + len;
-            read_FF_4096(PRIVGOLDEN.m, linePtr, HFLEN_4096);
+            read_OCTET(&PGOLDEN, linePtr);
+            read_FF_2048(PRIVGOLDEN.p, linePtr, HFLEN_2048);
+
+            FF_2048_sqr(PRIVGOLDEN.p2, PRIVGOLDEN.p, HFLEN_2048);
+            FF_2048_norm(PRIVGOLDEN.p2, FFLEN_2048);
+            FF_2048_invmod2m(PRIVGOLDEN.invp, PRIVGOLDEN.p, HFLEN_2048);
+#ifdef DEBUG
+            printf("P= ");
+            FF_2048_output(PRIVGOLDEN.p , HFLEN_2048);
+            printf("\n");
+            printf("P2= ");
+            FF_2048_output(PRIVGOLDEN.p2 , HFLEN_2048);
+            printf("\n");
+            printf("PI= ");
+            FF_2048_output(PRIVGOLDEN.invp , HFLEN_2048);
+            printf("\n");
+#endif
+        }
+
+        // Read Q
+        if (!strncmp(line, Qline, strlen(Qline)))
+        {
+            len = strlen(Qline);
+            linePtr = line + len;
+            read_OCTET(&QGOLDEN, linePtr);
+            read_FF_2048(PRIVGOLDEN.q, linePtr, HFLEN_2048);
+
+            FF_2048_sqr(PRIVGOLDEN.q2, PRIVGOLDEN.q, HFLEN_2048);
+            FF_2048_norm(PRIVGOLDEN.q2, FFLEN_2048);
+            FF_2048_invmod2m(PRIVGOLDEN.invq, PRIVGOLDEN.q, HFLEN_2048);
+#ifdef DEBUG
+            printf("Q= ");
+            FF_2048_output(PRIVGOLDEN.q , HFLEN_2048);
+            printf("\n");
+            printf("Q2= ");
+            FF_2048_output(PRIVGOLDEN.q2 , HFLEN_2048);
+            printf("\n");
+            printf("QI= ");
+            FF_2048_output(PRIVGOLDEN.invq , HFLEN_2048);
+            printf("\n");
+#endif
+        }
+
+        // Read LP
+        if (!strncmp(line, LPline, strlen(LPline)))
+        {
+            len = strlen(LPline);
+            linePtr = line + len;
+            read_FF_2048(PRIVGOLDEN.lp, linePtr, HFLEN_2048);
+#ifdef DEBUG
+            printf("LP= ");
+            FF_2048_output(PRIVGOLDEN.lp , HFLEN_2048);
+            printf("\n");
+#endif
+        }
+
+        // Read LQ
+        if (!strncmp(line, LQline, strlen(LQline)))
+        {
+            len = strlen(LQline);
+            linePtr = line + len;
+            read_FF_2048(PRIVGOLDEN.lq, linePtr, HFLEN_2048);
+#ifdef DEBUG
+            printf("LQ= ");
+            FF_2048_output(PRIVGOLDEN.lq , HFLEN_2048);
+            printf("\n");
+#endif
+        }
+
+        // Read MP
+        if (!strncmp(line, MPline, strlen(MPline)))
+        {
+            len = strlen(MPline);
+            linePtr = line + len;
+            read_FF_2048(PRIVGOLDEN.mp, linePtr, HFLEN_2048);
+#ifdef DEBUG
+            printf("MP= ");
+            FF_2048_output(PRIVGOLDEN.mp , HFLEN_2048);
+            printf("\n");
+#endif
+        }
+
+        // Read MQ and process test vector
+        if (!strncmp(line, MQline, strlen(MQline)))
+        {
+            len = strlen(MQline);
+            linePtr = line + len;
+            read_FF_2048(PRIVGOLDEN.mq, linePtr, HFLEN_2048);
+#ifdef DEBUG
+            printf("MQ= ");
+            FF_2048_output(PRIVGOLDEN.mq , HFLEN_2048);
+            printf("\n");
+#endif
 
             if (testSeed)
             {
@@ -235,19 +302,19 @@ int main(int argc, char** argv)
             printf("SEED = ");
             OCT_output(&SEEDGOLDEN);
             printf("\nP = ");
-            FF_4096_output(PRIV.p , HFLEN_4096);
+            FF_2048_output(PRIV.p , HFLEN_2048);
             printf("\nQ = ");
-            FF_4096_output(PRIV.q , HFLEN_4096);
-            printf("\nL = ");
-            FF_4096_output(PRIV.l , FFLEN_4096);
-            printf("\nM = ");
-            FF_4096_output(PRIV.m , FFLEN_4096);
+            FF_2048_output(PRIV.q , HFLEN_2048);
             printf("\nN = ");
-            FF_4096_output(PRIV.n , FFLEN_4096);
-            printf("\nG = ");
-            FF_4096_output(PRIV.g , FFLEN_4096);
-            printf("\nN2 = ");
-            FF_4096_output(PRIV.n2, FFLEN_4096);
+            FF_2048_output(PRIV.n , FFLEN_2048);
+            printf("\nLP = ");
+            FF_2048_output(PRIV.lp , HFLEN_2048);
+            printf("\nLQ = ");
+            FF_2048_output(PRIV.lq , HFLEN_2048);
+            printf("\nMP = ");
+            FF_2048_output(PRIV.mp , HFLEN_2048);
+            printf("\nMQ = ");
+            FF_2048_output(PRIV.mq , HFLEN_2048);
             printf("\nPUB N = ");
             FF_4096_output(PUB.n , FFLEN_4096);
             printf("\nPUB G = ");
@@ -257,22 +324,24 @@ int main(int argc, char** argv)
             printf("\n\n");
 #endif
 
-            compare_FF("PRIV.p",    "PRIVGOLDEN.p",    PRIV.p,    PRIVGOLDEN.p,    HFLEN_4096);
-            compare_FF("PRIV.q",    "PRIVGOLDEN.q",    PRIV.q,    PRIVGOLDEN.q,    HFLEN_4096);
-            compare_FF("PRIV.l",    "PRIVGOLDEN.l",    PRIV.l,    PRIVGOLDEN.l,    FFLEN_4096);
-            compare_FF("PRIV.m",    "PRIVGOLDEN.m",    PRIV.m,    PRIVGOLDEN.m,    FFLEN_4096);
-            compare_FF("PRIV.n",    "PRIVGOLDEN.n",    PRIV.n,    PRIVGOLDEN.n,    FFLEN_4096);
-            compare_FF("PRIV.g",    "PRIVGOLDEN.g",    PRIV.g,    PRIVGOLDEN.g,    FFLEN_4096);
-            compare_FF("PRIV.invn", "PRIVGOLDEN.invn", PRIV.invn, PRIVGOLDEN.invn, FFLEN_4096);
-            compare_FF("PRIV.n2",   "PRIVGOLDEN.n2",   PRIV.n2,   PRIVGOLDEN.n2,   FFLEN_4096);
+            ff_2048_compare("PRIV.p",    "PRIVGOLDEN.p",    PRIV.p,    PRIVGOLDEN.p,    HFLEN_2048);
+            ff_2048_compare("PRIV.q",    "PRIVGOLDEN.q",    PRIV.q,    PRIVGOLDEN.q,    HFLEN_2048);
+            ff_2048_compare("PRIV.lp",   "PRIVGOLDEN.lp",   PRIV.lp,   PRIVGOLDEN.lp,   HFLEN_2048);
+            ff_2048_compare("PRIV.mp",   "PRIVGOLDEN.mp",   PRIV.mp,   PRIVGOLDEN.mp,   HFLEN_2048);
+            ff_2048_compare("PRIV.lq",   "PRIVGOLDEN.lq",   PRIV.lq,   PRIVGOLDEN.lq,   HFLEN_2048);
+            ff_2048_compare("PRIV.mq",   "PRIVGOLDEN.mq",   PRIV.mq,   PRIVGOLDEN.mq,   HFLEN_2048);
+            ff_2048_compare("PRIV.invp", "PRIVGOLDEN.invp", PRIV.invp, PRIVGOLDEN.invp, FFLEN_2048);
+            ff_2048_compare("PRIV.p2",   "PRIVGOLDEN.p2",   PRIV.p2,   PRIVGOLDEN.p2,   FFLEN_2048);
+            ff_2048_compare("PRIV.invq", "PRIVGOLDEN.invq", PRIV.invq, PRIVGOLDEN.invq, FFLEN_2048);
+            ff_2048_compare("PRIV.q2",   "PRIVGOLDEN.q2",   PRIV.q2,   PRIVGOLDEN.q2,   FFLEN_2048);
 
-            compare_FF("PUB.n",  "PUBGOLDEN.n",  PUB.n,  PUBGOLDEN.n,  FFLEN_4096);
-            compare_FF("PUB.g",  "PUBGOLDEN.g",  PUB.g,  PUBGOLDEN.g,  FFLEN_4096);
-            compare_FF("PUB.n2", "PUBGOLDEN.n2", PUB.n2, PUBGOLDEN.n2, FFLEN_4096);
+            ff_4096_compare("PUB.n",  "PUBGOLDEN.n",  PUB.n,  PUBGOLDEN.n,  FFLEN_4096);
+            ff_4096_compare("PUB.g",  "PUBGOLDEN.g",  PUB.g,  PUBGOLDEN.g,  FFLEN_4096);
+            ff_4096_compare("PUB.n2", "PUBGOLDEN.n2", PUB.n2, PUBGOLDEN.n2, FFLEN_4096);
 
             // Clean keys for next test vector
-            clean_private(&PRIV);
-            clean_private(&PRIVGOLDEN);
+            PAILLIER_PRIVATE_KEY_KILL(&PRIV);
+            PAILLIER_PRIVATE_KEY_KILL(&PRIVGOLDEN);
 
             clean_public(&PUB);
             clean_public(&PUBGOLDEN);

@@ -1013,3 +1013,32 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 
     return 1;
 }
+
+/* Chinese Remainder Theorem to reconstruct results mod pq*/
+void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *q, int n)
+{
+#ifndef C99
+    BIG_XXX pq[FFLEN_WWW], invp[FFLEN_WWW], invq[FFLEN_WWW], a[2*FFLEN_WWW], b[2*FFLEN_WWW]; 
+#else
+    BIG_XXX pq[2*n], invp[2*n], invq[2*n], a[2*n], b[4*n];
+#endif
+
+    FF_WWW_mul(pq,p,q,n);
+
+    FF_WWW_zero(invp,2*n);
+    FF_WWW_zero(invq,2*n);
+
+    FF_WWW_invmodp(invp,p,q,n);
+    FF_WWW_invmodp(invq,q,p,n);
+
+    FF_WWW_mul(a,rq,p,n);
+    FF_WWW_mul(b,a,invp,2*n);
+    FF_WWW_dmod(r,b,pq,2*n);
+
+    FF_WWW_mul(a,rp,q,n);
+    FF_WWW_mul(b,a,invq,2*n);
+    FF_WWW_dmod(a,b,pq,2*n);
+    FF_WWW_add(r,r,a,2*n);
+
+    FF_WWW_mod(r,pq,2*n);
+}

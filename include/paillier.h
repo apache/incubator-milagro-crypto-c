@@ -52,15 +52,20 @@ typedef struct{
  * \brief Paillier Private Key
  */
 typedef struct{
-    BIG_512_60 n[FFLEN_4096]; /**< Paillier Modulus - n = pq*/
-    BIG_512_60 g[FFLEN_4096]; /**< Public Base - n+1 */
-    BIG_512_60 l[HFLEN_4096]; /**< Private Key (Euler totient of n) */
-    BIG_512_60 m[FFLEN_4096]; /**< Precomputed l^(-1) */
+    BIG_1024_58 p[HFLEN_2048]; /**< Secret Prime */
+    BIG_1024_58 q[HFLEN_2048]; /**< Secret Prime */
 
-    BIG_512_60 p[HFLEN_4096];     /**< Secret Prime */
-    BIG_512_60 q[HFLEN_4096];     /**< Secret Prime */
-    BIG_512_60 invn[FFLEN_4096];  /**< Precomputed inverse of n */
-    BIG_512_60 n2[FFLEN_4096];    /**< Precomputed n^2 */
+    BIG_1024_58 lp[HFLEN_2048]; /**< Private Key modulo p (Euler totient of p) */
+    BIG_1024_58 lq[HFLEN_2048]; /**< Private Key modulo q (Euler totient of q) */
+
+    BIG_1024_58 invp[FFLEN_2048]; /**< Precomputed inverse of p mod 2^m */
+    BIG_1024_58 invq[FFLEN_2048]; /**< Precomputed inverse of q mod 2^m */
+
+    BIG_1024_58 p2[FFLEN_2048]; /**< Precomputed p^2 */
+    BIG_1024_58 q2[FFLEN_2048]; /**< Precomputed q^2 */
+
+    BIG_1024_58 mp[HFLEN_2048]; /**< Precomputed L(g^lp mod p^2)^(-1) */
+    BIG_1024_58 mq[HFLEN_2048]; /**< Precomputed L(g^lq mod q^2)^(-1) */
 }PAILLIER_private_key;
 
 /*! \brief Generate the key pair
@@ -108,7 +113,9 @@ void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* C
 
 /*! \brief Decrypt ciphertext
  *
- *  These are the decryption steps.
+ *  These are the decryption steps modulo n.
+ *  The computations are carried out modulo p and q
+ *  and combined using the CRT.
  *
  *  <ol>
  *  <li> \f$ ctl = ct^l \pmod{n^2} - 1 \f$

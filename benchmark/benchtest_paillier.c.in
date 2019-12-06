@@ -266,10 +266,12 @@ int paillier(csprng *RNG)
     printf("Size info\n");
     printf("=========\n");
     
-    printf("public key n\t%d bytes\n", FS_2048);
-    printf("public key g\t%d bytes\n", FS_2048);
-    printf("secret key l\t%d bytes\n", FS_2048);
-    printf("secret key m\t%d bytes\n", FS_2048);
+    printf("public key n\t%d bytes\n",  FS_2048);
+    printf("public key g\t%d bytes\n",  FS_2048);
+    printf("secret key lp\t%d bytes\n", HFS_2048);
+    printf("secret key lq\t%d bytes\n", HFS_2048);
+    printf("secret key mp\t%d bytes\n", HFS_2048);
+    printf("secret key mq\t%d bytes\n", HFS_2048);
     printf("ciphertext\t%d bytes\n", FS_4096);
 
 #ifdef DEBUG

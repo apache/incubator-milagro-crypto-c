@@ -97,26 +97,32 @@ int paillier(csprng *RNG)
     PAILLIER_KEY_PAIR(RNG, NULL, NULL, &PUB, &PRIV);
 
     printf("P: ");
-    FF_4096_output(PRIV.p, HFLEN_4096/2);
+    FF_2048_output(PRIV.p, HFLEN_2048);
     printf("\n");
     printf("Q: ");
-    FF_4096_output(PRIV.q, HFLEN_4096/2);
+    FF_2048_output(PRIV.q, HFLEN_2048);
     printf("\n");
 
     printf("Public Key \n");
     printf("N: ");
-    FF_4096_output(PRIV.n, HFLEN_4096);
+    FF_4096_output(PUB.n, HFLEN_4096);
     printf("\n");
     printf("G: ");
-    FF_4096_output(PRIV.g, FFLEN_4096);
+    FF_4096_output(PUB.g, FFLEN_4096);
     printf("\n");
 
     printf("Secret Key \n");
-    printf("L: ");
-    FF_4096_output(PRIV.l, HFLEN_4096);
+    printf("L_p: ");
+    FF_2048_output(PRIV.lp, HFLEN_2048);
     printf("\n");
-    printf("M: ");
-    FF_4096_output(PRIV.m, HFLEN_4096);
+    printf("L_q: ");
+    FF_2048_output(PRIV.lq, HFLEN_2048);
+    printf("\n");
+    printf("M_p: ");
+    FF_2048_output(PRIV.mp, HFLEN_2048);
+    printf("\n");
+    printf("M_q: ");
+    FF_2048_output(PRIV.mq, HFLEN_2048);
     printf("\n");
 
     // Set plaintext values

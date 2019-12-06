@@ -41,14 +41,14 @@ void read_OCTET(octet* OCT, char* string)
     OCT_fromHex(OCT,buff);
 }
 
-void read_FF_4096(BIG_512_60 *x, char* string, int n)
+void read_FF_2048(BIG_1024_58 *x, char* string, int n)
 {
     int len = strlen(string);
     char oct[len/2];
     octet OCT = {0, len/2, oct};
 
     read_OCTET(&OCT, string);
-    FF_4096_fromOctet(x, &OCT, n);
+    FF_2048_fromOctet(x, &OCT, n);
 }
 
 int main(int argc, char** argv)
@@ -72,9 +72,12 @@ int main(int argc, char** argv)
     const char* TESTline = "TEST = ";
 
     PAILLIER_private_key PRIV;
-    const char* Nline = "N = ";
-    const char* Lline = "L = ";
-    const char* Mline = "M = ";
+    const char* Pline = "P = ";
+    const char* Qline = "Q = ";
+    const char* LPline = "LP = ";
+    const char* MPline = "MP = ";
+    const char* LQline = "LQ = ";
+    const char* MQline = "MQ = ";
 
     char ptgolden[FS_2048]= {0};
     octet PTGOLDEN = {0,sizeof(ptgolden),ptgolden};
@@ -94,61 +97,119 @@ int main(int argc, char** argv)
     while (fgets(line, LINE_LEN, fp) != NULL)
     {
         // Read TEST Number
-        if (!strncmp(line,TESTline, strlen(TESTline)))
+        if (!strncmp(line, TESTline, strlen(TESTline)))
         {
             len = strlen(TESTline);
             linePtr = line + len;
             sscanf(linePtr,"%d\n",&testNo);
         }
 
-        // Read N
-        if (!strncmp(line,Nline, strlen(Nline)))
+        // Read P
+        if (!strncmp(line, Pline, strlen(Pline)))
         {
-            len = strlen(Nline);
+            len = strlen(Pline);
             linePtr = line + len;
-            FF_4096_zero(PRIV.n, FFLEN_4096);
-            read_FF_4096(PRIV.n, linePtr, HFLEN_4096);
+            read_FF_2048(PRIV.p, linePtr, HFLEN_2048);
 
-            FF_4096_sqr(PRIV.n2,PRIV.n, HFLEN_4096);
-            FF_4096_norm(PRIV.n2, FFLEN_4096);
+            FF_2048_zero(PRIV.p2, FFLEN_2048);
+            FF_2048_sqr(PRIV.p2, PRIV.p, HFLEN_2048);
+            FF_2048_norm(PRIV.p2, FFLEN_2048);
 
-            FF_4096_invmod2m(PRIV.invn,PRIV.n,FFLEN_4096);
+            FF_2048_zero(PRIV.invp, FFLEN_2048);
+            FF_2048_invmod2m(PRIV.invp, PRIV.p, HFLEN_2048);
 #ifdef DEBUG
-            printf("N = ");
-            FF_4096_output(PRIV.n , FFLEN_4096);
+            printf("P= ");
+            FF_2048_output(PRIV.p , HFLEN_2048);
+            printf("\n");
+            printf("P2= ");
+            FF_2048_output(PRIV.p2 , HFLEN_2048);
+            printf("\n");
+            printf("PI= ");
+            FF_2048_output(PRIV.invp , HFLEN_2048);
             printf("\n");
 #endif
         }
 
-        // Read L
-        if (!strncmp(line,Lline, strlen(Lline)))
+        // Read Q
+        if (!strncmp(line, Qline, strlen(Qline)))
         {
-            len = strlen(Lline);
+            len = strlen(Qline);
             linePtr = line + len;
-            read_FF_4096(PRIV.l, linePtr, HFLEN_4096);
+            read_FF_2048(PRIV.q, linePtr, HFLEN_2048);
+
+            FF_2048_zero(PRIV.q2, FFLEN_2048);
+            FF_2048_sqr(PRIV.q2, PRIV.q, HFLEN_2048);
+            FF_2048_norm(PRIV.q2, FFLEN_2048);
+
+            FF_2048_zero(PRIV.invq, FFLEN_2048);
+            FF_2048_invmod2m(PRIV.invq, PRIV.q, HFLEN_2048);
 #ifdef DEBUG
-            printf("L = ");
-            FF_4096_output(PRIV.l , HFLEN_4096);
+            printf("Q= ");
+            FF_2048_output(PRIV.q , HFLEN_2048);
+            printf("\n");
+            printf("Q2= ");
+            FF_2048_output(PRIV.q2 , HFLEN_2048);
+            printf("\n");
+            printf("QI= ");
+            FF_2048_output(PRIV.invq , HFLEN_2048);
             printf("\n");
 #endif
         }
 
-        // Read M
-        if (!strncmp(line,Mline, strlen(Mline)))
+        // Read LP
+        if (!strncmp(line, LPline, strlen(LPline)))
         {
-            len = strlen(Mline);
+            len = strlen(LPline);
             linePtr = line + len;
-            FF_4096_zero(PRIV.m, FFLEN_4096);
-            read_FF_4096(PRIV.m, linePtr, HFLEN_4096);
+            read_FF_2048(PRIV.lp, linePtr, HFLEN_2048);
 #ifdef DEBUG
-            printf("M = ");
-            FF_4096_output(PRIV.m , FFLEN_4096);
+            printf("LP= ");
+            FF_2048_output(PRIV.lp , HFLEN_2048);
+            printf("\n");
+#endif
+        }
+
+        // Read LQ
+        if (!strncmp(line, LQline, strlen(LQline)))
+        {
+            len = strlen(LQline);
+            linePtr = line + len;
+            read_FF_2048(PRIV.lq, linePtr, HFLEN_2048);
+#ifdef DEBUG
+            printf("LQ= ");
+            FF_2048_output(PRIV.lq , HFLEN_2048);
+            printf("\n");
+#endif
+        }
+
+        // Read MP
+        if (!strncmp(line, MPline, strlen(MPline)))
+        {
+            len = strlen(MPline);
+            linePtr = line + len;
+            read_FF_2048(PRIV.mp, linePtr, HFLEN_2048);
+#ifdef DEBUG
+            printf("MP= ");
+            FF_2048_output(PRIV.mp , HFLEN_2048);
+            printf("\n");
+#endif
+        }
+
+        // Read MQ
+        if (!strncmp(line, MQline, strlen(MQline)))
+        {
+            len = strlen(MQline);
+            linePtr = line + len;
+            read_FF_2048(PRIV.mq, linePtr, HFLEN_2048);
+#ifdef DEBUG
+            printf("MQ= ");
+            FF_2048_output(PRIV.mq , HFLEN_2048);
             printf("\n");
 #endif
         }
 
         // Read CIPHERTEXT
-        if (!strncmp(line,CTline, strlen(CTline)))
+        if (!strncmp(line, CTline, strlen(CTline)))
         {
             len = strlen(CTline);
             linePtr = line + len;
@@ -160,7 +221,7 @@ int main(int argc, char** argv)
         }
 
         // Read PLAINTEXT and process test vector
-        if (!strncmp(line,PTline, strlen(PTline)))
+        if (!strncmp(line, PTline, strlen(PTline)))
         {
             len = strlen(PTline);
             linePtr = line + len;

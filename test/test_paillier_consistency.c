@@ -32,7 +32,7 @@ under the License.
 
 char* PT3GOLDEN_hex = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001a";
 
-void ff_compare(BIG_512_60 *a, BIG_512_60 *b, char *msg, int n)
+void ff_4096_compare(BIG_512_60 *a, BIG_512_60 *b, char *msg, int n)
 {
     if(FF_4096_comp(a, b, n))
     {
@@ -41,9 +41,18 @@ void ff_compare(BIG_512_60 *a, BIG_512_60 *b, char *msg, int n)
     }
 }
 
+void ff_2048_compare(BIG_1024_58 *a, BIG_1024_58 *b, char *msg, int n)
+{
+    if(FF_2048_comp(a, b, n))
+    {
+        fprintf(stderr, "FAILURE %s\n", msg);
+        exit(EXIT_FAILURE);
+    }
+}
+
 int paillier(csprng *RNG)
 {
-    BIG_512_60 zero[FFLEN_4096];
+    BIG_1024_58 zero[FFLEN_2048];
 
     // Key material
     PAILLIER_private_key PRIV;
@@ -116,34 +125,9 @@ int paillier(csprng *RNG)
     PAILLIER_PK_toOctet(&PUBOCT, &PUB);
     PAILLIER_PK_fromOctet(&PUBIN, &PUBOCT);
 
-    ff_compare(PUB.n,  PUBIN.n,  "n not correctly loaded",   FFLEN_4096);
-    ff_compare(PUB.g,  PUBIN.g,  "g not correctly loaded",   FFLEN_4096);
-    ff_compare(PUB.n2, PUBIN.n2, "n^2 not correctly loaded", FFLEN_4096);
-
-#ifdef DEBUG
-    printf("P: ");
-    FF_4096_output(PRIV.p, HFLEN_4096);
-    printf("\n");
-    printf("Q: ");
-    FF_4096_output(PRIV.q, HFLEN_4096);
-    printf("\n");
-
-    printf("Public Key \n");
-    printf("N: ");
-    FF_4096_output(PUB.n, HFLEN_4096);
-    printf("\n");
-    printf("G: ");
-    FF_4096_output(PUB.g, HFLEN_4096);
-    printf("\n");
-
-    printf("Secret Key \n");
-    printf("L: ");
-    FF_4096_output(PRIV.l, HFLEN_4096);
-    printf("\n");
-    printf("M: ");
-    FF_4096_output(PRIV.m, HFLEN_4096);
-    printf("\n");
-#endif
+    ff_4096_compare(PUB.n,  PUBIN.n,  "n not correctly loaded",   FFLEN_4096);
+    ff_4096_compare(PUB.g,  PUBIN.g,  "g not correctly loaded",   FFLEN_4096);
+    ff_4096_compare(PUB.n2, PUBIN.n2, "n^2 not correctly loaded", FFLEN_4096);
 
     // Set plaintext values
     for(int i=0; i<NTHREADS; i++)
@@ -155,25 +139,7 @@ int paillier(csprng *RNG)
         BIG_1024_58 ptk[FFLEN_2048];
         FF_2048_init(ptk, kvalues[i],FFLEN_2048);
         FF_2048_toOctet(&PTK[i], ptk, FFLEN_2048);
-
-#ifdef DEBUG
-        printf("pt ");
-        FF_2048_output(pt,FFLEN_2048);
-        printf("\n");
-        printf("ptk ");
-        FF_2048_output(ptk,FFLEN_2048);
-        printf("\n");
-#endif
     }
-
-#ifdef DEBUG
-    for(int i=0; i<NTHREADS; i++)
-    {
-        printf("PTIN[%d] ", i);
-        OCT_output(&PTIN[i]);
-        printf("\n");
-    }
-#endif
 
     // Encrypt plaintext
     for(int i=0; i<NTHREADS; i++)
@@ -181,29 +147,11 @@ int paillier(csprng *RNG)
         PAILLIER_ENCRYPT(RNG, &PUB, &PTIN[i], &CT[i], NULL);
     }
 
-#ifdef DEBUG
-    for(int i=0; i<NTHREADS; i++)
-    {
-        printf("CT[%d] ", i);
-        OCT_output(&CT[i]);
-        printf("\n");
-    }
-#endif
-
     // Decrypt ciphertexts
     for(int i=0; i<NTHREADS; i++)
     {
         PAILLIER_DECRYPT(&PRIV, &CT[i], &PTOUT[i]);
     }
-
-#ifdef DEBUG
-    for(int i=0; i<NTHREADS; i++)
-    {
-        printf("PTOUT[%d] ", i);
-        OCT_output(&PTOUT[i]);
-        printf("\n");
-    }
-#endif
 
     for(int i=0; i<NTHREADS; i++)
     {
@@ -212,28 +160,8 @@ int paillier(csprng *RNG)
 
     PAILLIER_ADD(&PUB, &CTA[0], &CTA[1], &CT3);
 
-#ifdef DEBUG
-    for(int i=0; i<NTHREADS; i++)
-    {
-        printf("CTA[%d] ", i);
-        OCT_output(&CTA[i]);
-        printf("\n");
-    }
-    printf("CT3: ");
-    OCT_output(&CT3);
-    printf("\n");
-#endif
-
     PAILLIER_DECRYPT(&PRIV, &CT3, &PT3);
 
-#ifdef DEBUG
-    printf("PT3GOLDEN: ");
-    OCT_output(&PT3GOLDEN);
-
-    printf("PT3: ");
-    OCT_output(&PT3);
-    printf("\n");
-#endif
     OCT_fromHex(&PT3GOLDEN,PT3GOLDEN_hex);
     if(!OCT_comp(&PT3GOLDEN,&PT3))
     {
@@ -243,11 +171,17 @@ int paillier(csprng *RNG)
 
     PAILLIER_PRIVATE_KEY_KILL(&PRIV);
 
-    FF_4096_zero(zero, FFLEN_4096);
-    ff_compare(zero, PRIV.p, "p not cleaned from private key", HFLEN_4096);
-    ff_compare(zero, PRIV.q, "p not cleaned from private key", HFLEN_4096);
-    ff_compare(zero, PRIV.l, "p not cleaned from private key", HFLEN_4096);
-    ff_compare(zero, PRIV.m, "p not cleaned from private key", FFLEN_4096);
+    FF_2048_zero(zero, FFLEN_2048);
+    ff_2048_compare(zero, PRIV.p,    "p not cleaned from private key",    HFLEN_2048);
+    ff_2048_compare(zero, PRIV.q,    "q not cleaned from private key",    HFLEN_2048);
+    ff_2048_compare(zero, PRIV.lp,   "lp not cleaned from private key",   HFLEN_2048);
+    ff_2048_compare(zero, PRIV.lq,   "lq not cleaned from private key",   HFLEN_2048);
+    ff_2048_compare(zero, PRIV.mp,   "mp not cleaned from private key",   HFLEN_2048);
+    ff_2048_compare(zero, PRIV.mq,   "mq not cleaned from private key",   HFLEN_2048);
+    ff_2048_compare(zero, PRIV.p2,   "p2 not cleaned from private key",   FFLEN_2048);
+    ff_2048_compare(zero, PRIV.q2,   "q2 not cleaned from private key",   FFLEN_2048);
+    ff_2048_compare(zero, PRIV.invp, "invp not cleaned from private key", FFLEN_2048);
+    ff_2048_compare(zero, PRIV.invq, "invq not cleaned from private key", FFLEN_2048);
 
     OCT_clear(&CT3);
     OCT_clear(&PT3);
