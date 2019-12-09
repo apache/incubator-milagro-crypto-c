@@ -272,8 +272,14 @@ endif()
 if(BUILD_PAILLIER)
   set(deps "amcl_core;amcl_paillier")
 
-  amcl_rsa_test(2048 test_ff_consistency_2048  test_ff_consistency_WWW.c.in  "${deps}" "SUCCESS")
-  amcl_rsa_test(4096 test_ff_consistency_4096  test_ff_consistency_WWW.c.in  "${deps}" "SUCCESS")
+  foreach(level 2048 4096)
+    amcl_rsa_field(BD "${level}")
+    amcl_rsa_field(TFF "${level}")
+
+    amcl_rsa_test(${level} test_big_arithmetics_${BD} test_big_arithmetics_XXX.c.in "${deps}" "SUCCESS" "big/test_vector_big.txt")
+    amcl_rsa_test(${level} test_big_consistency_${BD} test_big_consistency_XXX.c.in "${deps}" "SUCCESS")
+    amcl_rsa_test(${level} test_ff_consistency_${TFF} test_ff_consistency_WWW.c.in  "${deps}" "SUCCESS")
+  endforeach()
 
   amcl_test(test_paillier_consistency test_paillier_consistency.c "${deps}" "SUCCESS")
   amcl_test(test_paillier_decrypt test_paillier_decrypt.c "${deps}" "SUCCESS" "paillier/decrypt.txt")
