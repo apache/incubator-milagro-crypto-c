@@ -1038,8 +1038,7 @@ void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *q, in
     FF_WWW_mul(b, a, c, 2*n);
     FF_WWW_dmod(a, b, pq, 2*n);
 
-    FF_WWW_zero(r, 2*n);
-    FF_WWW_copy(r, rp, n);
+    FF_WWW_dscopy(r, rp, n);
     FF_WWW_add(r, r, a, 2*n);
     FF_WWW_mod(r, pq, 2*n);
 }
