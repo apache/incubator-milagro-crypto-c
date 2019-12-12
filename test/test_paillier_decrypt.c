@@ -117,17 +117,6 @@ int main(int argc, char** argv)
 
             FF_2048_zero(PRIV.invp, FFLEN_2048);
             FF_2048_invmod2m(PRIV.invp, PRIV.p, HFLEN_2048);
-#ifdef DEBUG
-            printf("P= ");
-            FF_2048_output(PRIV.p , HFLEN_2048);
-            printf("\n");
-            printf("P2= ");
-            FF_2048_output(PRIV.p2 , HFLEN_2048);
-            printf("\n");
-            printf("PI= ");
-            FF_2048_output(PRIV.invp , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read Q
@@ -143,17 +132,6 @@ int main(int argc, char** argv)
 
             FF_2048_zero(PRIV.invq, FFLEN_2048);
             FF_2048_invmod2m(PRIV.invq, PRIV.q, HFLEN_2048);
-#ifdef DEBUG
-            printf("Q= ");
-            FF_2048_output(PRIV.q , HFLEN_2048);
-            printf("\n");
-            printf("Q2= ");
-            FF_2048_output(PRIV.q2 , HFLEN_2048);
-            printf("\n");
-            printf("QI= ");
-            FF_2048_output(PRIV.invq , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read LP
@@ -162,11 +140,6 @@ int main(int argc, char** argv)
             len = strlen(LPline);
             linePtr = line + len;
             read_FF_2048(PRIV.lp, linePtr, HFLEN_2048);
-#ifdef DEBUG
-            printf("LP= ");
-            FF_2048_output(PRIV.lp , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read LQ
@@ -175,11 +148,6 @@ int main(int argc, char** argv)
             len = strlen(LQline);
             linePtr = line + len;
             read_FF_2048(PRIV.lq, linePtr, HFLEN_2048);
-#ifdef DEBUG
-            printf("LQ= ");
-            FF_2048_output(PRIV.lq , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read MP
@@ -188,11 +156,6 @@ int main(int argc, char** argv)
             len = strlen(MPline);
             linePtr = line + len;
             read_FF_2048(PRIV.mp, linePtr, HFLEN_2048);
-#ifdef DEBUG
-            printf("MP= ");
-            FF_2048_output(PRIV.mp , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read MQ
@@ -201,11 +164,6 @@ int main(int argc, char** argv)
             len = strlen(MQline);
             linePtr = line + len;
             read_FF_2048(PRIV.mq, linePtr, HFLEN_2048);
-#ifdef DEBUG
-            printf("MQ= ");
-            FF_2048_output(PRIV.mq , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read CIPHERTEXT
@@ -214,10 +172,6 @@ int main(int argc, char** argv)
             len = strlen(CTline);
             linePtr = line + len;
             read_OCTET(&CTGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("CIPHERTEXT = ");
-            OCT_output(&CTGOLDEN);
-#endif
         }
 
         // Read PLAINTEXT and process test vector
@@ -226,26 +180,11 @@ int main(int argc, char** argv)
             len = strlen(PTline);
             linePtr = line + len;
             read_OCTET(&PTGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("PLAINTEXT = ");
-            OCT_output(&PTGOLDEN);
-#endif
 
             PAILLIER_DECRYPT(&PRIV, &CTGOLDEN, &PT);
 
-#ifdef DEBUG
-            printf("PT: ");
-            OCT_output(&PT);
-            printf("\n");
-#endif
-
             if(!OCT_comp(&PTGOLDEN,&PT))
             {
-#ifdef DEBUG
-                printf("PTGOLDEN: ");
-                OCT_output(&PTGOLDEN);
-                printf("\n");
-#endif
                 fprintf(stderr, "FAILURE Test %d\n", testNo);
                 fclose(fp);
                 exit(EXIT_FAILURE);
@@ -258,4 +197,3 @@ int main(int argc, char** argv)
     printf("SUCCESS TEST PAILLIER DECRYPTION PASSED\n");
     exit(EXIT_SUCCESS);
 }
-

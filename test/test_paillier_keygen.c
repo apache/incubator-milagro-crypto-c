@@ -193,17 +193,6 @@ int main(int argc, char** argv)
             FF_2048_sqr(PRIVGOLDEN.p2, PRIVGOLDEN.p, HFLEN_2048);
             FF_2048_norm(PRIVGOLDEN.p2, FFLEN_2048);
             FF_2048_invmod2m(PRIVGOLDEN.invp, PRIVGOLDEN.p, HFLEN_2048);
-#ifdef DEBUG
-            printf("P= ");
-            FF_2048_output(PRIVGOLDEN.p , HFLEN_2048);
-            printf("\n");
-            printf("P2= ");
-            FF_2048_output(PRIVGOLDEN.p2 , HFLEN_2048);
-            printf("\n");
-            printf("PI= ");
-            FF_2048_output(PRIVGOLDEN.invp , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read Q
@@ -217,17 +206,6 @@ int main(int argc, char** argv)
             FF_2048_sqr(PRIVGOLDEN.q2, PRIVGOLDEN.q, HFLEN_2048);
             FF_2048_norm(PRIVGOLDEN.q2, FFLEN_2048);
             FF_2048_invmod2m(PRIVGOLDEN.invq, PRIVGOLDEN.q, HFLEN_2048);
-#ifdef DEBUG
-            printf("Q= ");
-            FF_2048_output(PRIVGOLDEN.q , HFLEN_2048);
-            printf("\n");
-            printf("Q2= ");
-            FF_2048_output(PRIVGOLDEN.q2 , HFLEN_2048);
-            printf("\n");
-            printf("QI= ");
-            FF_2048_output(PRIVGOLDEN.invq , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read LP
@@ -236,11 +214,6 @@ int main(int argc, char** argv)
             len = strlen(LPline);
             linePtr = line + len;
             read_FF_2048(PRIVGOLDEN.lp, linePtr, HFLEN_2048);
-#ifdef DEBUG
-            printf("LP= ");
-            FF_2048_output(PRIVGOLDEN.lp , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read LQ
@@ -249,11 +222,6 @@ int main(int argc, char** argv)
             len = strlen(LQline);
             linePtr = line + len;
             read_FF_2048(PRIVGOLDEN.lq, linePtr, HFLEN_2048);
-#ifdef DEBUG
-            printf("LQ= ");
-            FF_2048_output(PRIVGOLDEN.lq , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read MP
@@ -262,11 +230,6 @@ int main(int argc, char** argv)
             len = strlen(MPline);
             linePtr = line + len;
             read_FF_2048(PRIVGOLDEN.mp, linePtr, HFLEN_2048);
-#ifdef DEBUG
-            printf("MP= ");
-            FF_2048_output(PRIVGOLDEN.mp , HFLEN_2048);
-            printf("\n");
-#endif
         }
 
         // Read MQ and process test vector
@@ -275,11 +238,6 @@ int main(int argc, char** argv)
             len = strlen(MQline);
             linePtr = line + len;
             read_FF_2048(PRIVGOLDEN.mq, linePtr, HFLEN_2048);
-#ifdef DEBUG
-            printf("MQ= ");
-            FF_2048_output(PRIVGOLDEN.mq , HFLEN_2048);
-            printf("\n");
-#endif
 
             if (testSeed)
             {
@@ -297,32 +255,6 @@ int main(int argc, char** argv)
             {
                 PAILLIER_KEY_PAIR(NULL, &PGOLDEN, &QGOLDEN, &PUB, &PRIV);
             }
-
-#ifdef DEBUG
-            printf("SEED = ");
-            OCT_output(&SEEDGOLDEN);
-            printf("\nP = ");
-            FF_2048_output(PRIV.p , HFLEN_2048);
-            printf("\nQ = ");
-            FF_2048_output(PRIV.q , HFLEN_2048);
-            printf("\nN = ");
-            FF_2048_output(PRIV.n , FFLEN_2048);
-            printf("\nLP = ");
-            FF_2048_output(PRIV.lp , HFLEN_2048);
-            printf("\nLQ = ");
-            FF_2048_output(PRIV.lq , HFLEN_2048);
-            printf("\nMP = ");
-            FF_2048_output(PRIV.mp , HFLEN_2048);
-            printf("\nMQ = ");
-            FF_2048_output(PRIV.mq , HFLEN_2048);
-            printf("\nPUB N = ");
-            FF_4096_output(PUB.n , FFLEN_4096);
-            printf("\nPUB G = ");
-            FF_4096_output(PUB.g , FFLEN_4096);
-            printf("\nPUB N2 = ");
-            FF_4096_output(PUB.n2, FFLEN_4096);
-            printf("\n\n");
-#endif
 
             ff_2048_compare("PRIV.p",    "PRIVGOLDEN.p",    PRIV.p,    PRIVGOLDEN.p,    HFLEN_2048);
             ff_2048_compare("PRIV.q",    "PRIVGOLDEN.q",    PRIV.q,    PRIVGOLDEN.q,    HFLEN_2048);

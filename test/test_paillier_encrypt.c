@@ -114,11 +114,6 @@ int main(int argc, char** argv)
 
             FF_4096_sqr(PUB.n2, PUB.n, HFLEN_4096);
             FF_4096_norm(PUB.n2, FFLEN_4096);
-#ifdef DEBUG
-            printf("N = ");
-            FF_4096_output(PUB.n , FFLEN_4096);
-            printf("\n");
-#endif
         }
 
 
@@ -129,11 +124,6 @@ int main(int argc, char** argv)
             linePtr = line + len;
             FF_4096_zero(PUB.g, FFLEN_4096);
             read_FF_4096(PUB.g, linePtr, HFLEN_4096);
-#ifdef DEBUG
-            printf("\nG = ");
-            FF_4096_output(PUB.g , FFLEN_4096);
-            printf("\n");
-#endif
         }
 
         // Read R
@@ -142,10 +132,6 @@ int main(int argc, char** argv)
             len = strlen(Rline);
             linePtr = line + len;
             read_OCTET(&RGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("R = ");
-            OCT_output(&RGOLDEN);
-#endif
         }
 
         // Read PLAINTEXT
@@ -154,10 +140,6 @@ int main(int argc, char** argv)
             len = strlen(PTline);
             linePtr = line + len;
             read_OCTET(&PTGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("PLAINTEXT = ");
-            OCT_output(&PTGOLDEN);
-#endif
         }
 
         // Read CIPHERTEXT and process test vector
@@ -166,26 +148,11 @@ int main(int argc, char** argv)
             len = strlen(CTline);
             linePtr = line + len;
             read_OCTET(&CTGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("CIPHERTEXT = ");
-            OCT_output(&CTGOLDEN);
-#endif
 
             PAILLIER_ENCRYPT(NULL, &PUB, &PTGOLDEN, &CT, &RGOLDEN);
 
-#ifdef DEBUG
-            printf("CT: ");
-            OCT_output(&CT);
-            printf("\n");
-#endif
-
             if(!OCT_comp(&CTGOLDEN,&CT))
             {
-#ifdef DEBUG
-                printf("CTGOLDEN: ");
-                OCT_output(&CTGOLDEN);
-                printf("\n");
-#endif
                 fprintf(stderr, "FAILURE Test %d\n", testNo);
                 fclose(fp);
                 exit(EXIT_FAILURE);
@@ -198,4 +165,3 @@ int main(int argc, char** argv)
     printf("SUCCESS TEST PAILLIER ENCRYPTION PASSED\n");
     exit(EXIT_SUCCESS);
 }
-

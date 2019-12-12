@@ -112,11 +112,6 @@ int main(int argc, char** argv)
 
             FF_4096_sqr(PUB.n2, PUB.n, HFLEN_4096);
             FF_4096_norm(PUB.n2, FFLEN_4096);
-#ifdef DEBUG
-            printf("N = ");
-            FF_4096_output(PUB.n , FFLEN_4096);
-            printf("\n");
-#endif
         }
 
         // Read CIPHERTEXT1
@@ -125,10 +120,6 @@ int main(int argc, char** argv)
             len = strlen(CT1line);
             linePtr = line + len;
             read_OCTET(&CT1GOLDEN,linePtr);
-#ifdef DEBUG
-            printf("CIPHERTEXT1 = ");
-            OCT_output(&CT1GOLDEN);
-#endif
         }
 
         // Read PLAINTEXT2
@@ -137,10 +128,6 @@ int main(int argc, char** argv)
             len = strlen(PT2line);
             linePtr = line + len;
             read_OCTET(&PT2GOLDEN,linePtr);
-#ifdef DEBUG
-            printf("PLAINTEXT2 = ");
-            OCT_output(&PT2GOLDEN);
-#endif
         }
 
         // Read CIPHERTEXT and process test vector
@@ -149,26 +136,11 @@ int main(int argc, char** argv)
             len = strlen(CTline);
             linePtr = line + len;
             read_OCTET(&CTGOLDEN,linePtr);
-#ifdef DEBUG
-            printf("CIPHERTEXT = ");
-            OCT_output(&CTGOLDEN);
-#endif
 
             PAILLIER_MULT(&PUB, &CT1GOLDEN, &PT2GOLDEN, &CT);
 
-#ifdef DEBUG
-            printf("CT: ");
-            OCT_output(&CT);
-            printf("\n");
-#endif
-
             if(!OCT_comp(&CTGOLDEN,&CT))
             {
-#ifdef DEBUG
-                printf("CTGOLDEN: ");
-                OCT_output(&CTGOLDEN);
-                printf("\n");
-#endif
                 fprintf(stderr, "FAILURE Test %d\n", testNo);
                 fclose(fp);
                 exit(EXIT_FAILURE);
@@ -181,4 +153,3 @@ int main(int argc, char** argv)
     printf("SUCCESS TEST PAILLIER MULTIPLICATION PASSED\n");
     exit(EXIT_SUCCESS);
 }
-
