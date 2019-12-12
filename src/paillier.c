@@ -27,7 +27,7 @@ under the License.
 #include "ff_2048.h"
 #include "paillier.h"
 
-/* generate a Paillier key pair */
+// generate a Paillier key pair 
 void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV)
 {
     char oct[FS_2048];
@@ -147,9 +147,7 @@ void PAILLIER_PRIVATE_KEY_KILL(PAILLIER_private_key *PRIV)
     FF_2048_zero(PRIV->invq, FFLEN_2048);
 }
 
-/* Paillier encrypt
- R is for testing
-*/
+// Paillier encryption
 void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* CT, octet* R)
 {
     // Random r < n^2
@@ -190,7 +188,7 @@ void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* C
     FF_4096_zero(pt, HFLEN_4096);
 }
 
-/* Paillier decrypt */
+// Paillier decryption
 void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
 {
     // Chiphertext
@@ -253,11 +251,7 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
     FF_2048_zero(ctln, 2 * FFLEN_2048);
 }
 
-/* Homomorphic addition of plaintexts */
-/*  n2 = n * n
-    ct = ct1 * ct2
-    ct = ct % n2
-*/
+// Homomorphic addition of plaintexts 
 void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT)
 {
     // ciphertext
@@ -276,11 +270,7 @@ void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT)
     FF_4096_toOctet(CT, ct, FFLEN_4096);
 }
 
-/* Homomorphic multiplation of plaintext
-
-    ct = ct1 ^ pt mod n^2
-
-*/
+// Homomorphic multiplication of plaintext
 void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT)
 {
     // Ciphertext
@@ -305,6 +295,7 @@ void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT)
     FF_4096_zero(pt, HFLEN_4096);
 }
 
+// Read a public key from its octet representation
 void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK)
 {
     FF_4096_zero(PUB->n, FFLEN_4096);
@@ -317,6 +308,7 @@ void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK)
     FF_4096_inc(PUB->g, 1, HFLEN_4096);
 }
 
+// Write a public key to an octet
 void PAILLIER_PK_toOctet(octet *PK, PAILLIER_public_key *PUB)
 {
     FF_4096_toOctet(PK, PUB->n, HFLEN_4096);
