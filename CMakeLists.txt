@@ -64,7 +64,7 @@ set(AMCL_SOVERSION ${AMCL_VERSION_MAJOR})
 if(CMAKE_COMPILER_IS_GNUCC)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
                     OUTPUT_VARIABLE GCC_VERSION)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc -Wall -Wextra -Wno-strict-prototypes -Wunused-value -Wcast-align -Wunused-variable -Wundef -Wformat-security")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -static-libgcc -Wall -Wextra -Wno-strict-prototypes -Wunused-value -Wcast-align -Wunused-variable -Wundef -Wformat-security")
 
     if (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wshadow")
@@ -114,14 +114,16 @@ log(BUILD_EXAMPLES)
 log(BUILD_PYTHON)
 log(BUILD_TESTING) # added by 'include(CTest)'
 
-option(BUILD_MPIN    "Build MPIN"    ON)
-option(BUILD_WCC     "Build WCC"     ON)
-option(BUILD_X509    "BUild X509"    ON)
-option(BUILD_BLS     "Build BLS"    ON)
+option(BUILD_MPIN     "Build MPIN"     ON)
+option(BUILD_WCC      "Build WCC"      ON)
+option(BUILD_X509     "BUild X509"     ON)
+option(BUILD_BLS      "Build BLS"      ON)
+option(BUILD_PAILLIER "Build Paillier" OFF)
 log(BUILD_MPIN)
 log(BUILD_WCC)
 log(BUILD_X509)
 log(BUILD_BLS)
+log(BUILD_PAILLIER)
 
 option(DEBUG_REDUCE "Print debug message for field reduction" OFF)
 option(DEBUG_NORM "Detect digit overflow" OFF)
@@ -290,6 +292,62 @@ if(BUILD_X509)
 
   install(FILES
     include/x509.h
+    DESTINATION ${INSTALL_INCLUDESUBDIR}
+  )
+endif()
+
+##################################################
+# AMCL_PAILLIER Library
+##################################################
+
+if(BUILD_PAILLIER)
+  foreach(level 2048 4096)
+    amcl_rsa_field(BD "${level}")
+    amcl_rsa_field(TFF "${level}")
+
+    amcl_configure_file_rsa(include/config_big.h.in include/config_big_${BD}.h "${level}" amcl_paillier_GEN_HDRS)
+    amcl_configure_file_rsa(include/config_ff.h.in  include/config_ff_${TFF}.h "${level}" amcl_paillier_GEN_HDRS)
+    amcl_configure_file_rsa(include/big.h.in        include/big_${BD}.h        "${level}" amcl_paillier_GEN_HDRS)
+    amcl_configure_file_rsa(include/ff.h.in         include/ff_${TFF}.h        "${level}" amcl_paillier_GEN_HDRS)
+
+    amcl_configure_file_rsa(src/big.c.in src/big_${BD}.c  "${level}" amcl_paillier_GEN_SRCS)
+    amcl_configure_file_rsa(src/ff.c.in  src/ff_${TFF}.c  "${level}" amcl_paillier_GEN_SRCS)
+  endforeach()
+
+  list(APPEND amcl_paillier_GEN_HDRS include/paillier.h)
+  list(APPEND amcl_paillier_GEN_SRCS src/paillier.c)
+
+  message(STATUS "Build libamcl_paillier")
+  add_library(amcl_paillier
+    ${amcl_paillier_GEN_SRCS}
+  )
+  list(APPEND AMCL_LIBRARIES amcl_paillier)
+
+  set_target_properties(amcl_paillier PROPERTIES
+    EXPORT_NAME paillier
+    VERSION ${AMCL_VERSION}
+    SOVERSION ${AMCL_SOVERSION}
+  )
+
+  target_include_directories(amcl_paillier PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/incldue>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
+
+  target_link_libraries(amcl_paillier PUBLIC
+    amcl_core
+  )
+
+  install(TARGETS amcl_paillier
+    EXPORT AMCLTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
+
+  install(FILES
+    ${amcl_paillier_GEN_HDRS}
     DESTINATION ${INSTALL_INCLUDESUBDIR}
   )
 endif()

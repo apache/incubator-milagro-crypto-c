@@ -208,9 +208,9 @@ Start a command prompt as an administrator
 ```
 git clone https://github.com/apache/incubator-milagro-crypto-c.git
 cd milagro-crypto-c
-mkdir target\build
-cd target\build
-cmake -G "MinGW Makefiles" -D WORD_SIZE=64 ..\..
+mkdir build
+cd build
+cmake -G "MinGW Makefiles" -D WORD_SIZE=64 ..
 mingw32-make
 mingw32-make test
 mingw32-make doc

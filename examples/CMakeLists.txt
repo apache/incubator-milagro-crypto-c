@@ -66,3 +66,8 @@ foreach(level ${AMCL_RSA})
   target_link_libraries(example_rsa_${TFF} PRIVATE amcl_rsa_${TFF})
 
 endforeach()
+
+if(BUILD_PAILLIER)
+  add_executable(example_paillier example_paillier.c)
+  target_link_libraries(example_paillier PRIVATE amcl_paillier)
+endif()
