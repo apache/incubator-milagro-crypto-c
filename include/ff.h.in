@@ -284,6 +284,17 @@ extern void FF_WWW_power(BIG_XXX *r,BIG_XXX *x,int e,BIG_XXX *p,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_pow(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e,BIG_XXX *p,int n);
+/**	@brief Calculate r=x^e.y^f mod m
+ *
+	@param r FF instance, on exit = x^e.y^f mod p
+	@param x FF instance
+	@param e BIG exponent
+	@param y FF instance
+	@param f BIG exponent
+	@param m FF modulus
+	@param n size of FF in BIGs
+ */
+extern void FF_WWW_pow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *y,BIG_XXX f,BIG_XXX *m,int n);
 /**	@brief Test if an FF has factor in common with integer s
  *
 	@param x FF instance to be tested

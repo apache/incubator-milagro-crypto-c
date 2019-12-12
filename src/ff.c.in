@@ -924,6 +924,44 @@ void FF_WWW_pow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX p[],int n)
     FF_WWW_redc(r,p,ND,n);
 }
 
+/* double exponentiation r=x^e.y^f mod p */
+void FF_WWW_pow2(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX y[],BIG_XXX f,BIG_XXX p[],int n)
+{
+    int i,eb,fb;
+#ifndef C99
+    BIG_XXX xn[FFLEN_WWW],yn[FFLEN_WWW],xy[FFLEN_WWW],ND[FFLEN_WWW];
+#else
+    BIG_XXX xn[n],yn[n],xy[n],ND[n];
+#endif
+
+    FF_WWW_invmod2m(ND,p,n);
+
+    FF_WWW_copy(xn,x,n);
+    FF_WWW_copy(yn,y,n);
+    FF_WWW_nres(xn,p,n);
+    FF_WWW_nres(yn,p,n);
+    FF_WWW_modmul(xy,xn,yn,p,ND,n);
+    FF_WWW_one(r,n);
+    FF_WWW_nres(r,p,n);
+
+    for (i=8*MODBYTES_XXX-1; i>=0; i--)
+    {
+        eb=BIG_XXX_bit(e,i);
+        fb=BIG_XXX_bit(f,i);
+        FF_WWW_modsqr(r,r,p,ND,n);
+        if (eb==1)
+        {
+            if (fb==1) FF_WWW_modmul(r,r,xy,p,ND,n);
+            else FF_WWW_modmul(r,r,xn,p,ND,n);
+        }
+        else
+        {
+            if (fb==1) FF_WWW_modmul(r,r,yn,p,ND,n);
+        }
+    }
+    FF_WWW_redc(r,p,ND,n);
+}
+
 static sign32 igcd(sign32 x,sign32 y)
 {
     /* integer GCD, returns GCD of x and y */
