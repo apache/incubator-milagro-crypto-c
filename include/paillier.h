@@ -42,10 +42,10 @@ under the License.
  * \brief Paillier Public Key
  */
 typedef struct{
-    BIG_512_60 n[FFLEN_4096]; /**< Paillier Modulus - n = pq */
-    BIG_512_60 g[FFLEN_4096]; /**< Public Base - n+1 */
+    BIG_512_60 n[FFLEN_4096]; /**< Paillier Modulus - \f$ n = pq \f$ */
+    BIG_512_60 g[FFLEN_4096]; /**< Public Base - \f$ g = n+1 \f$ */
 
-    BIG_512_60 n2[FFLEN_4096]; /**< Precomputed n^2 */
+    BIG_512_60 n2[FFLEN_4096]; /**< Precomputed \f$ n^2 \f$ */
 }PAILLIER_public_key;
 
 /*!
@@ -55,17 +55,17 @@ typedef struct{
     BIG_1024_58 p[HFLEN_2048]; /**< Secret Prime */
     BIG_1024_58 q[HFLEN_2048]; /**< Secret Prime */
 
-    BIG_1024_58 lp[HFLEN_2048]; /**< Private Key modulo p (Euler totient of p) */
-    BIG_1024_58 lq[HFLEN_2048]; /**< Private Key modulo q (Euler totient of q) */
+    BIG_1024_58 lp[HFLEN_2048]; /**< Private Key modulo \f$ p \f$ (Euler totient of \f$ p \f$) */
+    BIG_1024_58 lq[HFLEN_2048]; /**< Private Key modulo \f$ q \f$ (Euler totient of \f$ q \f$) */
 
-    BIG_1024_58 invp[FFLEN_2048]; /**< Precomputed inverse of p mod 2^m */
-    BIG_1024_58 invq[FFLEN_2048]; /**< Precomputed inverse of q mod 2^m */
+    BIG_1024_58 invp[FFLEN_2048]; /**< Precomputed \f$ p^{-1} \pmod{2^m} \f$ */
+    BIG_1024_58 invq[FFLEN_2048]; /**< Precomputed \f$ q^{-1} \pmod{2^m} \f$ */
 
-    BIG_1024_58 p2[FFLEN_2048]; /**< Precomputed p^2 */
-    BIG_1024_58 q2[FFLEN_2048]; /**< Precomputed q^2 */
+    BIG_1024_58 p2[FFLEN_2048]; /**< Precomputed \f$ p^2 \f$ */
+    BIG_1024_58 q2[FFLEN_2048]; /**< Precomputed \f$ q^2 \f$ */
 
-    BIG_1024_58 mp[HFLEN_2048]; /**< Precomputed L(g^lp mod p^2)^(-1) */
-    BIG_1024_58 mq[HFLEN_2048]; /**< Precomputed L(g^lq mod q^2)^(-1) */
+    BIG_1024_58 mp[HFLEN_2048]; /**< Precomputed \f$ L(g^{lp} \pmod{p^2})^{-1} \f$ */
+    BIG_1024_58 mq[HFLEN_2048]; /**< Precomputed \f$ L(g^{lq} \pmod{q^2})^{-1} \f$ */
 }PAILLIER_private_key;
 
 /*! \brief Generate the key pair
@@ -160,14 +160,14 @@ void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT);
  */
 void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT);
 
-/**! \brief Read a public key from its octet representation
+/*! \brief Read a public key from its octet representation
  *
  * @param   PUB   Public key
  * @param   PK    Octet representation of the public key
  */
 void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK);
 
-/**! \brief Write a public key to an octet
+/*! \brief Write a public key to an octet
  *
  * @param   PK    Destination octet
  * @param   PUB   Public key
