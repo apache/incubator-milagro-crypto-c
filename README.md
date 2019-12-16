@@ -73,7 +73,10 @@ sudo apt-get install -y \
      lcov \
      python3-dev \
      python3-pip \
-     gcc-multilib
+     gcc-multilib \
+     git \
+     rpm \
+     checkinstall
 
 sudo pip3 install cffi autopep8
 ```
@@ -96,6 +99,7 @@ sudo dnf install -y @development-tools \
     libgcc.i686
 
 sudo pip3 install cffi autopep8
+sudo yum install rpm-build
 ```
 
 * **MacOS**
@@ -112,16 +116,25 @@ brew install parallel
 * **Windows**
 
 * install [MinGW](http://www.mingw.org) Please select the **mingw32-base** and **mingw32-gcc-g++** components. Add *C:\MinGW\bin* to the PATH variable
-* install [Python](https://www.python.org/downloads/windows/). Add *C:\Python27 to the PATH variable
-* install [CMake](http://www.cmake.org)
+* install [Python](https://www.python.org/downloads/windows/). Either Python 2.7.x or 3.8.x may be used.  During the installation, ensure that the option to add Python to the Windows PATH variable is selected.
+* install [CMake](http://www.cmake.org). During installation, ensure that the option to add the CMake executable to the Windows PATH variable is selected.
 * install [Doxygen](http://www.doxygen.org)
-
+* install [Git](https://git-scm.com/)
 
 ## Build Instructions
 
 #### Linux and Mac
 
 ##### Quick start
+
+Either clone the repository using Git:
+
+```
+git clone https://github.com/apache/incubator-milagro-crypto-c.git
+cd incubator-milagro-crypto-c
+```
+
+Or, if using an official Apache release, download the compressed archive, extract it and navigate into its root directory.
 
 A Makefile is present at the project root that reads the options defined in
 config.mk. Change these options and then type the following to build and test
@@ -144,11 +157,14 @@ program. To build and run the example use this script;
 
 ##### Manual build
 
-NOTE: The default build is for 64 bit machines
+NOTE: The default build is for 64 bit machines.  Either use Git to clone the repository:
 
 ```
 git clone https://github.com/apache/incubator-milagro-crypto-c.git
 cd incubator-milagro-crypto-c
+```
+Or, if using an official Apache release, download the compressed archive, extract it and navigate into its root directory.
+```
 mkdir -p target/build
 cd target/build
 cmake ../..
@@ -198,16 +214,19 @@ sudo make uninstall
 After having built the libraries you can build a binary installer and a source distribution by running this command
 
 ```
-make package
+sudo make package
 ```
 
 #### Windows
 
-Start a command prompt as an administrator
+Start a command prompt as an administrator and either use Git to clone the repository
 
 ```
 git clone https://github.com/apache/incubator-milagro-crypto-c.git
-cd milagro-crypto-c
+cd incubator-milagro-crypto-c
+```
+Or, if using an official Apache release, download the compressed archive, extract it and navigate into its root directory.
+```
 mkdir build
 cd build
 cmake -G "MinGW Makefiles" -D WORD_SIZE=64 ..
@@ -219,7 +238,7 @@ mingw32-make install
 
 Post install append the PATH system variable to point to the install ./lib:
 
-*My Computer -> Properties -> Advanced > Environment Variables*
+*Control Panel - System and Security - System - Advanced System Settings - Environment Variables*
 
 The build can be configured using by setting flags on the command line i.e.
 
@@ -238,7 +257,7 @@ mingw32-make uninstall
 After having built the libraries you can build a Windows installer using this command
 
 ```
-sudo mingw32-make package
+mingw32-make package
 ```
 
 In order for this to work [NSIS](https://nsis.sourceforge.io) has to have been installed
