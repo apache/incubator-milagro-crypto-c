@@ -50,6 +50,10 @@ foreach(curve ${AMCL_CURVE})
     amcl_configure_file_curve(example_bls_ZZZ.c.in example_bls_${TC}.c "${curve}" example_bls_${TC}_GEN_SRCS)
     add_executable(example_bls_${TC} ${example_bls_${TC}_GEN_SRCS})
     target_link_libraries(example_bls_${TC} PRIVATE amcl_bls_${TC})
+    
+    amcl_configure_file_curve(example_bls_sss_ZZZ.c.in example_bls_sss_${TC}.c "${curve}" example_bls_sss_${TC}_GEN_SRCS)
+    add_executable(example_bls_sss_${TC} ${example_bls_sss_${TC}_GEN_SRCS})
+    target_link_libraries(example_bls_sss_${TC} PRIVATE amcl_bls_${TC})
   endif()
   
 endforeach()
@@ -62,3 +66,8 @@ foreach(level ${AMCL_RSA})
   target_link_libraries(example_rsa_${TFF} PRIVATE amcl_rsa_${TFF})
 
 endforeach()
+
+if(BUILD_PAILLIER)
+  add_executable(example_paillier example_paillier.c)
+  target_link_libraries(example_paillier PRIVATE amcl_paillier)
+endif()

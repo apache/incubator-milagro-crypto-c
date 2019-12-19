@@ -209,6 +209,7 @@ foreach(curve ${AMCL_CURVE})
     ################################################
     if(BUILD_BLS)
       amcl_curve_test(${curve} test_bls_${TC} test_bls_ZZZ.c.in amcl_bls_${TC} "SUCCESS")
+      amcl_curve_test(${curve} test_bls_sss_${TC} test_bls_sss_ZZZ.c.in amcl_bls_${TC} "SUCCESS")      
     endif()
     
   endif()
@@ -223,6 +224,7 @@ foreach(level ${AMCL_RSA})
 
   amcl_rsa_test(${level} test_big_arithmetics_${BD} test_big_arithmetics_XXX.c.in amcl_rsa_${TFF} "SUCCESS" "big/test_vector_big.txt")
   amcl_rsa_test(${level} test_big_consistency_${BD} test_big_consistency_XXX.c.in amcl_rsa_${TFF} "SUCCESS")
+  amcl_rsa_test(${level} test_ff_consistency_${TFF}  test_ff_consistency_WWW.c.in  amcl_rsa_${TFF} "SUCCESS")
   amcl_rsa_test(${level} test_rsa_${TFF}            test_rsa_WWW.c.in             amcl_rsa_${TFF} "SUCCESS")
 endforeach()
 
@@ -261,4 +263,28 @@ if(BUILD_X509)
 
     endforeach()
   endforeach()
+endif()
+
+################################################
+# Paillier Tests
+################################################
+
+if(BUILD_PAILLIER)
+  set(deps "amcl_core;amcl_paillier")
+
+  foreach(level 2048 4096)
+    amcl_rsa_field(BD "${level}")
+    amcl_rsa_field(TFF "${level}")
+
+    amcl_rsa_test(${level} test_big_arithmetics_${BD} test_big_arithmetics_XXX.c.in "${deps}" "SUCCESS" "big/test_vector_big.txt")
+    amcl_rsa_test(${level} test_big_consistency_${BD} test_big_consistency_XXX.c.in "${deps}" "SUCCESS")
+    amcl_rsa_test(${level} test_ff_consistency_${TFF} test_ff_consistency_WWW.c.in  "${deps}" "SUCCESS")
+  endforeach()
+
+  amcl_test(test_paillier_consistency test_paillier_consistency.c "${deps}" "SUCCESS")
+  amcl_test(test_paillier_decrypt test_paillier_decrypt.c "${deps}" "SUCCESS" "paillier/decrypt.txt")
+  amcl_test(test_paillier_encrypt test_paillier_encrypt.c "${deps}" "SUCCESS" "paillier/encrypt.txt")
+  amcl_test(test_paillier_add test_paillier_add.c "${deps}" "SUCCESS" "paillier/add.txt")
+  amcl_test(test_paillier_mult test_paillier_mult.c "${deps}" "SUCCESS" "paillier/mult.txt")
+  amcl_test(test_paillier_keygen test_paillier_keygen.c "${deps}" "SUCCESS" "paillier/keygen.txt")
 endif()
