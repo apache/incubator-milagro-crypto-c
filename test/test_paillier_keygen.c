@@ -117,7 +117,7 @@ int main(int argc, char** argv)
     octet PGOLDEN = {0,sizeof(pgolden),pgolden};
     const char* Pline = "P = ";
 
-    char qgolden[HFS_2048]={0};
+    char qgolden[HFS_2048]= {0};
     octet QGOLDEN = {0,sizeof(qgolden),qgolden};
     const char* Qline = "Q = ";
 

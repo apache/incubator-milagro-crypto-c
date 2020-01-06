@@ -41,17 +41,19 @@ under the License.
 /*!
  * \brief Paillier Public Key
  */
-typedef struct{
+typedef struct
+{
     BIG_512_60 n[FFLEN_4096]; /**< Paillier Modulus - \f$ n = pq \f$ */
     BIG_512_60 g[FFLEN_4096]; /**< Public Base - \f$ g = n+1 \f$ */
 
     BIG_512_60 n2[FFLEN_4096]; /**< Precomputed \f$ n^2 \f$ */
-}PAILLIER_public_key;
+} PAILLIER_public_key;
 
 /*!
  * \brief Paillier Private Key
  */
-typedef struct{
+typedef struct
+{
     BIG_1024_58 p[HFLEN_2048]; /**< Secret Prime */
     BIG_1024_58 q[HFLEN_2048]; /**< Secret Prime */
 
@@ -66,7 +68,7 @@ typedef struct{
 
     BIG_1024_58 mp[HFLEN_2048]; /**< Precomputed \f$ L(g^{lp} \pmod{p^2})^{-1} \f$ */
     BIG_1024_58 mq[HFLEN_2048]; /**< Precomputed \f$ L(g^{lq} \pmod{q^2})^{-1} \f$ */
-}PAILLIER_private_key;
+} PAILLIER_private_key;
 
 /*! \brief Generate the key pair
  *

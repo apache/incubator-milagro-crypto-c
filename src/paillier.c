@@ -27,7 +27,7 @@ under the License.
 #include "ff_2048.h"
 #include "paillier.h"
 
-// generate a Paillier key pair 
+// generate a Paillier key pair
 void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV)
 {
     char oct[FS_2048];
@@ -251,7 +251,7 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
     FF_2048_zero(dws, 2 * FFLEN_2048);
 }
 
-// Homomorphic addition of plaintexts 
+// Homomorphic addition of plaintexts
 void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT)
 {
     // ciphertext
