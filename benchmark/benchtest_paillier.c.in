@@ -64,7 +64,7 @@ static void print_platform_info()
 {
 #if defined(__linux__)
     printf("Target platform:\tLinux ");
-    
+
 #if defined(__x86_64__)
     printf("(64-bit)\n");
 #else
@@ -89,9 +89,9 @@ static void print_platform_info()
 
 static void print_paillier_configuration()
 {
-    printf("Project Version:\t@BUILD_VERSION@\n");    
+    printf("Project Version:\t@BUILD_VERSION@\n");
     printf("CFLAGS:\t\t\t@CMAKE_C_FLAGS@\n");
-    printf("Build type:\t\t@CMAKE_BUILD_TYPE@\n");    
+    printf("Build type:\t\t@CMAKE_BUILD_TYPE@\n");
     printf("AMCL Version:\t\t@AMCL_VERSION_MAJOR@.@AMCL_VERSION_MINOR@.@AMCL_VERSION_PATCH@\n");
     printf("AMCL Detected OS:\t@OS@\n");
     printf("AMCL CHUNK:\t\t%d\n", CHUNK);
@@ -176,7 +176,7 @@ int paillier(csprng *RNG)
 
     printf("Timing info\n");
     printf("===========\n");
-    
+
     // Generating public/private key pair
     iterations=0;
     start=clock();
@@ -265,7 +265,7 @@ int paillier(csprng *RNG)
 
     printf("Size info\n");
     printf("=========\n");
-    
+
     printf("public key n\t%d bytes\n",  FS_2048);
     printf("public key g\t%d bytes\n",  FS_2048);
     printf("secret key lp\t%d bytes\n", HFS_2048);

@@ -27,7 +27,7 @@ under the License.
 #include "ff_2048.h"
 #include "paillier.h"
 
-// generate a Paillier key pair 
+// generate a Paillier key pair
 void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV)
 {
     char oct[FS_2048];
@@ -200,42 +200,42 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
     BIG_1024_58 ptq[HFLEN_2048];
 
     // Work space
-    BIG_1024_58 ctl[FFLEN_2048];
-    BIG_1024_58 ctln[2 * FFLEN_2048];
+    BIG_1024_58 ws[FFLEN_2048];
+    BIG_1024_58 dws[2 * FFLEN_2048];
 
     FF_2048_fromOctet(ct, CT, 2 * FFLEN_2048);
 
     /* Decryption modulo p */
 
-    FF_2048_dmod(ctl, ct, PRIV->p2, FFLEN_2048);
+    FF_2048_dmod(ws, ct, PRIV->p2, FFLEN_2048);
 
-    // Compute ctl = (ct^lp mod p2 - 1)
-    FF_2048_skpow(ctl, ctl, PRIV->lp, PRIV->p2, FFLEN_2048, HFLEN_2048);
-    FF_2048_dec(ctl, 1, FFLEN_2048);
+    // Compute ws = (ct^lp mod p2 - 1)
+    FF_2048_skpow(ws, ws, PRIV->lp, PRIV->p2, FFLEN_2048, HFLEN_2048);
+    FF_2048_dec(ws, 1, FFLEN_2048);
 
-    // ctln = ctl / p
+    // dws = ws / p
     // Division by p using the inverse mod 2^m trick
-    FF_2048_mul(ctln, ctl, PRIV->invp, FFLEN_2048);
+    FF_2048_mul(dws, ws, PRIV->invp, FFLEN_2048);
 
-    // ptp = ctln * mp mod p
-    FF_2048_mul(ptp, ctln, PRIV->mp, HFLEN_2048);
-    FF_2048_dmod(ptp, ptp, PRIV->p, HFLEN_2048);
+    // ptp = dws * mp mod p
+    FF_2048_mul(ws, dws, PRIV->mp, HFLEN_2048);
+    FF_2048_dmod(ptp, ws, PRIV->p, HFLEN_2048);
 
     /* Decryption modulo q */
 
-    FF_2048_dmod(ctl, ct, PRIV->q2, FFLEN_2048);
+    FF_2048_dmod(ws, ct, PRIV->q2, FFLEN_2048);
 
-    // Compute ctl = (ct^lq mod q2 - 1)
-    FF_2048_skpow(ctl, ctl, PRIV->lq, PRIV->q2, FFLEN_2048, HFLEN_2048);
-    FF_2048_dec(ctl, 1, FFLEN_2048);
+    // Compute ws = (ct^lq mod q2 - 1)
+    FF_2048_skpow(ws, ws, PRIV->lq, PRIV->q2, FFLEN_2048, HFLEN_2048);
+    FF_2048_dec(ws, 1, FFLEN_2048);
 
-    // ctln = ctl / q
+    // dws = ws / q
     // Division by q using the inverse mod 2^m trick
-    FF_2048_mul(ctln, ctl, PRIV->invq, FFLEN_2048);
+    FF_2048_mul(dws, ws, PRIV->invq, FFLEN_2048);
 
-    // ptq = ctln * mq mod q
-    FF_2048_mul(ptq, ctln, PRIV->mq, HFLEN_2048);
-    FF_2048_dmod(ptq, ptq, PRIV->q, HFLEN_2048);
+    // ptq = dws * mq mod q
+    FF_2048_mul(ws, dws, PRIV->mq, HFLEN_2048);
+    FF_2048_dmod(ptq, ws, PRIV->q, HFLEN_2048);
 
     /* Combine results using CRT */
     FF_2048_crt(pt, ptp, ptq, PRIV->p, PRIV->q, HFLEN_2048);
@@ -244,14 +244,14 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
     FF_2048_toOctet(PT, pt, FFLEN_2048);
 
     // Clean memory
-    FF_2048_zero(pt,   FFLEN_2048);
-    FF_2048_zero(ptp,  HFLEN_2048);
-    FF_2048_zero(ptq,  HFLEN_2048);
-    FF_2048_zero(ctl,  FFLEN_2048);
-    FF_2048_zero(ctln, 2 * FFLEN_2048);
+    FF_2048_zero(pt,  FFLEN_2048);
+    FF_2048_zero(ptp, HFLEN_2048);
+    FF_2048_zero(ptq, HFLEN_2048);
+    FF_2048_zero(ws,  FFLEN_2048);
+    FF_2048_zero(dws, 2 * FFLEN_2048);
 }
 
-// Homomorphic addition of plaintexts 
+// Homomorphic addition of plaintexts
 void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT)
 {
     // ciphertext
