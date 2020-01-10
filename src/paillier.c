@@ -180,7 +180,7 @@ void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* C
     // Output R for Debug
     if (R!=NULL)
     {
-        FF_4096_toOctet(R, r, HFLEN_4096);
+        FF_4096_toOctet(R, r, FFLEN_4096);
     }
 
     // Clean memory

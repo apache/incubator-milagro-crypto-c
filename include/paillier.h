@@ -23,12 +23,19 @@ under the License.
  *
  */
 
+#ifndef PAILLIER_H
+#define PAILLIER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "ff_4096.h"
 #include "ff_2048.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Field size
 #define FS_4096 MODBYTES_512_60*FFLEN_4096    /**< 4096 field size in bytes */
@@ -175,3 +182,9 @@ void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK);
  * @param   PUB   Public key
  */
 void PAILLIER_PK_toOctet(octet *PK, PAILLIER_public_key *PUB);
+
+#ifdef __cplusplus
+}
+#endif
+  
+#endif
