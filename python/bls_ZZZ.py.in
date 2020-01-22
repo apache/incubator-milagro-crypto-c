@@ -54,8 +54,8 @@ extern void KILL_CSPRNG(csprng *R);
 extern void OCT_clear(octet *O);
 
 extern int BLS_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W);
-extern int BLS_ZZZ_SIGN(octet *SIG,char *m,octet *S);
-extern int BLS_ZZZ_VERIFY(octet *SIG,char *m,octet *W);
+extern int BLS_ZZZ_SIGN(octet *SIG,octet *m,octet *S);
+extern int BLS_ZZZ_VERIFY(octet *SIG,octet *m,octet *W);
 extern int BLS_ZZZ_ADD_G1(octet *R1,octet *R2,octet *R);
 extern int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W);
 
