@@ -48,7 +48,7 @@ int main()
     octet OCT = {0,FS_WWW,oct};
 
     BIG_XXX A[HFLEN_WWW], B[HFLEN_WWW], C[HFLEN_WWW], D[HFLEN_WWW];
-    BIG_XXX F[FFLEN_WWW], G[FFLEN_WWW], H[FFLEN_WWW], L[FFLEN_WWW], P[FFLEN_WWW], Q[FFLEN_WWW], N[FFLEN_WWW];
+    BIG_XXX E[FFLEN_WWW], F[FFLEN_WWW], G[FFLEN_WWW], H[FFLEN_WWW], L[FFLEN_WWW], P[FFLEN_WWW], Q[FFLEN_WWW], N[FFLEN_WWW];
 
     /* Fake random source */
     RAND_clean(&RNG);
@@ -280,6 +280,61 @@ int main()
             printf("ERROR testing crt");
             exit(EXIT_FAILURE);
         }
+    }
+
+    /* Testing multiple power */
+    FF_WWW_random(A, &RNG, HFLEN_WWW);
+    FF_WWW_random(B, &RNG, HFLEN_WWW);
+    FF_WWW_random(C, &RNG, HFLEN_WWW);
+    FF_WWW_random(D, &RNG, HFLEN_WWW);
+
+    FF_WWW_random(E, &RNG, HFLEN_WWW);
+    FF_WWW_random(F, &RNG, HFLEN_WWW);
+    FF_WWW_random(G, &RNG, HFLEN_WWW);
+    FF_WWW_random(H, &RNG, HFLEN_WWW);
+
+#if WWW == 4096
+    // P is too small for dmod if using ff_4096
+    FF_WWW_copy(P, N, HFLEN_WWW);
+#endif
+
+    FF_WWW_pow(L, A, E, P, HFLEN_WWW);
+    FF_WWW_pow(N, B, F, P, HFLEN_WWW);
+    FF_WWW_mul(Q, L, N, HFLEN_WWW);
+    FF_WWW_dmod(L, Q, P, HFLEN_WWW);
+
+    FF_WWW_bpow2(N, A, E, B, F, P, HFLEN_WWW, HFLEN_WWW);
+
+    if(FF_WWW_comp(N, L, HFLEN_WWW))
+    {
+        printf("ERROR testing bpow2");
+        exit(EXIT_FAILURE);
+    }
+
+    // Test triple exponent
+    FF_WWW_pow(N, C, G, P, HFLEN_WWW);
+    FF_WWW_mul(Q, L, N, HFLEN_WWW);
+    FF_WWW_dmod(L, Q, P, HFLEN_WWW);
+
+    FF_WWW_pow3(N, A, E, B, F, C, G, P, HFLEN_WWW, HFLEN_WWW);
+
+    if(FF_WWW_comp(N, L, HFLEN_WWW))
+    {
+        printf("ERROR testing pow3");
+        exit(EXIT_FAILURE);
+    }
+
+    // Test quadruple exponent
+    FF_WWW_pow(N, D, H, P, HFLEN_WWW);
+    FF_WWW_mul(Q, L, N, HFLEN_WWW);
+    FF_WWW_dmod(L, Q, P, HFLEN_WWW);
+
+    FF_WWW_pow4(N, A, E, B, F, C, G, D, H, P, HFLEN_WWW, HFLEN_WWW);
+
+    if(FF_WWW_comp(N, L, HFLEN_WWW))
+    {
+        printf("ERROR testing pow4");
+        exit(EXIT_FAILURE);
     }
 
     printf("SUCCESS TEST CONSISTENCY OF FF_WWW PASSED\n");
