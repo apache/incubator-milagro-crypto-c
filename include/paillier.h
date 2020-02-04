@@ -186,5 +186,5 @@ void PAILLIER_PK_toOctet(octet *PK, PAILLIER_public_key *PUB);
 #ifdef __cplusplus
 }
 #endif
-  
+
 #endif

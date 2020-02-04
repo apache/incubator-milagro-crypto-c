@@ -28,10 +28,10 @@ This module use cffi to access the c functions in the mpin library.
 There is also an example usage program in this file.
 
 """
+
 import cffi
 import platform
 import os
-
 ffi = cffi.FFI()
 ffi.cdef("""
 typedef struct {
