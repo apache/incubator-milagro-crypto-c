@@ -866,6 +866,64 @@ void FF_WWW_skpow2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[
     FF_WWW_redc(r,p,ND,n);
 }
 
+/* r=x^e*y^f mod p - side channel resistant */
+void FF_WWW_skpow3(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX z[], BIG_XXX g[], BIG_XXX p[], int n, int en)
+{
+    int i,b;
+#ifndef C99
+    BIG_XXX xn[FFLEN_WWW],yn[FFLEN_WWW],zn[FFLEN_WWW],xy[FFLEN_WWW],xz[FFLEN_WWW],yz[FFLEN_WWW],xyz[FFLEN_WWW],w[FFLEN_WWW],ND[FFLEN_WWW];
+#else
+    BIG_XXX xn[n],yn[n],zn[n],xy[n],xz[n],yz[n],xyz[n],w[n],ND[n];
+#endif
+
+    FF_WWW_invmod2m(ND, p, n);
+
+    FF_WWW_copy(xn, x, n);
+    FF_WWW_copy(yn, y, n);
+    FF_WWW_copy(zn, z, n);
+    FF_WWW_nres(xn, p, n);
+    FF_WWW_nres(yn, p, n);
+    FF_WWW_nres(zn, p, n);
+    FF_WWW_modmul(xy,  xn, yn, p, ND, n);
+    FF_WWW_modmul(xz,  xn, zn, p, ND, n);
+    FF_WWW_modmul(yz,  yn, zn, p, ND, n);
+    FF_WWW_modmul(xyz, xy, zn, p, ND, n);
+    FF_WWW_one(w, n);
+    FF_WWW_one(r, n);
+    FF_WWW_nres(w, p, n);
+    FF_WWW_nres(r, p, n);
+
+    for (i=8*MODBYTES_XXX*en-1; i>=0; i--)
+    {
+        b = BIG_XXX_bit(g[i/BIGBITS_XXX],i%BIGBITS_XXX);
+        b <<= 1;
+        b = b | BIG_XXX_bit(f[i/BIGBITS_XXX],i%BIGBITS_XXX);
+        b <<= 1;
+        b = b | BIG_XXX_bit(e[i/BIGBITS_XXX],i%BIGBITS_XXX);
+
+        FF_WWW_cswap(w, xn,  b == 0x01, n);
+        FF_WWW_cswap(w, yn,  b == 0x02, n);
+        FF_WWW_cswap(w, zn,  b == 0x04, n);
+        FF_WWW_cswap(w, xy,  b == 0x03, n);
+        FF_WWW_cswap(w, xz,  b == 0x05, n);
+        FF_WWW_cswap(w, yz,  b == 0x06, n);
+        FF_WWW_cswap(w, xyz, b == 0x07, n);
+
+        FF_WWW_modsqr(r, r, p, ND, n);
+        FF_WWW_modmul(r, w, r, p, ND, n);
+
+        FF_WWW_cswap(w, xn,  b == 0x01, n);
+        FF_WWW_cswap(w, yn,  b == 0x02, n);
+        FF_WWW_cswap(w, zn,  b == 0x04, n);
+        FF_WWW_cswap(w, xy,  b == 0x03, n);
+        FF_WWW_cswap(w, xz,  b == 0x05, n);
+        FF_WWW_cswap(w, yz,  b == 0x06, n);
+        FF_WWW_cswap(w, xyz, b == 0x07, n);
+    }
+
+    FF_WWW_redc(r, p, ND, n);
+}
+
 /* raise to an integer power - right-to-left method */
 void FF_WWW_power(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
 {

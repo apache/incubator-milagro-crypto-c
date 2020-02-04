@@ -324,6 +324,16 @@ int main()
         exit(EXIT_FAILURE);
     }
 
+    // Test triple exponent for secret key
+    FF_WWW_zero(N, HFLEN_WWW);
+    FF_WWW_skpow3(N, A, E, B, F, C, G, P, HFLEN_WWW, HFLEN_WWW);
+
+    if(FF_WWW_comp(N, L, HFLEN_WWW))
+    {
+        printf("ERROR testing pow3");
+        exit(EXIT_FAILURE);
+    }
+
     // Test quadruple exponent
     FF_WWW_pow(N, D, H, P, HFLEN_WWW);
     FF_WWW_mul(Q, L, N, HFLEN_WWW);
