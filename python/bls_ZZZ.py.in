@@ -28,10 +28,10 @@ This module use cffi to access the c functions in the BLS library.
 There is also an example usage program in this file.
 
 """
+
 import cffi
 import platform
 import os
-
 ffi = cffi.FFI()
 ffi.cdef("""
 typedef struct {
@@ -252,7 +252,7 @@ def sign(message, sk):
     Raises:
 
     """
-    m, m_val = make_octet(None, message)    
+    m, m_val = make_octet(None, message)
     sk1, sk1_val = make_octet(None, sk)
     signature1, signature1_val = make_octet(G1LEN)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_SIGN(signature1, m, sk1)
@@ -284,7 +284,7 @@ def verify(signature, message, pk):
     Raises:
 
     """
-    m, m_val = make_octet(None, message)        
+    m, m_val = make_octet(None, message)
     pk1, pk1_val = make_octet(None, pk)
     signature1, signature1_val = make_octet(None, signature)
     error_code = libamcl_bls_ZZZ.BLS_ZZZ_VERIFY(signature1, m, pk1)
@@ -360,7 +360,6 @@ def add_G2(R1, R2):
     libamcl_core.OCT_clear(R1)
 
     return error_code, R
-
 
 
 if __name__ == "__main__":

@@ -253,7 +253,7 @@ extern void FF_WWW_skpow(BIG_XXX *r,BIG_XXX *x,BIG_XXX * e,BIG_XXX *p,int n, int
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_skspow(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *p,int n);
-/**	@brief Calculate r=x^e.y^f mod p for big e and f, side channel resistant
+/**	@brief Calculate r=x^e.y^f mod p for FF e and f, side channel resistant
  *
 	@param r  FF instance, on exit = x^e.y^f mod p
 	@param x  FF instance
@@ -265,6 +265,20 @@ extern void FF_WWW_skspow(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *p,int n);
 	@param en size of the exponent in BIGs
  */
 extern void FF_WWW_skpow2(BIG_XXX *r,BIG_XXX *x, BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *p, int n, int en);
+/**	@brief Calculate r=x^e.y^f.z^g mod p for FF e, f and g, side channel resistant
+ *
+	@param r  FF instance, on exit = x^e.y^f.z^g mod p
+	@param x  FF instance
+	@param e  FF exponent
+	@param y  FF instance
+	@param f  FF exponent
+	@param z  FF instance
+	@param g  FF exponent
+	@param p  FF modulus
+	@param n  size of FF in BIGs
+	@param en size of the exponent in BIGs
+ */
+extern void FF_WWW_skpow3(BIG_XXX *r,BIG_XXX *x, BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *p, int n, int en);
 /**	@brief Calculate r=x^e mod p
  *
 	For very short integer exponent
@@ -295,6 +309,48 @@ extern void FF_WWW_pow(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e,BIG_XXX *p,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_pow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *y,BIG_XXX f,BIG_XXX *m,int n);
+/**	@brief Calculate r=x^e.y^f mod p. Faster but non constant time
+ *
+	@param r  FF instance, on exit = x^e.y^f mod p
+	@param x  FF instance
+	@param e  BIG exponent
+	@param y  FF instance
+	@param f  BIG exponent
+	@param p  FF modulus
+	@param n   size of FF in BIGs
+	@param en size of exponent in BIGs
+ */
+void FF_WWW_bpow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *p,int n, int en);
+/**	@brief Calculate r=x^e.y^f.z^g mod p. Faster but non constant time
+ *
+	@param r  FF instance, on exit = x^e.y^f.z^g mod p
+	@param x  FF instance
+	@param e  BIG exponent
+	@param y  FF instance
+	@param f  BIG exponent
+	@param z  FF instance
+	@param g  BIG exponent
+	@param p  FF modulus
+	@param n  size of FF in BIGs
+	@param en size of exponent in BIGs
+ */
+void FF_WWW_pow3(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *p, int n, int en);
+/**	@brief Calculate r=x^e.y^f.z^g.w^h mod p. Faster but non constant time
+ *
+	@param r  FF instance, on exit = x^e.y^f.z^g.w^h mod p
+	@param x  FF instance
+	@param e  BIG exponent
+	@param y  FF instance
+	@param f  BIG exponent
+	@param z  FF instance
+	@param g  BIG exponent
+	@param w  FF instance
+	@param h  BIG exponent
+	@param p  FF modulus
+	@param n  size of FF in BIGs
+	@param en size of exponent in BIGs
+ */
+extern void FF_WWW_pow4(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *w, BIG_XXX *h, BIG_XXX *p, int n, int en);
 /**	@brief Test if an FF has factor in common with integer s
  *
 	@param x FF instance to be tested

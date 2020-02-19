@@ -28,9 +28,9 @@ This module use cffi to access the c functions in the WCC library.
 There is also an example usage program in this file.
 
 """
+
 import cffi
 import platform
-
 ffi = cffi.FFI()
 ffi.cdef("""
 typedef struct {
