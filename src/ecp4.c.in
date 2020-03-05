@@ -744,6 +744,7 @@ void ECP4_ZZZ_mapit(ECP4_ZZZ *Q,octet *W)
         FP4_YYY_from_FP2(&X4,&T);
         if (ECP4_ZZZ_setx(Q,&X4)) break;
         BIG_XXX_inc(hv,1);
+        BIG_XXX_norm(hv);
     }
 
     ECP4_ZZZ_frob_constants(X);

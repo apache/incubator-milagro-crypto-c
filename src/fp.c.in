@@ -767,6 +767,7 @@ void FP_YYY_sqrt(FP_YYY *r,FP_YYY *a)
         FP_YYY_mul(&i,&i,&v); // i=(2x)^(p+3)/8
         FP_YYY_mul(&i,&i,&v); // i=(2x)^(p-1)/4
         BIG_XXX_dec(i.g,1);  // i=(2x)^(p-1)/4 - 1
+        BIG_XXX_norm(i.g);
         FP_YYY_mul(r,a,&v);
         FP_YYY_mul(r,r,&i);
         FP_YYY_reduce(r);
