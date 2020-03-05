@@ -112,7 +112,7 @@ int main()
 
     /* Testing small multiplication and addition */
     BIG_XXX_random(F,&rng);
-    for (j = 1; j <= 20; ++j)
+    for (j = 1; j <= NEXCESS_XXX; ++j)
     {
         BIG_XXX_imul(H,F,j);
         BIG_XXX_copy(G,F);
