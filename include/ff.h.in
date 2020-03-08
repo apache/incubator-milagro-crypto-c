@@ -298,6 +298,16 @@ extern void FF_WWW_power(BIG_XXX *r,BIG_XXX *x,int e,BIG_XXX *p,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_pow(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e,BIG_XXX *p,int n);
+/**	@brief Calculate r=x^e mod p
+ *
+	@param r  FF instance, on exit = x^e mod p
+	@param x  FF instance
+	@param e  FF exponent
+	@param p  FF modulus
+	@param n  size of base in BIGs
+	@param en size of exponent in BIGs
+ */
+extern void FF_WWW_hpow(BIG_XXX *r, BIG_XXX *x, BIG_XXX *e, BIG_XXX *p, int n, int en);
 /**	@brief Calculate r=x^e.y^f mod m
  *
 	@param r FF instance, on exit = x^e.y^f mod p

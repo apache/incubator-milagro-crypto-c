@@ -33,12 +33,7 @@ void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB
     char oct[FS_2048];
     octet OCT = {0, FS_2048, oct};
 
-    // Public key
-    BIG_1024_58 g[FFLEN_2048];
-
-    // Workspace for CRT precomputations
-    BIG_1024_58 ff[FFLEN_2048];
-    BIG_1024_58 dff[2*FFLEN_2048];
+    BIG_1024_58 n[FFLEN_2048];
 
     /* Private key */
 
@@ -92,33 +87,25 @@ void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB
     FF_2048_norm(PRIV->p2, FFLEN_2048);
     FF_2048_norm(PRIV->q2, FFLEN_2048);
 
-    // g = n + 1
-    FF_2048_mul(g, PRIV->p, PRIV->q, HFLEN_2048);
-    FF_2048_inc(g, 1, FFLEN_2048);
+    // mp = (((g^(p-1) mod p^2) -1) / p)^(-1) mod p
+    // Using g = n+1, g^(p-1) = 1 + n(p-1) mod p^2, i.e.
+    // mp = (n(p-1)/p)^(-1) = -q^(-1) mod p
 
-    // (((g^(p-1) mod p^2) - 1) / p)^(-1) mod p for dec/enc with CRT
-    FF_2048_skpow(ff, g, PRIV->lp, PRIV->p2, FFLEN_2048, HFLEN_2048);
-    FF_2048_dec(ff, 1, FFLEN_2048);
-    FF_2048_mul(dff, ff, PRIV->invp, FFLEN_2048);
-    FF_2048_invmodp(PRIV->mp, dff, PRIV->p, HFLEN_2048);
+    // (-q)^(-1) mod p
+    FF_2048_invmodp(PRIV->mp, PRIV->q, PRIV->p, HFLEN_2048);
+    FF_2048_sub(PRIV->mp, PRIV->p, PRIV->mp, HFLEN_2048);
+    FF_2048_norm(PRIV->mp, HFLEN_2048);
 
-    // (((g^(q-1) mod q^2) - 1) / q)^(-1) mod q for dec/enc with CRT
-    FF_2048_skpow(ff, g, PRIV->lq, PRIV->q2, FFLEN_2048, HFLEN_2048);
-    FF_2048_dec(ff, 1, FFLEN_2048);
-    FF_2048_mul(dff, ff, PRIV->invq, FFLEN_2048);
-    FF_2048_invmodp(PRIV->mq, dff, PRIV->q, HFLEN_2048);
+    // (-p)^(-1) mod q
+    FF_2048_invmodp(PRIV->mq, PRIV->p, PRIV->q, HFLEN_2048);
+    FF_2048_sub(PRIV->mq, PRIV->q, PRIV->mq, HFLEN_2048);
+    FF_2048_norm(PRIV->mq, HFLEN_2048);
 
     /* Public Key */
 
-    // g = n + 1
-    FF_2048_toOctet(&OCT, g, FFLEN_2048);
-    FF_4096_zero(PUB->g, FFLEN_4096);
-    FF_4096_fromOctet(PUB->g, &OCT, HFLEN_4096);
-    OCT_empty(&OCT);
-
     // n
-    FF_2048_dec(g, 1, FFLEN_2048);
-    FF_2048_toOctet(&OCT, g, FFLEN_2048);
+    FF_2048_mul(n, PRIV->p, PRIV->q, HFLEN_2048);
+    FF_2048_toOctet(&OCT, n, FFLEN_2048);
     FF_4096_zero(PUB->n, FFLEN_4096);
     FF_4096_fromOctet(PUB->n, &OCT, HFLEN_4096);
     OCT_empty(&OCT);
@@ -126,10 +113,6 @@ void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB
     // Precompute n^2 for public key
     FF_4096_sqr(PUB->n2, PUB->n, HFLEN_4096);
     FF_4096_norm(PUB->n2, FFLEN_4096);
-
-    // Clean memory
-    FF_2048_zero(ff, FFLEN_2048);
-    FF_2048_zero(dff, 2*FFLEN_2048);
 }
 
 /* Clean secrets from private key */
@@ -150,41 +133,49 @@ void PAILLIER_PRIVATE_KEY_KILL(PAILLIER_private_key *PRIV)
 // Paillier encryption
 void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* CT, octet* R)
 {
-    // Random r < n^2
-    BIG_512_60 r[FFLEN_4096];
-
     // plaintext
     BIG_512_60 pt[HFLEN_4096];
 
-    // ciphertext
-    BIG_512_60 ct[FFLEN_4096];
+    // workspaces
+    BIG_512_60 ws1[FFLEN_4096];
+    BIG_512_60 ws2[FFLEN_4096];
+    BIG_512_60 dws[2 * FFLEN_4096];
 
-    FF_4096_fromOctet(pt,PT,HFLEN_4096);
+    FF_4096_fromOctet(pt, PT, HFLEN_4096);
 
     // In production generate R from RNG
     if (RNG!=NULL)
     {
-        FF_4096_randomnum(r, PUB->n2, RNG,FFLEN_4096);
+        FF_4096_randomnum(ws1, PUB->n2, RNG,FFLEN_4096);
     }
     else
     {
-        FF_4096_fromOctet(r, R, FFLEN_4096);
+        FF_4096_fromOctet(ws1, R, FFLEN_4096);
     }
-
-    // ct = g^pt * r^n mod n2
-    FF_4096_skpow2(ct, PUB->g, pt, r, PUB->n, PUB->n2, FFLEN_4096, HFLEN_4096);
-
-    // Output
-    FF_4096_toOctet(CT, ct, FFLEN_4096);
 
     // Output R for Debug
     if (R!=NULL)
     {
-        FF_4096_toOctet(R, r, FFLEN_4096);
+        FF_4096_toOctet(R, ws1, FFLEN_4096);
     }
 
+    // r^n
+    FF_4096_hpow(ws1, ws1, PUB->n, PUB->n2, FFLEN_4096, HFLEN_4096);
+
+    // g^pt = 1 + pt * n
+    FF_4096_mul(ws2, pt, PUB->n, HFLEN_4096);
+    FF_4096_inc(ws2, 1, FFLEN_4096);
+    FF_4096_norm(ws2, FFLEN_4096);
+
+    // ct = g^pt * r^n mod n^2
+    FF_4096_mul(dws, ws1, ws2, FFLEN_4096);
+    FF_4096_dmod(ws1, dws, PUB->n2, FFLEN_4096);
+
+    // Output
+    FF_4096_toOctet(CT, ws1, FFLEN_4096);
+
     // Clean memory
-    FF_4096_zero(r, FFLEN_4096);
+    FF_4096_zero(ws2, FFLEN_4096);
     FF_4096_zero(pt, HFLEN_4096);
 }
 
@@ -298,14 +289,10 @@ void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT)
 // Read a public key from its octet representation
 void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK)
 {
-    FF_4096_zero(PUB->n, FFLEN_4096);
     FF_4096_fromOctet(PUB->n, PK, HFLEN_4096);
 
     FF_4096_sqr(PUB->n2, PUB->n, HFLEN_4096);
     FF_4096_norm(PUB->n2, FFLEN_4096);
-
-    FF_4096_copy(PUB->g, PUB->n, FFLEN_4096);
-    FF_4096_inc(PUB->g, 1, HFLEN_4096);
 }
 
 // Write a public key to an octet

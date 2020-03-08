@@ -125,8 +125,7 @@ int paillier(csprng *RNG)
     PAILLIER_PK_toOctet(&PUBOCT, &PUB);
     PAILLIER_PK_fromOctet(&PUBIN, &PUBOCT);
 
-    ff_4096_compare(PUB.n,  PUBIN.n,  "n not correctly loaded",   FFLEN_4096);
-    ff_4096_compare(PUB.g,  PUBIN.g,  "g not correctly loaded",   FFLEN_4096);
+    ff_4096_compare(PUB.n,  PUBIN.n,  "n not correctly loaded",   HFLEN_4096);
     ff_4096_compare(PUB.n2, PUBIN.n2, "n^2 not correctly loaded", FFLEN_4096);
 
     // Set plaintext values

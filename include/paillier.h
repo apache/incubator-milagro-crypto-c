@@ -50,9 +50,7 @@ extern "C" {
  */
 typedef struct
 {
-    BIG_512_60 n[FFLEN_4096]; /**< Paillier Modulus - \f$ n = pq \f$ */
-    BIG_512_60 g[FFLEN_4096]; /**< Public Base - \f$ g = n+1 \f$ */
-
+    BIG_512_60 n[HFLEN_4096];  /**< Paillier Modulus - \f$ n = pq \f$ */
     BIG_512_60 n2[FFLEN_4096]; /**< Precomputed \f$ n^2 \f$ */
 } PAILLIER_public_key;
 

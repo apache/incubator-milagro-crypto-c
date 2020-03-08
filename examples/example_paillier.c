@@ -107,9 +107,6 @@ int paillier(csprng *RNG)
     printf("N: ");
     FF_4096_output(PUB.n, HFLEN_4096);
     printf("\n");
-    printf("G: ");
-    FF_4096_output(PUB.g, FFLEN_4096);
-    printf("\n");
 
     printf("Secret Key \n");
     printf("L_p: ");
