@@ -160,7 +160,7 @@ void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* C
     }
 
     // r^n
-    FF_4096_hpow(ws1, ws1, PUB->n, PUB->n2, FFLEN_4096, HFLEN_4096);
+    FF_4096_pow(ws1, ws1, PUB->n, PUB->n2, FFLEN_4096, HFLEN_4096);
 
     // g^pt = 1 + pt * n
     FF_4096_mul(ws2, pt, PUB->n, HFLEN_4096);
