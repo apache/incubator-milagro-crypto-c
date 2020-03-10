@@ -73,7 +73,6 @@ int main(int argc, char** argv)
 
     PAILLIER_public_key PUB;
     const char* Nline = "N = ";
-    const char* Gline = "G = ";
 
     char rgolden[FS_4096]= {0};
     octet RGOLDEN = {0,sizeof(rgolden),rgolden};
@@ -114,16 +113,6 @@ int main(int argc, char** argv)
 
             FF_4096_sqr(PUB.n2, PUB.n, HFLEN_4096);
             FF_4096_norm(PUB.n2, FFLEN_4096);
-        }
-
-
-        // Read G
-        if (!strncmp(line,Gline, strlen(Gline)))
-        {
-            len = strlen(Gline);
-            linePtr = line + len;
-            FF_4096_zero(PUB.g, FFLEN_4096);
-            read_FF_4096(PUB.g, linePtr, HFLEN_4096);
         }
 
         // Read R

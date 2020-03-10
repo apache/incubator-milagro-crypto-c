@@ -82,8 +82,7 @@ void ff_2048_compare(char *x_name, char* y_name, BIG_1024_58 *x, BIG_1024_58 *y,
 
 void clean_public(PAILLIER_public_key *PUB)
 {
-    FF_4096_zero(PUB->n, FFLEN_4096);
-    FF_4096_zero(PUB->g, FFLEN_4096);
+    FF_4096_zero(PUB->n,  HFLEN_4096);
     FF_4096_zero(PUB->n2, FFLEN_4096);
 }
 
@@ -124,7 +123,6 @@ int main(int argc, char** argv)
     PAILLIER_private_key PRIVGOLDEN;
     PAILLIER_public_key PUBGOLDEN;
     const char* Nline = "N = ";
-    const char* Gline = "G = ";
     const char* LPline = "LP = ";
     const char* MPline = "MP = ";
     const char* LQline = "LQ = ";
@@ -161,21 +159,12 @@ int main(int argc, char** argv)
             testSeed = 1;
         }
 
-        // Read G
-        if (!strncmp(line, Gline, strlen(Gline)))
-        {
-            len = strlen(Gline);
-            linePtr = line + len;
-            read_FF_4096(PUBGOLDEN.g, linePtr, HFLEN_4096);
-        }
-
         // Read N
         if (!strncmp(line, Nline, strlen(Nline)))
         {
             len = strlen(Nline);
             linePtr = line + len;
 
-            FF_4096_zero(PUBGOLDEN.n, FFLEN_4096);
             read_FF_4096(PUBGOLDEN.n, linePtr, HFLEN_4096);
 
             FF_4096_sqr(PUBGOLDEN.n2, PUBGOLDEN.n, HFLEN_4096);
@@ -267,8 +256,7 @@ int main(int argc, char** argv)
             ff_2048_compare("PRIV.invq", "PRIVGOLDEN.invq", PRIV.invq, PRIVGOLDEN.invq, FFLEN_2048);
             ff_2048_compare("PRIV.q2",   "PRIVGOLDEN.q2",   PRIV.q2,   PRIVGOLDEN.q2,   FFLEN_2048);
 
-            ff_4096_compare("PUB.n",  "PUBGOLDEN.n",  PUB.n,  PUBGOLDEN.n,  FFLEN_4096);
-            ff_4096_compare("PUB.g",  "PUBGOLDEN.g",  PUB.g,  PUBGOLDEN.g,  FFLEN_4096);
+            ff_4096_compare("PUB.n",  "PUBGOLDEN.n",  PUB.n,  PUBGOLDEN.n,  HFLEN_4096);
             ff_4096_compare("PUB.n2", "PUBGOLDEN.n2", PUB.n2, PUBGOLDEN.n2, FFLEN_4096);
 
             // Clean keys for next test vector
