@@ -165,7 +165,7 @@ foreach(curve ${AMCL_CURVE})
     # output
     if(CMAKE_SYSTEM_NAME MATCHES "Linux" AND NOT DEBUG_NORM)
       amcl_curve_test(${curve} test_output_functions_${TC} test_output_functions_ZZZ.c.in amcl_pairing_${TC} "SUCCESS" "output/test_vector_${TC}_${WORD_SIZE}.txt" "stdout.out")
-    endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    endif(CMAKE_SYSTEM_NAME MATCHES "Linux" AND NOT DEBUG_NORM)
 
     ################################################
     # MPIN Tests
