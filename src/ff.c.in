@@ -71,9 +71,12 @@ void FF_WWW_zero(BIG_XXX x[],int n)
 int FF_WWW_iszilch(BIG_XXX x[],int n)
 {
     int i;
+    int rc = 1;
+
     for (i=0; i<n; i++)
-        if (!BIG_XXX_iszilch(x[i])) return 0;
-    return 1;
+        rc &= BIG_XXX_iszilch(x[i]);
+
+    return rc;
 }
 
 /* shift right by BIGBITS-bit words */
@@ -137,13 +140,19 @@ void FF_WWW_init(BIG_XXX x[],sign32 m,int n)
 /* compare x and y - must be normalised */
 int FF_WWW_comp(BIG_XXX x[],BIG_XXX y[],int n)
 {
-    int i,j;
+    int i;
+    int c;
+    int eq = 1;
+    int gt = 0;
+
     for (i=n-1; i>=0; i--)
     {
-        j=BIG_XXX_comp(x[i],y[i]);
-        if (j!=0) return j;
+        c = BIG_XXX_comp(x[i],y[i]);
+        gt += eq * (c * c + c);
+        eq *= 1 - c * c;
     }
-    return 0;
+
+    return gt + eq - 1;
 }
 
 /* recursive add */
@@ -305,6 +314,15 @@ static void FF_WWW_cswap(BIG_XXX a[],BIG_XXX b[],int d,int n)
     return;
 }
 
+/* copy b to a - side channel resistant */
+static void FF_WWW_cmove(BIG_XXX a[],BIG_XXX b[],int d,int n)
+{
+    int i;
+    for (i=0; i<n; i++)
+        BIG_XXX_cmove(a[i],b[i],d);
+    return;
+}
+
 /* z=x*y, t is workspace */
 static void FF_WWW_karmul(BIG_XXX z[],int zp,BIG_XXX x[],int xp,BIG_XXX y[],int yp,BIG_XXX t[],int tp,int n)
 {
@@ -425,6 +443,12 @@ void FF_WWW_mod(BIG_XXX b[],BIG_XXX c[],int n)
 {
     int k=0;
 
+#ifndef C99
+    BIG_XXX r[FFLEN_WWW];
+#else
+    BIG_XXX r[n];
+#endif
+
     FF_WWW_norm(b,n);
     if (FF_WWW_comp(b,c,n)<0)
         return;
@@ -438,11 +462,9 @@ void FF_WWW_mod(BIG_XXX b[],BIG_XXX c[],int n)
     while (k>0)
     {
         FF_WWW_shr(c,n);
-        if (FF_WWW_comp(b,c,n)>=0)
-        {
-            FF_WWW_sub(b,b,c,n);
-            FF_WWW_norm(b,n);
-        }
+        FF_WWW_sub(r,b,c,n);
+        FF_WWW_norm(r,n);
+        FF_WWW_cmove(b,r,FF_WWW_comp(b,c,n)>=0,n);
         k--;
     }
 }
@@ -488,9 +510,11 @@ void FF_WWW_dmod(BIG_XXX r[],BIG_XXX a[],BIG_XXX b[],int n)
 {
     int k;
 #ifndef C99
+    BIG_XXX s[2*FFLEN_WWW];
     BIG_XXX m[2*FFLEN_WWW];
     BIG_XXX x[2*FFLEN_WWW];
 #else
+    BIG_XXX s[2*n];
     BIG_XXX m[2*n];
     BIG_XXX x[2*n];
 #endif
@@ -508,13 +532,9 @@ void FF_WWW_dmod(BIG_XXX r[],BIG_XXX a[],BIG_XXX b[],int n)
     while (k>0)
     {
         FF_WWW_shr(m,2*n);
-
-        if (FF_WWW_comp(x,m,2*n)>=0)
-        {
-            FF_WWW_sub(x,x,m,2*n);
-            FF_WWW_norm(x,2*n);
-        }
-
+        FF_WWW_sub(s,x,m,2*n);
+        FF_WWW_norm(s,2*n);
+        FF_WWW_cmove(x,s,FF_WWW_comp(x,m,2*n)>=0,2*n);
         k--;
     }
     FF_WWW_copy(r,x,n);

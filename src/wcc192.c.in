@@ -155,6 +155,7 @@ int WCC_ZZZ_SENDER_KEY(int sha, octet *xOct, octet *piaOct, octet *pibOct, octet
 
     // z =  x + pia
     BIG_XXX_add(z,x,pia);
+    BIG_XXX_norm(z);
 
     // (x+pia).AKeyG1
     PAIR_ZZZ_G1mul(&sAG1,z);
@@ -256,6 +257,7 @@ int WCC_ZZZ_RECEIVER_KEY(int sha, octet *yOct, octet *wOct,  octet *piaOct, octe
 
     // y =  y + pib
     BIG_XXX_add(y,y,pib);
+    BIG_XXX_norm(y);
 
     // (y+pib).BKeyG2
     PAIR_ZZZ_G2mul(&sBG2,y);
