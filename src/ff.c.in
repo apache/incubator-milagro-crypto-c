@@ -541,74 +541,88 @@ void FF_WWW_dmod(BIG_XXX r[],BIG_XXX a[],BIG_XXX b[],int n)
     FF_WWW_mod(r,b,n);
 }
 
-/* Set r=1/a mod p. Binary method - a<p on entry */
-
+/* Set r=1/a mod p. Kaliski method - a<p on entry */
 void FF_WWW_invmodp(BIG_XXX r[],BIG_XXX a[],BIG_XXX p[],int n)
 {
 #ifndef C99
-    BIG_XXX u[FFLEN_WWW],v[FFLEN_WWW],x1[FFLEN_WWW],x2[FFLEN_WWW],t[FFLEN_WWW],one[FFLEN_WWW];
+    BIG_XXX u[FFLEN_WWW],v[FFLEN_WWW],s[FFLEN_WWW],w[FFLEN_WWW];
 #else
-    BIG_XXX u[n],v[n],x1[n],x2[n],t[n],one[n];
+    BIG_XXX u[n],v[n],s[n],w[n];
 #endif
-    FF_WWW_copy(u,a,n);
-    FF_WWW_copy(v,p,n);
-    FF_WWW_one(one,n);
-    FF_WWW_copy(x1,one,n);
-    FF_WWW_zero(x2,n);
 
-    // reduce n in here as well!
-    while (FF_WWW_comp(u,one,n)!=0 && FF_WWW_comp(v,one,n)!=0)
+    int k, p1, pu, pv, psw, pmv;
+
+    FF_WWW_copy(u, p, n);
+    FF_WWW_copy(v, a, n);
+    FF_WWW_zero(r, n);
+    FF_WWW_one(s, n);
+
+    // v = a2^(n*BIGBITS_XXX) mod p
+    for(k = 0; k < n*BIGBITS_XXX; k++)
     {
-        while (FF_WWW_parity(u)==0)
-        {
-            FF_WWW_shr(u,n);
-            if (FF_WWW_parity(x1)!=0)
-            {
-                FF_WWW_add(x1,p,x1,n);
-                FF_WWW_norm(x1,n);
-            }
-            FF_WWW_shr(x1,n);
-        }
-        while (FF_WWW_parity(v)==0)
-        {
-            FF_WWW_shr(v,n);
-            if (FF_WWW_parity(x2)!=0)
-            {
-                FF_WWW_add(x2,p,x2,n);
-                FF_WWW_norm(x2,n);
-            }
-            FF_WWW_shr(x2,n);
-        }
-        if (FF_WWW_comp(u,v,n)>=0)
-        {
-
-            FF_WWW_sub(u,u,v,n);
-            FF_WWW_norm(u,n);
-            if (FF_WWW_comp(x1,x2,n)>=0) FF_WWW_sub(x1,x1,x2,n);
-            else
-            {
-                FF_WWW_sub(t,p,x2,n);
-                FF_WWW_add(x1,x1,t,n);
-            }
-            FF_WWW_norm(x1,n);
-        }
-        else
-        {
-            FF_WWW_sub(v,v,u,n);
-            FF_WWW_norm(v,n);
-            if (FF_WWW_comp(x2,x1,n)>=0) FF_WWW_sub(x2,x2,x1,n);
-            else
-            {
-                FF_WWW_sub(t,p,x1,n);
-                FF_WWW_add(x2,x2,t,n);
-            }
-            FF_WWW_norm(x2,n);
-        }
+        FF_WWW_sub(w, v, p, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(v, w, (FF_WWW_comp(v, p, n) > 0), n);
+        FF_WWW_shl(v, n);
     }
-    if (FF_WWW_comp(u,one,n)==0)
-        FF_WWW_copy(r,x1,n);
-    else
-        FF_WWW_copy(r,x2,n);
+
+    // CT Kaliski almost inverse
+    // The correction step is included
+    for (k = 0; k < 2*n*BIGBITS_XXX; k++)
+    {
+        p1 = !FF_WWW_iszilch(v, n);
+
+        pu = FF_WWW_parity(u);
+        pv = FF_WWW_parity(v);
+        // Cases 2-4 of Kaliski
+        psw = p1 & ((!pu) | (pv & (FF_WWW_comp(u, v, n)>0)));
+        // Cases 3-4 of Kaliski
+        pmv = p1 & pu & pv;
+
+        // Swap for cases 2-4 of Kaliski
+        FF_WWW_cswap(u, v, psw, n);
+        FF_WWW_cswap(r, s, psw, n);
+
+        // Addition and subtraction for cases 3-4 of Kaliski
+        FF_WWW_sub(w, v, u, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(v, w, pmv, n);
+
+        FF_WWW_add(w, r, s, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(s, w, pmv, n);
+
+        // Subtraction for correction step
+        FF_WWW_sub(w, r, p, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(r, w, (!p1) & (FF_WWW_comp(r, p, n)>0), n);
+
+        // Shifts for all Kaliski cases and correction step
+        FF_WWW_shl(r, n);
+        FF_WWW_shr(v, n);
+
+        // Restore u,v,r,s to the original position
+        FF_WWW_cswap(u, v, psw, n);
+        FF_WWW_cswap(r, s, psw, n);
+    }
+
+    // Last step of Kaliski
+    // Moved after the correction step
+    FF_WWW_sub(w, r, p, n);
+    FF_WWW_norm(w, n);
+    FF_WWW_cmove(r, w, (FF_WWW_comp(r, p, n)>0), n);
+    
+    FF_WWW_sub(r, p, r, n);
+    FF_WWW_norm(r, n);
+
+    // Restore inverse from Montgomery form
+    for (k = 0; k < n*BIGBITS_XXX; k++)
+    {
+        FF_WWW_add(w, r, p, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(r, w, FF_WWW_parity(r), n);
+        FF_WWW_shr(r, n);
+    }
 }
 
 /* nesidue mod m */

@@ -1351,6 +1351,7 @@ void BIG_XXX_moddiv(BIG_XXX r,BIG_XXX a1,BIG_XXX b1,BIG_XXX m)
     BIG_XXX_copy(b,b1);
 
     BIG_XXX_mod(a,m);
+    BIG_XXX_mod(b,m);
     BIG_XXX_invmodp(z,b,m);
 
     BIG_XXX_mul(d,a,z);
@@ -1479,69 +1480,83 @@ void BIG_XXX_invmod2m(BIG_XXX a)
     BIG_XXX_mod2m(a,BIGBITS_XXX);
 }
 
-/* Set r=1/a mod p. Binary method */
-/* SU= 240 */
+/* Set r=1/a mod p. Kaliski method - on entry a < p*/
 void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
 {
-    BIG_XXX u,v,x1,x2,t,one;
-    BIG_XXX_mod(a,p);
-    BIG_XXX_copy(u,a);
-    BIG_XXX_copy(v,p);
-    BIG_XXX_one(one);
-    BIG_XXX_copy(x1,one);
-    BIG_XXX_zero(x2);
+    int k, p1, pu, pv, psw, pmv;
+    BIG_XXX u, v, s, w;
 
-    while (BIG_XXX_comp(u,one)!=0 && BIG_XXX_comp(v,one)!=0)
+    BIG_XXX_copy(u, p);
+    BIG_XXX_copy(v,a);
+    BIG_XXX_zero(r);
+    BIG_XXX_one(s);
+
+    // v = a2^BIGBITS_XXX mod p
+    for (k = 0; k < BIGBITS_XXX; k++)
     {
-        while (BIG_XXX_parity(u)==0)
-        {
-            BIG_XXX_fshr(u,1);
-            if (BIG_XXX_parity(x1)!=0)
-            {
-                BIG_XXX_add(x1,p,x1);
-                BIG_XXX_norm(x1);
-            }
-            BIG_XXX_fshr(x1,1);
-        }
-        while (BIG_XXX_parity(v)==0)
-        {
-            BIG_XXX_fshr(v,1);
-            if (BIG_XXX_parity(x2)!=0)
-            {
-                BIG_XXX_add(x2,p,x2);
-                BIG_XXX_norm(x2);
-            }
-            BIG_XXX_fshr(x2,1);
-        }
-        if (BIG_XXX_comp(u,v)>=0)
-        {
-            BIG_XXX_sub(u,u,v);
-            BIG_XXX_norm(u);
-            if (BIG_XXX_comp(x1,x2)>=0) BIG_XXX_sub(x1,x1,x2);
-            else
-            {
-                BIG_XXX_sub(t,p,x2);
-                BIG_XXX_add(x1,x1,t);
-            }
-            BIG_XXX_norm(x1);
-        }
-        else
-        {
-            BIG_XXX_sub(v,v,u);
-            BIG_XXX_norm(v);
-            if (BIG_XXX_comp(x2,x1)>=0) BIG_XXX_sub(x2,x2,x1);
-            else
-            {
-                BIG_XXX_sub(t,p,x1);
-                BIG_XXX_add(x2,x2,t);
-            }
-            BIG_XXX_norm(x2);
-        }
+        BIG_XXX_sub(w, v, p);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(v, w, (BIG_XXX_comp(v, p) > 0));
+        BIG_XXX_fshl(v, 1);
     }
-    if (BIG_XXX_comp(u,one)==0)
-        BIG_XXX_copy(r,x1);
-    else
-        BIG_XXX_copy(r,x2);
+
+    // CT Kaliski almost inverse
+    // The correction step is included
+    for (k = 0; k < 2 * BIGBITS_XXX; k++)
+    {
+        p1 = !BIG_XXX_iszilch(v);
+        
+        pu = BIG_XXX_parity(u);
+        pv = BIG_XXX_parity(v);
+        // Cases 2-4 of Kaliski
+        psw = p1 & ((!pu) | (pv & (BIG_XXX_comp(u,v)>0)));
+        // Cases 3-4 of Kaliski
+        pmv = p1 & pu & pv;
+
+        // Swap necessary for cases 2-4 of Kaliski
+        BIG_XXX_cswap(u, v, psw);
+        BIG_XXX_cswap(r, s, psw);
+
+        // Addition and subtraction for cases 3-4 of Kaliski
+        BIG_XXX_sub(w, v, u);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(v, w, pmv);
+
+        BIG_XXX_add(w, r, s);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(s, w, pmv);
+
+        // Subtraction for correction step
+        BIG_XXX_sub(w, r, p);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(r, w, (!p1) & (BIG_XXX_comp(r, p) > 0));
+
+        // Shifts for all Kaliski cases and correction step
+        BIG_XXX_fshl(r, 1);
+        BIG_XXX_fshr(v, 1);
+
+        // Restore u,v,r,s to the original position
+        BIG_XXX_cswap(u, v, psw);
+        BIG_XXX_cswap(r, s, psw);        
+    }
+
+    // Last step of kaliski
+    // Moved after the correction step
+    BIG_XXX_sub(w, r, p);
+    BIG_XXX_norm(w);
+    BIG_XXX_cmove(r, w, (BIG_XXX_comp(r,p)>0));
+
+    BIG_XXX_sub(r, p, r);
+    BIG_XXX_norm(r);
+
+    // Restore inverse from Montgomery form
+    for (k = 0; k < BIGBITS_XXX; k++)
+    {
+        BIG_XXX_add(w, r, p);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(r, w, BIG_XXX_parity(r));
+        BIG_XXX_fshr(r, 1);
+    }
 }
 
 /* set x = x mod 2^m */
