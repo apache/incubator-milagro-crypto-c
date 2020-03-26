@@ -23,6 +23,7 @@
 #include "big_XXX.h"
 
 /* test a=0? */
+/* libsodium constant time implementation */
 int BIG_XXX_iszilch(BIG_XXX a)
 {
     int i;
@@ -35,6 +36,10 @@ int BIG_XXX_iszilch(BIG_XXX a)
 }
 
 /* test a=1? */
+/* libsodium constant time implementation for
+   comparison to zero of a[1],..,a[NLEN_XXX-1]
+   then checking if a[0] == 1
+ */
 int BIG_XXX_isunity(BIG_XXX a)
 {
     int i;
@@ -47,6 +52,7 @@ int BIG_XXX_isunity(BIG_XXX a)
 }
 
 /* test a=0? */
+/* libsodium constant time implementation */
 int BIG_XXX_diszilch(DBIG_XXX a)
 {
     int i;
@@ -1014,7 +1020,8 @@ void BIG_XXX_dnorm(DBIG_XXX a)
 
 /* Compare a and b. Return 1 for a>b, -1 for a<b, 0 for a==b */
 /* a and b MUST be normalised before call */
-int BIG_XXX_comp(BIG_XXX a,BIG_XXX b)
+/* libsodium constant time implementation */
+int BIG_XXX_comp(BIG_XXX b1,BIG_XXX b2)
 {
     int i;
     chunk gt = 0;
@@ -1022,14 +1029,17 @@ int BIG_XXX_comp(BIG_XXX a,BIG_XXX b)
 
     for (i = NLEN_XXX-1; i>=0; i--)
     {
-        gt |= ((b[i]-a[i]) >> BASEBITS_XXX) & eq;
-        eq &= ((b[i]^a[i])-1) >> BASEBITS_XXX;
+        gt |= ((b2[i]-b1[i]) >> BASEBITS_XXX) & eq;
+        eq &= ((b2[i]^b1[i])-1) >> BASEBITS_XXX;
     }
 
-    return (int)(gt+gt+eq-1);
+    return (int)(gt+gt+eq) - 1;
 }
 
-int BIG_XXX_dcomp(DBIG_XXX a,DBIG_XXX b)
+/* Compare b1 and b2. Return 1 for b1>b2, -1 for a<b, 0 for a==b */
+/* a and b MUST be normalised before call */
+/* libsodium constant time implementation */
+int BIG_XXX_dcomp(DBIG_XXX b1,DBIG_XXX b2)
 {
     int i;
     chunk gt = 0;
@@ -1037,11 +1047,11 @@ int BIG_XXX_dcomp(DBIG_XXX a,DBIG_XXX b)
 
     for (i=DNLEN_XXX-1; i>=0; i--)
     {
-        gt |= ((b[i]-a[i]) >> BASEBITS_XXX) & eq;
-        eq &= ((b[i]^a[i])-1) >> BASEBITS_XXX;
+        gt |= ((b2[i]-b1[i]) >> BASEBITS_XXX) & eq;
+        eq &= ((b2[i]^b1[i])-1) >> BASEBITS_XXX;
     }
 
-    return (int)(gt+gt+eq-1);
+    return (int)(gt+gt+eq) - 1;
 }
 
 /* return number of bits in a */
