@@ -259,6 +259,7 @@ int main()
 
     /* Testing CRT */
     FF_WWW_mul(N,P,Q,HFLEN_WWW);
+    FF_WWW_invmodp(E,P,Q,HFLEN_WWW);
 
     for (i=0; i<10; i++)
     {
@@ -281,7 +282,7 @@ int main()
         FF_WWW_mul(G,C,D,HFLEN_WWW);
         FF_WWW_mod(G,Q,FFLEN_WWW);
 
-        FF_WWW_crt(L,F,G,P,Q,HFLEN_WWW);
+        FF_WWW_crt(L,F,G,P,E,N,HFLEN_WWW);
 
         if(FF_WWW_comp(L,H,HFLEN_WWW))
         {

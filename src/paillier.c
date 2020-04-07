@@ -97,8 +97,9 @@ void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB
     FF_2048_norm(PRIV->mp, HFLEN_2048);
 
     // (-p)^(-1) mod q
-    FF_2048_invmodp(PRIV->mq, PRIV->p, PRIV->q, HFLEN_2048);
-    FF_2048_sub(PRIV->mq, PRIV->q, PRIV->mq, HFLEN_2048);
+    // Also use this to precompute p^(-1) mod q
+    FF_2048_invmodp(PRIV->invpq, PRIV->p, PRIV->q, HFLEN_2048);
+    FF_2048_sub(PRIV->mq, PRIV->q, PRIV->invpq, HFLEN_2048);
     FF_2048_norm(PRIV->mq, HFLEN_2048);
 
     /* Public Key */
@@ -118,16 +119,17 @@ void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB
 /* Clean secrets from private key */
 void PAILLIER_PRIVATE_KEY_KILL(PAILLIER_private_key *PRIV)
 {
-    FF_2048_zero(PRIV->p,    HFLEN_2048);
-    FF_2048_zero(PRIV->q,    HFLEN_2048);
-    FF_2048_zero(PRIV->lp,   HFLEN_2048);
-    FF_2048_zero(PRIV->lq,   HFLEN_2048);
-    FF_2048_zero(PRIV->p2,   FFLEN_2048);
-    FF_2048_zero(PRIV->q2,   FFLEN_2048);
-    FF_2048_zero(PRIV->mp,   HFLEN_2048);
-    FF_2048_zero(PRIV->mq,   HFLEN_2048);
-    FF_2048_zero(PRIV->invp, FFLEN_2048);
-    FF_2048_zero(PRIV->invq, FFLEN_2048);
+    FF_2048_zero(PRIV->p,     HFLEN_2048);
+    FF_2048_zero(PRIV->q,     HFLEN_2048);
+    FF_2048_zero(PRIV->lp,    HFLEN_2048);
+    FF_2048_zero(PRIV->lq,    HFLEN_2048);
+    FF_2048_zero(PRIV->p2,    FFLEN_2048);
+    FF_2048_zero(PRIV->q2,    FFLEN_2048);
+    FF_2048_zero(PRIV->mp,    HFLEN_2048);
+    FF_2048_zero(PRIV->mq,    HFLEN_2048);
+    FF_2048_zero(PRIV->invp,  FFLEN_2048);
+    FF_2048_zero(PRIV->invq,  FFLEN_2048);
+    FF_2048_zero(PRIV->invpq, HFLEN_2048);
 }
 
 // Paillier encryption
@@ -229,7 +231,8 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
     FF_2048_dmod(ptq, ws, PRIV->q, HFLEN_2048);
 
     /* Combine results using CRT */
-    FF_2048_crt(pt, ptp, ptq, PRIV->p, PRIV->q, HFLEN_2048);
+    FF_2048_mul(ws, PRIV->p, PRIV->q, HFLEN_2048);
+    FF_2048_crt(pt, ptp, ptq, PRIV->p, PRIV->invpq, ws, HFLEN_2048);
 
     // Output
     FF_2048_toOctet(PT, pt, FFLEN_2048);
@@ -238,7 +241,6 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
     FF_2048_zero(pt,  FFLEN_2048);
     FF_2048_zero(ptp, HFLEN_2048);
     FF_2048_zero(ptq, HFLEN_2048);
-    FF_2048_zero(ws,  FFLEN_2048);
     FF_2048_zero(dws, 2 * FFLEN_2048);
 }
 

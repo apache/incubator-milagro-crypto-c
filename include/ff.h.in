@@ -360,13 +360,14 @@ extern int FF_WWW_cfactor(BIG_XXX *x,sign32 s,int n);
 extern int FF_WWW_prime(BIG_XXX *x,csprng *R,int n);
 /**	@brief Combine rp and rq using the Chinese Remainder Theorem
  *
-	@param r  FF instance, on exit the solution of the system
-	@param rp FF instance, solution modulo p
-	@param rq FF instance, solution modulo q
-	@param p  FF instance, MUST be coprime with q
-	@param q  FF instance, MUST be coprime with p
-	@param n size of p and q in BIGs
+	@param r     FF instance, on exit the solution of the system
+	@param rp    FF instance, solution modulo p
+	@param rq    FF instance, solution modulo q
+	@param p     FF instance, MUST be coprime with q
+	@param invp  FF instance, p^(-1) mod q
+	@param pq    FF instance, p*q
+	@param n     size of p in BIGs
  */
-extern void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *q, int n);
+extern void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *invpq, BIG_XXX *pq, int n);
 
 #endif

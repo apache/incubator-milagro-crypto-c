@@ -1191,18 +1191,15 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 }
 
 /* Chinese Remainder Theorem to reconstruct results mod pq*/
-void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *q, int n)
+void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *invp, BIG_XXX *pq, int n)
 {
 #ifndef C99
-    BIG_XXX pq[FFLEN_WWW], invp[HFLEN_WWW], c[FFLEN_WWW], a[FFLEN_WWW], b[2*FFLEN_WWW];
+    BIG_XXX c[FFLEN_WWW], a[FFLEN_WWW], b[2*FFLEN_WWW];
 #else
-    BIG_XXX pq[2*n], invp[n], c[2*n], a[2*n], b[4*n];
+    BIG_XXX c[2*n], a[2*n], b[4*n];
 #endif
 
-    FF_WWW_mul(pq, p, q, n);
-
     // c = p * (p^-1 mod q)
-    FF_WWW_invmodp(invp, p, q, n);
     FF_WWW_mul(c, p, invp, n);
 
     // a = (rq - rp) mod pq
