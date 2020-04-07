@@ -66,6 +66,13 @@ extern void FF_WWW_zero(BIG_XXX *x,int n);
 	@return 1 if zero, else returns 0
  */
 extern int FF_WWW_iszilch(BIG_XXX *x,int n);
+/**	@brief Tests for FF element equal to one
+ *
+	@param x FF number to be tested
+	@param n size of FF in BIGs
+	@return 1 if unity, else returns 0
+ */
+extern int FF_WWW_isunity(BIG_XXX *x,int n);
 /**	@brief  return parity of an FF, that is the least significant bit
  *
 	@param x FF number
