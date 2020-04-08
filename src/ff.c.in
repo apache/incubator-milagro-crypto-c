@@ -1031,7 +1031,9 @@ void FF_WWW_pow(BIG_XXX r[], BIG_XXX x[], BIG_XXX e[], BIG_XXX p[], int n, int e
     FF_WWW_redc(r,p,ND,n);
 }
 
-/* Compute prod(x_i^e_i) mod p. Faster but not constant time */
+/* Compute prod(x_i^e_i) mod p. Faster but not constant time
+   Only feasible for small values of n (n<=4)
+*/
 static void FF_WWW_pown(BIG_XXX *r, BIG_XXX *x[], BIG_XXX *e[], BIG_XXX *p, int xlen, int elen, int n)
 {
 #ifndef C99

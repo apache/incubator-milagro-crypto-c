@@ -185,7 +185,7 @@ extern void FF_WWW_fromOctet(BIG_XXX *x,octet *S,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_mul(BIG_XXX *x,BIG_XXX *y,BIG_XXX *z,int n);
-/**	@brief Reduce FF mod a modulus
+/**	@brief Reduce FF mod a modulus - leaks log2(p)-log2(n)
  *
 	This is slow
 	@param x FF instance to be reduced mod p - on exit = x mod p
@@ -201,7 +201,7 @@ extern void FF_WWW_mod(BIG_XXX *x,BIG_XXX *p,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_sqr(BIG_XXX *x,BIG_XXX *y,int n);
-/**	@brief Reduces a double-length FF with respect to a given modulus
+/**	@brief Reduces a double-length FF with respect to a given modulus - leaks log2(y)-log2(z)
  *
 	This is slow
 	@param x FF instance, on exit = y mod z
@@ -232,7 +232,7 @@ extern void FF_WWW_invmod2m(BIG_XXX U[],BIG_XXX a[],int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_random(BIG_XXX *x,csprng *R,int n);
-/**	@brief Create a random FF less than a given modulus from a random number generator
+/**	@brief Create a random FF less than a given modulus from a random number generator - leaks log2(y)
  *
 	@param x FF instance, on exit x is a random number < y
 	@param y FF instance, the modulus
@@ -286,7 +286,7 @@ extern void FF_WWW_skpow2(BIG_XXX *r,BIG_XXX *x, BIG_XXX *e, BIG_XXX *y, BIG_XXX
 	@param en size of the exponent in BIGs
  */
 extern void FF_WWW_skpow3(BIG_XXX *r,BIG_XXX *x, BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *p, int n, int en);
-/**	@brief Calculate r=x^e mod p
+/**	@brief Calculate r=x^e mod p. Faster but not constant time
  *
 	For very short integer exponent
 	@param r  FF instance, on exit = x^e mod p
