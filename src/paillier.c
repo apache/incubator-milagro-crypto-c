@@ -162,7 +162,7 @@ void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* C
     }
 
     // r^n
-    FF_4096_pow(ws1, ws1, PUB->n, PUB->n2, FFLEN_4096, HFLEN_4096);
+    FF_4096_nt_pow(ws1, ws1, PUB->n, PUB->n2, FFLEN_4096, HFLEN_4096);
 
     // g^pt = 1 + pt * n
     FF_4096_mul(ws2, pt, PUB->n, HFLEN_4096);
@@ -203,7 +203,7 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
     FF_2048_dmod(ws, ct, PRIV->p2, FFLEN_2048);
 
     // Compute ws = (ct^lp mod p2 - 1)
-    FF_2048_skpow(ws, ws, PRIV->lp, PRIV->p2, FFLEN_2048, HFLEN_2048);
+    FF_2048_ct_pow(ws, ws, PRIV->lp, PRIV->p2, FFLEN_2048, HFLEN_2048);
     FF_2048_dec(ws, 1, FFLEN_2048);
 
     // dws = ws / p
@@ -219,7 +219,7 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
     FF_2048_dmod(ws, ct, PRIV->q2, FFLEN_2048);
 
     // Compute ws = (ct^lq mod q2 - 1)
-    FF_2048_skpow(ws, ws, PRIV->lq, PRIV->q2, FFLEN_2048, HFLEN_2048);
+    FF_2048_ct_pow(ws, ws, PRIV->lq, PRIV->q2, FFLEN_2048, HFLEN_2048);
     FF_2048_dec(ws, 1, FFLEN_2048);
 
     // dws = ws / q
@@ -279,7 +279,7 @@ void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT)
     FF_4096_fromOctet(ct1, CT1, FFLEN_4096);
 
     // ct1^pt mod n^2
-    FF_4096_skpow(ct, ct1, pt, PUB->n2, FFLEN_4096, HFLEN_4096);
+    FF_4096_ct_pow(ct, ct1, pt, PUB->n2, FFLEN_4096, HFLEN_4096);
 
     // output
     FF_4096_toOctet(CT, ct, FFLEN_4096);
