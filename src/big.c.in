@@ -1515,7 +1515,7 @@ void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
     for (k = 0; k < 2 * BIGBITS_XXX; k++)
     {
         p1 = !BIG_XXX_iszilch(v);
-        
+
         pu = BIG_XXX_parity(u);
         pv = BIG_XXX_parity(v);
         // Cases 2-4 of Kaliski
@@ -1547,7 +1547,7 @@ void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
 
         // Restore u,v,r,s to the original position
         BIG_XXX_cswap(u, v, psw);
-        BIG_XXX_cswap(r, s, psw);        
+        BIG_XXX_cswap(r, s, psw);
     }
 
     // Last step of kaliski
