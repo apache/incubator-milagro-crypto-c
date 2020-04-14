@@ -1519,7 +1519,8 @@ void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
     BIG_XXX u, v, s, w;
 
     BIG_XXX_copy(u, p);
-    BIG_XXX_copy(v,a);
+    BIG_XXX_copy(v, a);
+    BIG_XXX_mod(v, p);
     BIG_XXX_zero(r);
     BIG_XXX_one(s);
 

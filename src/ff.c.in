@@ -568,6 +568,7 @@ void FF_WWW_invmodp(BIG_XXX r[],BIG_XXX a[],BIG_XXX p[],int n)
 
     FF_WWW_copy(u, p, n);
     FF_WWW_copy(v, a, n);
+    FF_WWW_mod(v, p, n);
     FF_WWW_zero(r, n);
     FF_WWW_one(s, n);
 
