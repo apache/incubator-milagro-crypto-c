@@ -132,6 +132,8 @@ int main(int argc, char** argv)
 
             FF_2048_zero(PRIV.invq, FFLEN_2048);
             FF_2048_invmod2m(PRIV.invq, PRIV.q, HFLEN_2048);
+
+            FF_2048_invmodp(PRIV.invpq, PRIV.p, PRIV.q, HFLEN_2048);
         }
 
         // Read LP

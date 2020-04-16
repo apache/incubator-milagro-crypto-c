@@ -24,11 +24,11 @@ under the License.
 example for using bls
 
 """
+
 import cffi
 import platform
 import os
 import bls_ZZZ
-
 if __name__ == "__main__":
     # Print hex values
     DEBUG = False

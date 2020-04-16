@@ -79,6 +79,20 @@ int FF_WWW_iszilch(BIG_XXX x[],int n)
     return rc;
 }
 
+/* test equals 1 */
+int FF_WWW_isunity(BIG_XXX x[], int n)
+{
+    int i;
+    int rc;
+
+    rc = BIG_XXX_isunity(x[0]);
+
+    for (i=1; i<n; i++)
+        rc &= BIG_XXX_iszilch(x[i]);
+
+    return rc;
+}
+
 /* shift right by BIGBITS-bit words */
 static void FF_WWW_shrw(BIG_XXX a[],int n)
 {
@@ -554,6 +568,7 @@ void FF_WWW_invmodp(BIG_XXX r[],BIG_XXX a[],BIG_XXX p[],int n)
 
     FF_WWW_copy(u, p, n);
     FF_WWW_copy(v, a, n);
+    FF_WWW_mod(v, p, n);
     FF_WWW_zero(r, n);
     FF_WWW_one(s, n);
 
@@ -611,7 +626,7 @@ void FF_WWW_invmodp(BIG_XXX r[],BIG_XXX a[],BIG_XXX p[],int n)
     FF_WWW_sub(w, r, p, n);
     FF_WWW_norm(w, n);
     FF_WWW_cmove(r, w, (FF_WWW_comp(r, p, n)>0), n);
-    
+
     FF_WWW_sub(r, p, r, n);
     FF_WWW_norm(r, n);
 
@@ -801,7 +816,7 @@ static void FF_WWW_modsqr(BIG_XXX z[],BIG_XXX x[],BIG_XXX p[],BIG_XXX ND[],int n
 }
 
 /* r=x^e mod p using side-channel resistant Montgomery Ladder, for short e */
-void FF_WWW_skspow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX p[],int n)
+void FF_WWW_ct_pow_big(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX p[],int n)
 {
     int i,b;
 #ifndef C99
@@ -828,7 +843,7 @@ void FF_WWW_skspow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX p[],int n)
 }
 
 /* r=x^e mod p using side-channel resistant Montgomery Ladder, for large e */
-void FF_WWW_skpow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX p[],int n, int en)
+void FF_WWW_ct_pow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX p[],int n, int en)
 {
     int i,b;
 #ifndef C99
@@ -859,7 +874,7 @@ void FF_WWW_skpow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX p[],int n, int en)
 }
 
 /* r=x^e*y^f mod p - side channel resistant */
-void FF_WWW_skpow2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX p[], int n, int en)
+void FF_WWW_ct_pow_2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX p[], int n, int en)
 {
     int i,eb,fb;
 #ifndef C99
@@ -900,8 +915,8 @@ void FF_WWW_skpow2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[
     FF_WWW_redc(r,p,ND,n);
 }
 
-/* r=x^e*y^f mod p - side channel resistant */
-void FF_WWW_skpow3(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX z[], BIG_XXX g[], BIG_XXX p[], int n, int en)
+/* r=x^e*y^f*z^g mod p - side channel resistant */
+void FF_WWW_ct_pow_3(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX z[], BIG_XXX g[], BIG_XXX p[], int n, int en)
 {
     int i,b;
 #ifndef C99
@@ -959,7 +974,7 @@ void FF_WWW_skpow3(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[
 }
 
 /* raise to an integer power - right-to-left method */
-void FF_WWW_power(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
+void FF_WWW_nt_pow_int(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
 {
     int f=1;
 #ifndef C99
@@ -993,7 +1008,7 @@ void FF_WWW_power(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
 }
 
 /* r=x^e mod p, faster but not side channel resistant */
-void FF_WWW_pow(BIG_XXX r[], BIG_XXX x[], BIG_XXX e[], BIG_XXX p[], int n, int en)
+void FF_WWW_nt_pow(BIG_XXX r[], BIG_XXX x[], BIG_XXX e[], BIG_XXX p[], int n, int en)
 {
     int i,b;
 #ifndef C99
@@ -1017,8 +1032,10 @@ void FF_WWW_pow(BIG_XXX r[], BIG_XXX x[], BIG_XXX e[], BIG_XXX p[], int n, int e
     FF_WWW_redc(r,p,ND,n);
 }
 
-/* Compute prod(x_i^e_i) mod p. Faster but not constant time */
-static void FF_WWW_pown(BIG_XXX *r, BIG_XXX *x[], BIG_XXX *e[], BIG_XXX *p, int xlen, int elen, int n)
+/* Compute prod(x_i^e_i) mod p. Faster but not constant time
+   Only feasible for small values of n (n<=4)
+*/
+static void FF_WWW_nt_pow_n(BIG_XXX *r, BIG_XXX *x[], BIG_XXX *e[], BIG_XXX *p, int xlen, int elen, int n)
 {
 #ifndef C99
     BIG_XXX products[15][FFLEN_WWW], ND[FFLEN_WWW];
@@ -1076,28 +1093,28 @@ static void FF_WWW_pown(BIG_XXX *r, BIG_XXX *x[], BIG_XXX *e[], BIG_XXX *p, int 
     FF_WWW_redc(r, p, ND, xlen);
 }
 
-void FF_WWW_pow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *p,int n, int en)
+void FF_WWW_nt_pow_2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *p,int n, int en)
 {
     BIG_XXX *x_s[] = {x,y};
     BIG_XXX *e_s[] = {e,f};
 
-    FF_WWW_pown(r, x_s, e_s, p, n, en, 2);
+    FF_WWW_nt_pow_n(r, x_s, e_s, p, n, en, 2);
 }
 
-void FF_WWW_pow3(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *p, int n, int en)
+void FF_WWW_nt_pow_3(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *p, int n, int en)
 {
     BIG_XXX *x_s[] = {x,y,z};
     BIG_XXX *e_s[] = {e,f,g};
 
-    FF_WWW_pown(r, x_s, e_s, p, n, en, 3);
+    FF_WWW_nt_pow_n(r, x_s, e_s, p, n, en, 3);
 }
 
-void FF_WWW_pow4(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *w, BIG_XXX *h, BIG_XXX *p, int n, int en)
+void FF_WWW_nt_pow_4(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *w, BIG_XXX *h, BIG_XXX *p, int n, int en)
 {
     BIG_XXX *x_s[] = {x,y,z,w};
     BIG_XXX *e_s[] = {e,f,g,h};
 
-    FF_WWW_pown(r, x_s, e_s, p, n, en, 4);
+    FF_WWW_nt_pow_n(r, x_s, e_s, p, n, en, 4);
 }
 
 static sign32 igcd(sign32 x,sign32 y)
@@ -1146,9 +1163,9 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 {
     int i,j,loop,s=0;
 #ifndef C99
-    BIG_XXX d[FFLEN_WWW],x[FFLEN_WWW],unity[FFLEN_WWW],nm1[FFLEN_WWW];
+    BIG_XXX d[FFLEN_WWW],x[FFLEN_WWW],nm1[FFLEN_WWW];
 #else
-    BIG_XXX d[n],x[n],unity[n],nm1[n];
+    BIG_XXX d[n],x[n],nm1[n];
 #endif
     sign32 sf=4849845;/* 3*5*.. *19 */
 
@@ -1156,8 +1173,8 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 
     if (FF_WWW_cfactor(p,sf,n)) return 0;
 
-    FF_WWW_one(unity,n);
-    FF_WWW_sub(nm1,p,unity,n);
+    FF_WWW_copy(nm1,p,n);
+    FF_WWW_dec(nm1,1,n);
     FF_WWW_norm(nm1,n);
     FF_WWW_copy(d,nm1,n);
     while (FF_WWW_parity(d)==0)
@@ -1170,13 +1187,13 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
     for (i=0; i<10; i++)
     {
         FF_WWW_randomnum(x,p,rng,n);
-        FF_WWW_pow(x,x,d,p,n,n);
-        if (FF_WWW_comp(x,unity,n)==0 || FF_WWW_comp(x,nm1,n)==0) continue;
+        FF_WWW_nt_pow(x,x,d,p,n,n);
+        if (FF_WWW_isunity(x,n) || FF_WWW_comp(x,nm1,n)==0) continue;
         loop=0;
         for (j=1; j<s; j++)
         {
-            FF_WWW_power(x,x,2,p,n);
-            if (FF_WWW_comp(x,unity,n)==0) return 0;
+            FF_WWW_nt_pow_int(x,x,2,p,n);
+            if (FF_WWW_isunity(x,n)) return 0;
             if (FF_WWW_comp(x,nm1,n)==0 )
             {
                 loop=1;
@@ -1191,18 +1208,15 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 }
 
 /* Chinese Remainder Theorem to reconstruct results mod pq*/
-void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *q, int n)
+void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *invp, BIG_XXX *pq, int n)
 {
 #ifndef C99
-    BIG_XXX pq[FFLEN_WWW], invp[HFLEN_WWW], c[FFLEN_WWW], a[FFLEN_WWW], b[2*FFLEN_WWW];
+    BIG_XXX c[FFLEN_WWW], a[FFLEN_WWW], b[2*FFLEN_WWW];
 #else
-    BIG_XXX pq[2*n], invp[n], c[2*n], a[2*n], b[4*n];
+    BIG_XXX c[2*n], a[2*n], b[4*n];
 #endif
 
-    FF_WWW_mul(pq, p, q, n);
-
     // c = p * (p^-1 mod q)
-    FF_WWW_invmodp(invp, p, q, n);
     FF_WWW_mul(c, p, invp, n);
 
     // a = (rq - rp) mod pq

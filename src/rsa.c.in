@@ -121,7 +121,7 @@ void RSA_WWW_ENCRYPT(rsa_public_key_WWW *PUB,octet *F,octet *G)
     BIG_XXX f[FFLEN_WWW];
     FF_WWW_fromOctet(f,F,FFLEN_WWW);
 
-    FF_WWW_power(f,f,PUB->e,PUB->n,FFLEN_WWW);
+    FF_WWW_nt_pow_int(f,f,PUB->e,PUB->n,FFLEN_WWW);
 
     FF_WWW_toOctet(G,f,FFLEN_WWW);
 }
@@ -136,8 +136,8 @@ void RSA_WWW_DECRYPT(rsa_private_key_WWW *PRIV,octet *G,octet *F)
     FF_WWW_dmod(jp,g,PRIV->p,HFLEN_WWW);
     FF_WWW_dmod(jq,g,PRIV->q,HFLEN_WWW);
 
-    FF_WWW_skpow(jp,jp,PRIV->dp,PRIV->p,HFLEN_WWW,HFLEN_WWW);
-    FF_WWW_skpow(jq,jq,PRIV->dq,PRIV->q,HFLEN_WWW,HFLEN_WWW);
+    FF_WWW_ct_pow(jp,jp,PRIV->dp,PRIV->p,HFLEN_WWW,HFLEN_WWW);
+    FF_WWW_ct_pow(jq,jq,PRIV->dq,PRIV->q,HFLEN_WWW,HFLEN_WWW);
 
 
     FF_WWW_zero(g,FFLEN_WWW);

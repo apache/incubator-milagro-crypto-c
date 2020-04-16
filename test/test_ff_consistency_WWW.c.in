@@ -73,6 +73,14 @@ int main()
         exit(EXIT_FAILURE);
     }
 
+    /* Testing isunity */
+    FF_WWW_one(A, HFLEN_WWW);
+    if(!FF_WWW_isunity(A, HFLEN_WWW))
+    {
+        printf("ERROR comparing or setting to unity\n");
+        exit(EXIT_FAILURE);
+    }
+
     /* Test parity */
     FF_WWW_one(A,HFLEN_WWW);
     if (!FF_WWW_parity(A) || FF_WWW_parity(B))
@@ -120,7 +128,7 @@ int main()
 
     FF_WWW_add(C,A,B,HFLEN_WWW);
     FF_WWW_add(B,B,B,HFLEN_WWW);
-    if(FF_WWW_comp(A,C,HFLEN_WWW) || !FF_WWW_iszilch(B,HFLEN_WWW))
+    if(!FF_WWW_isunity(A,HFLEN_WWW) || !FF_WWW_iszilch(B,HFLEN_WWW))
     {
         printf("ERROR testing addition/subtraction\n");
         exit(EXIT_FAILURE);
@@ -259,6 +267,7 @@ int main()
 
     /* Testing CRT */
     FF_WWW_mul(N,P,Q,HFLEN_WWW);
+    FF_WWW_invmodp(E,P,Q,HFLEN_WWW);
 
     for (i=0; i<10; i++)
     {
@@ -281,7 +290,7 @@ int main()
         FF_WWW_mul(G,C,D,HFLEN_WWW);
         FF_WWW_mod(G,Q,FFLEN_WWW);
 
-        FF_WWW_crt(L,F,G,P,Q,HFLEN_WWW);
+        FF_WWW_crt(L,F,G,P,E,N,HFLEN_WWW);
 
         if(FF_WWW_comp(L,H,HFLEN_WWW))
         {
@@ -301,12 +310,12 @@ int main()
     FF_WWW_random(G, &RNG, HFLEN_WWW);
     FF_WWW_random(H, &RNG, HFLEN_WWW);
 
-    FF_WWW_pow(L, A, E, P, HFLEN_WWW, HFLEN_WWW);
-    FF_WWW_pow(N, B, F, P, HFLEN_WWW, HFLEN_WWW);
+    FF_WWW_nt_pow(L, A, E, P, HFLEN_WWW, HFLEN_WWW);
+    FF_WWW_nt_pow(N, B, F, P, HFLEN_WWW, HFLEN_WWW);
     FF_WWW_mul(Q, L, N, HFLEN_WWW);
     FF_WWW_dmod(L, Q, P, HFLEN_WWW);
 
-    FF_WWW_pow2(N, A, E, B, F, P, HFLEN_WWW, HFLEN_WWW);
+    FF_WWW_nt_pow_2(N, A, E, B, F, P, HFLEN_WWW, HFLEN_WWW);
 
     if(FF_WWW_comp(N, L, HFLEN_WWW))
     {
@@ -315,11 +324,11 @@ int main()
     }
 
     // Test triple exponent
-    FF_WWW_pow(N, C, G, P, HFLEN_WWW, HFLEN_WWW);
+    FF_WWW_nt_pow(N, C, G, P, HFLEN_WWW, HFLEN_WWW);
     FF_WWW_mul(Q, L, N, HFLEN_WWW);
     FF_WWW_dmod(L, Q, P, HFLEN_WWW);
 
-    FF_WWW_pow3(N, A, E, B, F, C, G, P, HFLEN_WWW, HFLEN_WWW);
+    FF_WWW_nt_pow_3(N, A, E, B, F, C, G, P, HFLEN_WWW, HFLEN_WWW);
 
     if(FF_WWW_comp(N, L, HFLEN_WWW))
     {
@@ -329,7 +338,7 @@ int main()
 
     // Test triple exponent for secret key
     FF_WWW_zero(N, HFLEN_WWW);
-    FF_WWW_skpow3(N, A, E, B, F, C, G, P, HFLEN_WWW, HFLEN_WWW);
+    FF_WWW_ct_pow_3(N, A, E, B, F, C, G, P, HFLEN_WWW, HFLEN_WWW);
 
     if(FF_WWW_comp(N, L, HFLEN_WWW))
     {
@@ -338,11 +347,11 @@ int main()
     }
 
     // Test quadruple exponent
-    FF_WWW_pow(N, D, H, P, HFLEN_WWW, HFLEN_WWW);
+    FF_WWW_nt_pow(N, D, H, P, HFLEN_WWW, HFLEN_WWW);
     FF_WWW_mul(Q, L, N, HFLEN_WWW);
     FF_WWW_dmod(L, Q, P, HFLEN_WWW);
 
-    FF_WWW_pow4(N, A, E, B, F, C, G, D, H, P, HFLEN_WWW, HFLEN_WWW);
+    FF_WWW_nt_pow_4(N, A, E, B, F, C, G, D, H, P, HFLEN_WWW, HFLEN_WWW);
 
     if(FF_WWW_comp(N, L, HFLEN_WWW))
     {

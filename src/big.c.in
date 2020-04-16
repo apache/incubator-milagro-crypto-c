@@ -29,6 +29,10 @@ int BIG_XXX_iszilch(BIG_XXX a)
     int i;
     chunk d = 0;
 
+#ifdef DEBUG_NORM
+    if ((a[MPV_XXX]!=1 && a[MPV_XXX]!=0) || a[MNV_XXX]!=0) printf("Input to iszilch not normed\n");
+#endif
+
     for (i=0; i<NLEN_XXX; i++)
         d |= a[i];
 
@@ -45,6 +49,10 @@ int BIG_XXX_isunity(BIG_XXX a)
     int i;
     chunk d = 0;
 
+#ifdef DEBUG_NORM
+    if ((a[MPV_XXX]!=1 && a[MPV_XXX]!=0) || a[MNV_XXX]!=0) printf("Input to isunity not normed\n");
+#endif
+
     for(i=1; i<NLEN_XXX; i++)
         d |= a[i];
 
@@ -57,6 +65,10 @@ int BIG_XXX_diszilch(DBIG_XXX a)
 {
     int i;
     chunk d = 0;
+
+#ifdef DEBUG_NORM
+    if ((a[DMPV_XXX]!=1 && a[DMPV_XXX]!=0) || a[DMNV_XXX]!=0) printf("Input to diszilch not normed\n");
+#endif
 
     for (i=0; i<DNLEN_XXX; i++)
         d |= a[i];
@@ -1027,6 +1039,11 @@ int BIG_XXX_comp(BIG_XXX b1,BIG_XXX b2)
     chunk gt = 0;
     chunk eq = 1;
 
+#ifdef DEBUG_NORM
+    if ((b1[MPV_XXX]!=1 && b1[MPV_XXX]!=0) || b1[MNV_XXX]!=0) printf("First input to comp not normed\n");
+    if ((b2[MPV_XXX]!=1 && b2[MPV_XXX]!=0) || b2[MNV_XXX]!=0) printf("Second input to comp not normed\n");
+#endif
+
     for (i = NLEN_XXX-1; i>=0; i--)
     {
         gt |= ((b2[i]-b1[i]) >> BASEBITS_XXX) & eq;
@@ -1044,6 +1061,11 @@ int BIG_XXX_dcomp(DBIG_XXX b1,DBIG_XXX b2)
     int i;
     chunk gt = 0;
     chunk eq = 1;
+
+#ifdef DEBUG_NORM
+    if ((b1[DMPV_XXX]!=1 && b1[DMPV_XXX]!=0) || b1[DMNV_XXX]!=0) printf("First input to dcomp not normed\n");
+    if ((b2[DMPV_XXX]!=1 && b2[DMPV_XXX]!=0) || b2[DMNV_XXX]!=0) printf("Second input to dcomp not normed\n");
+#endif
 
     for (i=DNLEN_XXX-1; i>=0; i--)
     {
@@ -1497,7 +1519,8 @@ void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
     BIG_XXX u, v, s, w;
 
     BIG_XXX_copy(u, p);
-    BIG_XXX_copy(v,a);
+    BIG_XXX_copy(v, a);
+    BIG_XXX_mod(v, p);
     BIG_XXX_zero(r);
     BIG_XXX_one(s);
 
@@ -1515,7 +1538,7 @@ void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
     for (k = 0; k < 2 * BIGBITS_XXX; k++)
     {
         p1 = !BIG_XXX_iszilch(v);
-        
+
         pu = BIG_XXX_parity(u);
         pv = BIG_XXX_parity(v);
         // Cases 2-4 of Kaliski
@@ -1547,7 +1570,7 @@ void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
 
         // Restore u,v,r,s to the original position
         BIG_XXX_cswap(u, v, psw);
-        BIG_XXX_cswap(r, s, psw);        
+        BIG_XXX_cswap(r, s, psw);
     }
 
     // Last step of kaliski

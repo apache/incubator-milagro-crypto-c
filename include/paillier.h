@@ -68,6 +68,8 @@ typedef struct
     BIG_1024_58 invp[FFLEN_2048]; /**< Precomputed \f$ p^{-1} \pmod{2^m} \f$ */
     BIG_1024_58 invq[FFLEN_2048]; /**< Precomputed \f$ q^{-1} \pmod{2^m} \f$ */
 
+    BIG_1024_58 invpq[HFLEN_2048]; /**< Precomputed \f$ p^{-1} \pmod{q} \f$ */
+
     BIG_1024_58 p2[FFLEN_2048]; /**< Precomputed \f$ p^2 \f$ */
     BIG_1024_58 q2[FFLEN_2048]; /**< Precomputed \f$ q^2 \f$ */
 
