@@ -153,6 +153,7 @@ int main(int argc, char** argv)
             if(!read_ECP_ZZZ(&ecp1,linePtr) || ECP_ZZZ_isinf(&ecp1))
             {
                 printf("ERROR getting test vector input ECP_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
 #if CURVETYPE_ZZZ!=MONTGOMERY
@@ -174,6 +175,7 @@ int main(int argc, char** argv)
             if(!ECP_ZZZ_equals(&ECPaux1,&ecp1)) // test octet conversion
             {
                 printf("ERROR converting ECP_ZZZ to/from OCTET, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -264,6 +266,7 @@ int main(int argc, char** argv)
             if(!read_ECP_ZZZ(&ecpdbl,linePtr) || ECP_ZZZ_isinf(&ecpdbl))
             {
                 printf("ERROR getting test vector input ECP_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP_ZZZ_copy(&ECPaux1,&ecp1);
@@ -274,6 +277,7 @@ int main(int argc, char** argv)
                 ECP_ZZZ_outputxyz(&ECPaux1);
                 ECP_ZZZ_outputxyz(&ecpdbl);
                 printf("ERROR computing double of ECP_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -285,6 +289,7 @@ int main(int argc, char** argv)
             if(!read_ECP_ZZZ(&ecpmul3,linePtr) || ECP_ZZZ_isinf(&ecpmul3))
             {
                 printf("ERROR getting test vector input ECP_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             BIG_XXX_one(BIGaux1);
@@ -296,6 +301,7 @@ int main(int argc, char** argv)
             if(!ECP_ZZZ_equals(&ECPaux1,&ecpmul3))
             {
                 printf("ERROR computing multiplication of ECP_ZZZ by 3, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP_ZZZ_copy(&ECPaux1,&ecpdbl);
@@ -303,6 +309,7 @@ int main(int argc, char** argv)
             if(!ECP_ZZZ_equals(&ECPaux1,&ecpmul3))
             {
                 printf("ERROR computing multiplication of ECP_ZZZ by 3, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -320,6 +327,7 @@ int main(int argc, char** argv)
             if(!read_ECP_ZZZ(&ecpmul,linePtr))
             {
                 printf("ERROR getting test vector input ECP_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP_ZZZ_copy(&ECPaux1,&ecp1);
@@ -331,6 +339,7 @@ int main(int argc, char** argv)
                 ECP_ZZZ_outputxyz(&ECPaux1);
                 ECP_ZZZ_outputxyz(&ecpmul);
                 printf("ERROR computing multiplication of ECP_ZZZ by a scalar, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -386,6 +395,7 @@ int main(int argc, char** argv)
             if(read_ECP_ZZZ(&ecpwrong,linePtr) || !ECP_ZZZ_isinf(&ecpwrong) || !ECP_ZZZ_equals(&ecpwrong,&inf))
             {
                 printf("ERROR identifying wrong ECP_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -396,6 +406,7 @@ int main(int argc, char** argv)
             if(read_ECP_ZZZ(&ecpinf,linePtr) || !ECP_ZZZ_isinf(&ecpinf) || !ECP_ZZZ_equals(&ecpinf,&inf))
             {
                 printf("ERROR identifying infinite point ECP_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }

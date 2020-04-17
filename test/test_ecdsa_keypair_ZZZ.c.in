@@ -89,9 +89,10 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             l2 = l1/2;
             d = (char*) malloc (l2);
-            if (d==NULL)
+            if (d==NULL) {
+                fclose(fp);
                 exit(EXIT_FAILURE);
-
+            }
             // d binary value
             amcl_hex2bin(linePtr, d, l1);
 
@@ -154,6 +155,7 @@ int main(int argc, char** argv)
             if (!rc)
             {
                 printf("TEST ECDSA KEYPAIR FAILED LINE %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             free(d);

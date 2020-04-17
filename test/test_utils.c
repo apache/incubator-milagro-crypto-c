@@ -92,11 +92,11 @@ int main()
 
     for (i=0; i<nIter; i++)
     {
-        amcl_hex2bin(V2[i], bintemp, 64);
-        amcl_bin2hex(bintemp, temp, 32);
-        if (strncmp(V2[i], temp, 64))
+        amcl_hex2bin(V2[i], bintemp, 32);
+        amcl_bin2hex(bintemp, temp, sizeof(bintemp), sizeof(temp));
+        if (strncmp(V2[i], temp, 32))
         {
-            printf("FAILURE conversion hex/bin\n");
+            printf("FAILURE conversion hex/bin %s %s\n", V2[i], temp);
             return 1;
         }
     }

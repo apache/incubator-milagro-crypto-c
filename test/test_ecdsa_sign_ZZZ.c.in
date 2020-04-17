@@ -121,9 +121,10 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             l2 = l1/2;
             Msg = (char*) malloc (l2);
-            if (Msg==NULL)
+            if (Msg==NULL) {
+                fclose(fp);
                 exit(EXIT_FAILURE);
-
+            }
             // Msg binary value
             amcl_hex2bin(linePtr, Msg, l1);
 
@@ -144,9 +145,10 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             l2 = l1/2;
             d = (char*) malloc (l2);
-            if (d==NULL)
+            if (d==NULL) {
+                fclose(fp);
                 exit(EXIT_FAILURE);
-
+            }
             // d binary value
             amcl_hex2bin(linePtr, d, l1);
 
@@ -197,9 +199,10 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             l2 = l1/2;
             k = (char*) malloc (l2);
-            if (k==NULL)
+            if (k==NULL) {
+                fclose(fp);
                 exit(EXIT_FAILURE);
-
+            }
             // k binary value
             amcl_hex2bin(linePtr, k, l1);
 
@@ -220,9 +223,10 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             l2 = l1/2;
             R = (char*) malloc (l2);
-            if (R==NULL)
+            if (R==NULL) {
+                fclose(fp);
                 exit(EXIT_FAILURE);
-
+            }
             // R binary value
             amcl_hex2bin(linePtr, R, l1);
 
@@ -243,9 +247,9 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             l2 = l1/2;
             S = (char*) malloc (l2);
-            if (S==NULL)
+            if (S==NULL) {
                 exit(EXIT_FAILURE);
-
+            }
             // S binary value
             amcl_hex2bin(linePtr, S, l1);
 
@@ -303,6 +307,7 @@ int main(int argc, char** argv)
                 OCT_output(&S2Oct);
                 printf("\n");
 #endif
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
 
