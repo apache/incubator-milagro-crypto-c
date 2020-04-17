@@ -73,8 +73,6 @@ void OCT_jstring(octet *y,char *s)
 int OCT_comp(octet *x,octet *y)
 {
     int i;
-    printf("x: %d\n",x->len);
-    printf("y: %d\n",y->len);
 
     if (x->len>y->len) return 0;
     if (x->len<y->len) return 0;
