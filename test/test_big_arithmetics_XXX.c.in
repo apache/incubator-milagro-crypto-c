@@ -134,6 +134,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_comp(BIG1,BIG2) < 0)
             {
                 printf("ERROR comparing two BIGs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -149,6 +150,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_comp(BIGsum,supp) != 0)
             {
                 printf("ERROR adding two BIGs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -164,6 +166,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_comp(BIGsub,supp) != 0)
             {
                 printf("ERROR subtracting two BIGs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -180,6 +183,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_comp(BIG1mod2,supp) != 0)
             {
                 printf("ERROR reducing modulo BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -196,6 +200,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_comp(BIG2mod1,supp) != 0)
             {
                 printf("ERROR reducing modulo BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -211,6 +216,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_dcomp(BIGmul,dsupp) != 0)
             {
                 printf("ERROR multiplication BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -226,6 +232,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_dcomp(BIG1sqr,dsupp) != 0)
             {
                 printf("ERROR squaring BIG 1, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -241,6 +248,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_dcomp(BIG2sqr,dsupp) != 0)
             {
                 printf("ERROR squaring BIG 2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -257,6 +265,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_comp(BIG1sqrmod2,supp) != 0)
             {
                 printf("ERROR reducing squaring modulo BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -274,6 +283,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_comp(BIG1modneg2,supp) != 0)
             {
                 printf("ERROR negative reduced modulo BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -287,6 +297,7 @@ int main(int argc, char** argv)
             if (nbitBIG != bitlen)
             {
                 printf("ERROR counting bit BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -300,6 +311,7 @@ int main(int argc, char** argv)
             if (nbitDBIG != bitlen)
             {
                 printf("ERROR counting bit DBIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -317,6 +329,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_comp(BIGdiv,supp) != 0)
             {
                 printf("ERROR division BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -335,6 +348,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_comp(BIGdivmod,supp) != 0)
             {
                 printf("ERROR division modulo BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -350,6 +364,7 @@ int main(int argc, char** argv)
             if (BIG_XXX_dcomp(BIGpxmul,dsupp) != 0)
             {
                 printf("ERROR small multiplication BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }

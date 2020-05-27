@@ -267,6 +267,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8_1))
             {
                 printf("ERROR in generating FP8 from two FP4s, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             // test FP8_from_FP4
@@ -276,6 +277,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8aux2))
             {
                 printf("ERROR in generating FP8 from one FP4, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             // test FP8_from_FP4
@@ -285,6 +287,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8aux2))
             {
                 printf("ERROR in generating FP8 from one FP4 as high part, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -310,6 +313,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8add) || !FP8_YYY_equals(&FP8aux2,&FP8add))
             {
                 printf("ERROR adding two FP8, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             // test associativity (P+Q)+R = P+(Q+R)
@@ -326,6 +330,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8aux2))
             {
                 printf("ERROR testing associativity between three FP8s, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -340,6 +345,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8neg))
             {
                 printf("ERROR in computing negative of FP8, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -355,6 +361,7 @@ int main(int argc, char** argv)
             if(FP8_YYY_equals(&FP8aux1,&FP8sub) == 0)
             {
                 printf("ERROR subtraction between two FP8, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -369,6 +376,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8conj))
             {
                 printf("ERROR computing conjugate of FP8, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -383,6 +391,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8nconj))
             {
                 printf("ERROR computing negative conjugate of FP8, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -418,6 +427,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8pmul))
             {
                 printf("ERROR in multiplication by FP4, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -431,6 +441,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8qmul))
             {
                 printf("ERROR in multiplication by FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -444,6 +455,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8tmul))
             {
                 printf("ERROR in multiplication by FP, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -458,6 +470,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8imul))
             {
                 printf("ERROR in multiplication by small integer, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -471,6 +484,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8sqr))
             {
                 printf("ERROR in squaring FP8, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -484,6 +498,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8mul))
             {
                 printf("ERROR in multiplication between two FP8s, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -497,6 +512,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8inv))
             {
                 printf("ERROR in computing inverse of FP8, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -511,6 +527,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8mulj))
             {
                 printf("ERROR in  multiplication of an FP8 instance by sqrt(sqrt(1+sqrt(-1))), line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -537,6 +554,7 @@ int main(int argc, char** argv)
             if(!FP8_YYY_equals(&FP8aux1,&FP8pow))
             {
                 printf("ERROR in raising FP8 by BIG power, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }

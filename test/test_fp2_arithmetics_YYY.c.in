@@ -167,18 +167,21 @@ int main(int argc, char** argv)
             if(FP2_YYY_equals(&FP2aux1,&FP2_1) != 0)
             {
                 printf("ERROR in conditional copy of FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             FP2_YYY_cmove(&FP2aux1,&FP2_1,1);
             if(FP2_YYY_equals(&FP2aux1,&FP2_1) != 1)
             {
                 printf("ERROR in conditional copy of FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             FP2_YYY_from_FPs(&FP2aux1,&FP2_1.a,&FP2_1.b);
             if(FP2_YYY_equals(&FP2aux1,&FP2_1) != 1)
             {
                 printf("ERROR in generating FP_YYY from two FPs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             FP_YYY_redc(BIGaux1,&FP2_1.a);
@@ -194,6 +197,7 @@ int main(int argc, char** argv)
                 FP2_YYY_output(&FP2_1);
                 printf("\n");
                 printf("ERROR in generating FP_YYY from two BIGs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             FP2_YYY_from_FP(&FP2aux1,&FP2_1.a);
@@ -202,6 +206,7 @@ int main(int argc, char** argv)
             if(FP2_YYY_equals(&FP2aux1,&FP2aux2) != 1)
             {
                 printf("ERROR in generating FP_YYY from one FP, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             FP_YYY_redc(BIGaux1,&FP2_1.a);
@@ -211,6 +216,7 @@ int main(int argc, char** argv)
             if(FP2_YYY_equals(&FP2aux1,&FP2aux2) != 1)
             {
                 printf("ERROR in generating FP_YYY from one BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -242,6 +248,7 @@ int main(int argc, char** argv)
                 printf("\nExp: ");
                 FP2_YYY_output(&FP2add);
                 printf("ERROR adding two FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
 // test associativity (P+Q)+R = P+(Q+R)
@@ -256,6 +263,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2aux2))
             {
                 printf("ERROR testing associativity between three FP2s, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -276,6 +284,7 @@ int main(int argc, char** argv)
                 printf("\nExp: ");
                 FP2_YYY_output(&FP2neg);
                 printf("ERROR in computing negative of FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -291,6 +300,7 @@ int main(int argc, char** argv)
             if(FP2_YYY_equals(&FP2aux1,&FP2sub) == 0)
             {
                 printf("ERROR subtraction between two FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -305,6 +315,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2conj))
             {
                 printf("ERROR computing conjugate of FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -326,6 +337,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2pmul))
             {
                 printf("ERROR in multiplication by BIG, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -353,6 +365,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2imul))
             {
                 printf("ERROR in multiplication by small integer, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -374,6 +387,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2_1) && !FP2_YYY_equals(&FP2aux2,&FP2_1))
             {
                 printf("ERROR square/square root consistency FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -387,6 +401,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2mul))
             {
                 printf("ERROR in multiplication between two FP2s, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -401,6 +416,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2inv))
             {
                 printf("ERROR in computing inverse of FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -414,6 +430,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2div2))
             {
                 printf("ERROR in computing division FP_YYY by 2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -428,6 +445,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2_YYY_mulip))
             {
                 printf("ERROR in computing multiplication of FP_YYY by (1+sqrt(-1)), line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -442,6 +460,7 @@ int main(int argc, char** argv)
             if(!FP2_YYY_equals(&FP2aux1,&FP2_divip))
             {
                 printf("ERROR in computing division of FP_YYY by (1+sqrt(-1)), line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }

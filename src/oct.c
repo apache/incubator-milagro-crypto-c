@@ -73,6 +73,7 @@ void OCT_jstring(octet *y,char *s)
 int OCT_comp(octet *x,octet *y)
 {
     int i;
+
     if (x->len>y->len) return 0;
     if (x->len<y->len) return 0;
     for (i=0; i<x->len; i++)
@@ -351,13 +352,18 @@ void OCT_rand(octet *x,csprng *RNG,int len)
 /* Convert an octet to a hex string */
 void OCT_toHex(octet *src,char *dst)
 {
+    const char * hexadecimals = "0123456789abcdef";
     int i;
     unsigned char ch;
     for (i=0; i<src->len; i++)
     {
         ch=src->val[i];
-        sprintf(&dst[i*2],"%02x", ch);
+        uint8_t res = ch / 16;
+        uint8_t mod = ch % 16;
+        dst[i*2] = hexadecimals[res];
+        dst[(i*2)+1] = hexadecimals[mod];
     }
+    dst[i*2] =0;
 }
 
 static int char2int(char input)

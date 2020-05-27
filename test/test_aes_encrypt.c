@@ -152,9 +152,10 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             IVLen = l1/2;
             IV = (char*) malloc (IVLen);
-            if (IV==NULL)
+            if (IV==NULL) {
                 exit(EXIT_FAILURE);
-
+                fclose(fp);
+            }
             // IV binary value
             amcl_hex2bin(linePtr, IV, l1);
         }
@@ -171,8 +172,10 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             PLAINTEXTLen = l1/2;
             PLAINTEXT = (char*) malloc(PLAINTEXTLen);
-            if (PLAINTEXT==NULL)
+            if (PLAINTEXT==NULL) {
+                fclose(fp);
                 exit(EXIT_FAILURE);
+            }
 
             // PLAINTEXT binary value
             amcl_hex2bin(linePtr, PLAINTEXT, l1);
@@ -189,8 +192,10 @@ int main(int argc, char** argv)
             // Allocate memory
             l1 = strlen(linePtr);
             CIPHERTEXT1 = (char*) malloc(PLAINTEXTLen+1);
-            if (CIPHERTEXT1==NULL)
+            if (CIPHERTEXT1==NULL) {
+                fclose(fp);
                 exit(EXIT_FAILURE);
+            }
 
             // Golden CIPHERTEXT value
             octet CIPHERTEXT1Oct= {PLAINTEXTLen,PLAINTEXTLen,CIPHERTEXT1};
@@ -227,6 +232,7 @@ int main(int argc, char** argv)
             if (!rc)
             {
                 printf("TEST AES ENCRYPT FAILED COMPARE CIPHERTEXT LINE %d\n",lineNo);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
 
