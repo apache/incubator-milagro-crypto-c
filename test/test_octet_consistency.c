@@ -59,7 +59,7 @@ int main()
         {
             if(!OCT_ncomp(&V,&W,i))
             {
-                printf("ERROR comparing two equal octet, OCTET\n");
+                printf("ERROR comparing %d bytes out of two equal octet, OCTET\n", i);
                 exit(EXIT_FAILURE);
             }
         }
@@ -67,6 +67,11 @@ int main()
         if(OCT_comp(&V,&W))
         {
             printf("ERROR comparing two different octet, OCTET\n");
+            exit(EXIT_FAILURE);
+        }
+        if(OCT_ncomp(&V,&W,len))
+        {
+            printf("ERROR comparing %d bytes out of two different octet, OCTET\n", len);
             exit(EXIT_FAILURE);
         }
     }
