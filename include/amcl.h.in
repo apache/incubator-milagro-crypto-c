@@ -232,6 +232,7 @@ extern void OCT_output_string(octet *O);
 extern void OCT_clear(octet *O);
 /**	@brief Compare two octets
  *
+    Terminates early if O.len != P.len
 	@param O first Octet to be compared
 	@param P second Octet to be compared
 	@return 1 if equal, else 0
@@ -239,6 +240,7 @@ extern void OCT_clear(octet *O);
 extern int  OCT_comp(octet *O,octet *P);
 /**	@brief Compare first n bytes of two octets
  *
+    Terminates early if O.len > n or P.len > n
 	@param O first Octet to be compared
 	@param P second Octet to be compared
 	@param n number of bytes to compare
@@ -362,6 +364,7 @@ extern void OCT_shl(octet *O,int n);
 extern void OCT_fromHex(octet *dst,char *src);
 /**	@brief Convert an Octet to printable hex number
  *
+    Truncates if there is no room
 	@param dst hex value
 	@param src Octet to be converted
  */
