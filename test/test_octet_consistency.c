@@ -32,20 +32,24 @@
 #include <time.h>
 #include "amcl.h"
 
+#define BYTES_LEN 100
+#define LEN64 (((BYTES_LEN / 3) + 2)*4+1)
+#define LENHEX (28 * BYTES_LEN)
+
 int main()
 {
-    int i,j,len=100;
-    int len64 = ((len/3) + 2)*4+1, lenHex = 28*len;
-    char raw[256], bytes[len+1], bytes64[len64+1], bytesHex[lenHex+1], v[len], w[len];
+    int i,j;
+    char raw[256], bytes[BYTES_LEN+1], bytes64[LEN64+1], bytesHex[LENHEX+1], v[BYTES_LEN], w[BYTES_LEN];
     octet V= {0,sizeof(v),v}, W= {0,sizeof(w),w};
     csprng rng;
-    char originByteHex[lenHex+1];
+    char originByteHex[LENHEX+1];
     /* Fake random source */
     RAND_clean(&rng);
     for (i=0; i<256; i++) raw[i]=(char)i;
     RAND_seed(&rng,256,raw);
 
     /* test comparison */
+	int len;
     for (len = 1; len <= 101; len=len+10)
     {
         OCT_rand(&W,&rng,len);

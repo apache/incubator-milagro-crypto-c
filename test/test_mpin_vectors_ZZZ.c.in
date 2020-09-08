@@ -46,7 +46,13 @@
 void read_OCTET(octet* OCT, char* string)
 {
     int len = strlen(string);
+
+#ifdef _MSC_VER
+    char *buff = _alloca(len);
+#else
     char buff[len];
+#endif
+
     strncpy(buff,string,len);
     char *end = strchr(buff,',');
     if (end == NULL)
