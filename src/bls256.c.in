@@ -31,7 +31,11 @@ static void recover_coefficients(int k, octet* X, BIG_XXX* coefs)
     BIG_XXX r;
     BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
 
+#ifdef _MSC_VER
+    BIG_XXX* x2 = _alloca(sizeof(BIG_XXX) * k);
+#else
     BIG_XXX x2[k];
+#endif
 
     for(int i=0; i<k; i++)
     {
@@ -233,7 +237,12 @@ int BLS_ZZZ_MAKE_SHARES(int k, int n, csprng *RNG, octet* X, octet* Y, octet* SK
     BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
 
     // Generate polynomial: f(x) = a_0 + a_1x + a_2x^2 ... a_{k-1}x^{k-1}
+#ifdef _MSC_VER
+    BIG_XXX* poly = _alloca(sizeof(BIG_XXX) * k);
+#else
     BIG_XXX poly[k];
+#endif
+
     for(int i=0; i<k; i++)
     {
         BIG_XXX_randomnum(poly[i],r,RNG);
@@ -294,7 +303,11 @@ int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
     BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
 
     BIG_XXX y;
+#ifdef _MSC_VER
+    BIG_XXX* coefs = _alloca(sizeof(BIG_XXX) * k);
+#else
     BIG_XXX coefs[k];
+#endif
 
     BIG_XXX secret;
     BIG_XXX prod;
@@ -326,7 +339,11 @@ int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
 
 int BLS_ZZZ_RECOVER_SIGNATURE(int k, octet* X, octet* Y, octet* SIG)
 {
+#ifdef _MSC_VER
+    BIG_XXX* coefs = _alloca(sizeof(BIG_XXX) * k);
+#else
     BIG_XXX coefs[k];
+#endif
     ECP_ZZZ y;
 
     ECP_ZZZ sig;
