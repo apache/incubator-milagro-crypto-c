@@ -115,11 +115,12 @@ brew install parallel
 
 * **Windows**
 
-* install [MinGW](http://www.mingw.org) Please select the **mingw32-base** and **mingw32-gcc-g++** components. Add *C:\MinGW\bin* to the PATH variable
-* install [Python](https://www.python.org/downloads/windows/). Either Python 2.7.x or 3.8.x may be used.  During the installation, ensure that the option to add Python to the Windows PATH variable is selected.
+* install [Visual Studio](https://visualstudio.microsoft.com/downloads/) Community edition
+* OR install [MinGW](http://www.mingw.org) Please select the **mingw32-base** and **mingw32-gcc-g++** components. Add *C:\MinGW\bin* to the PATH variable
 * install [CMake](http://www.cmake.org). During installation, ensure that the option to add the CMake executable to the Windows PATH variable is selected.
-* install [Doxygen](http://www.doxygen.org)
 * install [Git](https://git-scm.com/)
+* (optional) install [Python](https://www.python.org/downloads/windows/). Either Python 2.7.x or 3.8.x may be used.  During the installation, ensure that the option to add Python to the Windows PATH variable is selected.
+* (optional) install [Doxygen](http://www.doxygen.org)
 
 ## Build Instructions
 
@@ -226,6 +227,20 @@ git clone https://github.com/apache/incubator-milagro-crypto-c.git
 cd incubator-milagro-crypto-c
 ```
 Or, if using an official Apache release, download the compressed archive, extract it and navigate into its root directory.
+
+##### Visual Studio
+from `x64 Native Tools Command Prompt for VS`
+
+```
+mkdir build
+cd build
+cmake -A x64 -DBUILD_PYTHON=OFF -DBUILD_DOCS=OFF -DCMAKE_BUILD_TYPE=Release ..
+msbuild /p:Configuration=Release /p:Platform=x64 ALL_BUILD.vcxproj
+msbuild /p:Configuration=Release /p:Platform=x64 RUN_TESTS.vcxproj
+```
+
+##### Mingw
+
 ```
 mkdir build
 cd build
@@ -246,13 +261,13 @@ The build can be configured using by setting flags on the command line i.e.
 cmake -G "MinGW Makefiles" -D WORD_SIZE=64  -D BUILD_PYTHON=on ..
 ```
 
-##### Uninstall software
+###### Uninstall software
 
 ```
 mingw32-make uninstall
 ```
 
-##### Building an installer
+###### Building an installer
 
 After having built the libraries you can build a Windows installer using this command
 
