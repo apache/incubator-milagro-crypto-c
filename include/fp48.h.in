@@ -34,8 +34,24 @@ typedef struct
     int type;   /**< Type */
 } FP48_YYY;
 
-extern const BIG_XXX Fra_YYY; /**< real part of BN curve Frobenius Constant */
-extern const BIG_XXX Frb_YYY; /**< imaginary part of BN curve Frobenius Constant */
+
+#ifdef _MSC_VER
+
+#ifdef amcl_curve_ZZZ_EXPORTS
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllexport)
+#else
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllimport)
+#endif
+
+#else
+#define EXTERNAL_SYMBOL_DECLARATION extern
+#endif
+
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX Fra_YYY; /**< real part of BN curve Frobenius Constant */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX Frb_YYY; /**< imaginary part of BN curve Frobenius Constant */
+
+#undef EXTERNAL_SYMBOL_DECLARATION
+
 
 /* FP48 prototypes */
 /**	@brief Tests for FP48 equal to zero

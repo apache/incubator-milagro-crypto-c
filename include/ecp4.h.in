@@ -37,32 +37,47 @@ typedef struct
 } ECP4_ZZZ;
 
 
-/* Curve Params - see rom.c */
-extern const int CURVE_A_ZZZ;		/**< Elliptic curve A parameter */
-extern const int CURVE_B_I_ZZZ;		/**< Elliptic curve B parameter */
-extern const BIG_XXX CURVE_B_ZZZ;     /**< Elliptic curve B parameter */
-extern const BIG_XXX CURVE_Order_ZZZ; /**< Elliptic curve group order */
-extern const BIG_XXX CURVE_Cof_ZZZ;   /**< Elliptic curve cofactor */
-extern const BIG_XXX CURVE_Bnx_ZZZ;   /**< Elliptic curve parameter */
+#ifdef _MSC_VER
 
-extern const BIG_XXX Fra_YYY; /**< real part of curve Frobenius Constant */
-extern const BIG_XXX Frb_YYY; /**< imaginary part of curve Frobenius Constant */
+#ifdef amcl_curve_ZZZ_EXPORTS
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllexport)
+#else
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllimport)
+#endif
+
+#else
+#define EXTERNAL_SYMBOL_DECLARATION extern
+#endif
+
+/* Curve Params - see rom.c */
+EXTERNAL_SYMBOL_DECLARATION const int CURVE_A_ZZZ;		/**< Elliptic curve A parameter */
+EXTERNAL_SYMBOL_DECLARATION const int CURVE_B_I_ZZZ;		/**< Elliptic curve B parameter */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_B_ZZZ;     /**< Elliptic curve B parameter */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Order_ZZZ; /**< Elliptic curve group order */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Cof_ZZZ;   /**< Elliptic curve cofactor */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Bnx_ZZZ;   /**< Elliptic curve parameter */
+
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX Fra_YYY; /**< real part of curve Frobenius Constant */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX Frb_YYY; /**< imaginary part of curve Frobenius Constant */
 
 /* Generator point on G1 */
-extern const BIG_XXX CURVE_Gx_ZZZ; /**< x-coordinate of generator point in group G1  */
-extern const BIG_XXX CURVE_Gy_ZZZ; /**< y-coordinate of generator point in group G1  */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Gx_ZZZ; /**< x-coordinate of generator point in group G1  */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Gy_ZZZ; /**< y-coordinate of generator point in group G1  */
 
 /* For Pairings only */
 
 /* Generator point on G2 */
-extern const BIG_XXX CURVE_Pxaa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxab_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxba_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxbb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyaa_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyab_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyba_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pybb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxaa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxab_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxba_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxbb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyaa_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyab_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyba_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pybb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
+
+#undef EXTERNAL_SYMBOL_DECLARATION
+
 
 /* ECP4 E(FP4) prototypes */
 /**	@brief Tests for ECP4 point equal to infinity

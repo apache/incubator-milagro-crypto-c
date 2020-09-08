@@ -34,6 +34,12 @@
 #define OS "@OS@"                               /**< Build OS */
 #endif
 
+#ifdef _MSC_VER
+#define SYMBOL_EXPORT __declspec(dllexport)
+#else
+#define SYMBOL_EXPORT
+#endif
+
 /* modulus types */
 
 #define NOT_SPECIAL 0	       /**< Modulus of no exploitable form */

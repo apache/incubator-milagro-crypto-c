@@ -25,15 +25,30 @@ under the License.
 #include "ecp_ZZZ.h"
 
 
+#ifdef _MSC_VER
+
+#ifdef amcl_curve_ZZZ_EXPORTS
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllexport)
+#else
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllimport)
+#endif
+
+#else
+#define EXTERNAL_SYMBOL_DECLARATION extern
+#endif
+
 /* Pairing constants */
 
-extern const BIG_XXX CURVE_Bnx_ZZZ; /**< BN curve x parameter */
-extern const BIG_XXX CURVE_Cru_ZZZ; /**< BN curve Cube Root of Unity */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Bnx_ZZZ; /**< BN curve x parameter */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Cru_ZZZ; /**< BN curve Cube Root of Unity */
 
-extern const BIG_XXX CURVE_W_ZZZ[2];	 /**< BN curve constant for GLV decomposition */
-extern const BIG_XXX CURVE_SB_ZZZ[2][2]; /**< BN curve constant for GLV decomposition */
-extern const BIG_XXX CURVE_WB_ZZZ[4];	 /**< BN curve constant for GS decomposition */
-extern const BIG_XXX CURVE_BB_ZZZ[4][4]; /**< BN curve constant for GS decomposition */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_W_ZZZ[2];	 /**< BN curve constant for GLV decomposition */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_SB_ZZZ[2][2]; /**< BN curve constant for GLV decomposition */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_WB_ZZZ[4];	 /**< BN curve constant for GS decomposition */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_BB_ZZZ[4][4]; /**< BN curve constant for GS decomposition */
+
+#undef EXTERNAL_SYMBOL_DECLARATION
+
 
 /* Pairing function prototypes */
 

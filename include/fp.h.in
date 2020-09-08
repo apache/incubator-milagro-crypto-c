@@ -42,10 +42,24 @@ typedef struct
 } FP_YYY;
 
 
+#ifdef _MSC_VER
+
+#ifdef amcl_curve_ZZZ_EXPORTS
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllexport)
+#else
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllimport)
+#endif
+
+#else
+#define EXTERNAL_SYMBOL_DECLARATION extern
+#endif
+
 /* Field Params - see rom.c */
-extern const BIG_XXX Modulus_YYY;	/**< Actual Modulus set in romf_yyy.c */
-extern const BIG_XXX R2modp_YYY;	/**< Montgomery constant */
-extern const chunk MConst_YYY;		/**< Constant associated with Modulus - for Montgomery = 1/p mod 2^BASEBITS */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX Modulus_YYY;	/**< Actual Modulus set in romf_yyy.c */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX R2modp_YYY;	/**< Montgomery constant */
+EXTERNAL_SYMBOL_DECLARATION const chunk MConst_YYY;		/**< Constant associated with Modulus - for Montgomery = 1/p mod 2^BASEBITS */
+
+#undef EXTERNAL_SYMBOL_DECLARATION
 
 
 #define MODBITS_YYY MBITS_YYY                        /**< Number of bits in Modulus for selected curve */

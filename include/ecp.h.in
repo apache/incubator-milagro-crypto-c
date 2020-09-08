@@ -30,72 +30,86 @@
 #include "fp_YYY.h"
 #include "config_curve_ZZZ.h"
 
+#ifdef _MSC_VER
+
+#ifdef amcl_curve_ZZZ_EXPORTS
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllexport)
+#else
+#define EXTERNAL_SYMBOL_DECLARATION __declspec(dllimport)
+#endif
+
+#else
+#define EXTERNAL_SYMBOL_DECLARATION extern
+#endif
+
 /* Curve Params - see rom_zzz.c */
-extern const int CURVE_A_ZZZ;         /**< Elliptic curve A parameter */
-extern const int CURVE_Cof_I_ZZZ;     /**< Elliptic curve cofactor */
-extern const int CURVE_B_I_ZZZ;       /**< Elliptic curve B_i parameter */
-extern const BIG_XXX CURVE_B_ZZZ;     /**< Elliptic curve B parameter */
-extern const BIG_XXX CURVE_Order_ZZZ; /**< Elliptic curve group order */
-extern const BIG_XXX CURVE_Cof_ZZZ;   /**< Elliptic curve cofactor */
+EXTERNAL_SYMBOL_DECLARATION const int CURVE_A_ZZZ;         /**< Elliptic curve A parameter */
+EXTERNAL_SYMBOL_DECLARATION const int CURVE_Cof_I_ZZZ;     /**< Elliptic curve cofactor */
+EXTERNAL_SYMBOL_DECLARATION const int CURVE_B_I_ZZZ;       /**< Elliptic curve B_i parameter */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_B_ZZZ;     /**< Elliptic curve B parameter */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Order_ZZZ; /**< Elliptic curve group order */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Cof_ZZZ;   /**< Elliptic curve cofactor */
 
 /* Generator point on G1 */
-extern const BIG_XXX CURVE_Gx_ZZZ; /**< x-coordinate of generator point in group G1  */
-extern const BIG_XXX CURVE_Gy_ZZZ; /**< y-coordinate of generator point in group G1  */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Gx_ZZZ; /**< x-coordinate of generator point in group G1  */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Gy_ZZZ; /**< y-coordinate of generator point in group G1  */
 
 
 /* For Pairings only */
 
 /* Generator point on G2 */
-extern const BIG_XXX CURVE_Pxa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pya_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pya_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
 
 
 /*** needed for BLS24 curves ***/
 
-extern const BIG_XXX CURVE_Pxaa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxab_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxba_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxbb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyaa_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyab_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyba_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pybb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxaa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxab_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxba_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxbb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyaa_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyab_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyba_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pybb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
 
 /*** needed for BLS48 curves ***/
 
-extern const BIG_XXX CURVE_Pxaaa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxaab_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxaba_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxabb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxbaa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxbab_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxbba_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pxbbb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxaaa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxaab_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxaba_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxabb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxbaa_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxbab_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxbba_ZZZ; /**< real part of x-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pxbbb_ZZZ; /**< imaginary part of x-coordinate of generator point in group G2 */
 
-extern const BIG_XXX CURVE_Pyaaa_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyaab_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyaba_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pyabb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pybaa_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pybab_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pybba_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
-extern const BIG_XXX CURVE_Pybbb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
-
-
-extern const BIG_XXX CURVE_Bnx_ZZZ; /**< BN curve x parameter */
-
-extern const BIG_XXX CURVE_Cru_ZZZ; /**< BN curve Cube Root of Unity */
-
-extern const BIG_XXX Fra_YYY; /**< real part of BN curve Frobenius Constant */
-extern const BIG_XXX Frb_YYY; /**< imaginary part of BN curve Frobenius Constant */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyaaa_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyaab_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyaba_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pyabb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pybaa_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pybab_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pybba_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Pybbb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
 
 
-extern const BIG_XXX CURVE_W_ZZZ[2];	 /**< BN curve constant for GLV decomposition */
-extern const BIG_XXX CURVE_SB_ZZZ[2][2]; /**< BN curve constant for GLV decomposition */
-extern const BIG_XXX CURVE_WB_ZZZ[4];	 /**< BN curve constant for GS decomposition */
-extern const BIG_XXX CURVE_BB_ZZZ[4][4]; /**< BN curve constant for GS decomposition */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Bnx_ZZZ; /**< BN curve x parameter */
+
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_Cru_ZZZ; /**< BN curve Cube Root of Unity */
+
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX Fra_YYY; /**< real part of BN curve Frobenius Constant */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX Frb_YYY; /**< imaginary part of BN curve Frobenius Constant */
+
+
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_W_ZZZ[2];	 /**< BN curve constant for GLV decomposition */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_SB_ZZZ[2][2]; /**< BN curve constant for GLV decomposition */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_WB_ZZZ[4];	 /**< BN curve constant for GS decomposition */
+EXTERNAL_SYMBOL_DECLARATION const BIG_XXX CURVE_BB_ZZZ[4][4]; /**< BN curve constant for GS decomposition */
+
+#undef EXTERNAL_SYMBOL_DECLARATION 
 
 
 /**
