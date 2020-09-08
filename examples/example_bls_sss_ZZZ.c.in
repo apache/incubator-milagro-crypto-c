@@ -54,10 +54,11 @@ under the License.
 #define G2LEN 16*BFS_ZZZ
 #endif
 
+#define NUM_SHARES 4
+
 int bls_sss(csprng *RNG)
 {
     int rc;
-    int n=4;
     int k=3;
 
     char m[2000];
@@ -79,12 +80,12 @@ int bls_sss(csprng *RNG)
     octet SIGR = {0,sizeof(sigr),sigr};
 
     // Secret shares
-    char x[n][BGS_ZZZ];
-    octet X[n];
-    char y[n][BGS_ZZZ];
-    octet Y[n];
+    char x[NUM_SHARES][BGS_ZZZ];
+    octet X[NUM_SHARES];
+    char y[NUM_SHARES][BGS_ZZZ];
+    octet Y[NUM_SHARES];
 
-    for(int i=0; i<n; i++)
+    for(int i=0; i<NUM_SHARES; i++)
     {
         memset(&y[i], 0, sizeof(y[i]));
         Y[i].max = BGS_ZZZ;
@@ -123,14 +124,14 @@ int bls_sss(csprng *RNG)
     printf("Success: Signature is valid\n");
 
     // Make shares of BLS secret key
-    rc = BLS_ZZZ_MAKE_SHARES(k, n, RNG, X, Y, &SKI, &SKO);
+    rc = BLS_ZZZ_MAKE_SHARES(k, NUM_SHARES, RNG, X, Y, &SKI, &SKO);
     if (rc!=BLS_OK)
     {
         printf("Error: BLS_ZZZ_MAKE_SHARES\n");
         return 1;
     }
 
-    for(int i=0; i<n; i++)
+    for(int i=0; i<NUM_SHARES; i++)
     {
         printf("X[%d] ", i);
         OCT_output(&X[i]);
@@ -164,11 +165,11 @@ int bls_sss(csprng *RNG)
     }
 
     // Generate public keys and signatures using shares
-    char pks[n][G2LEN];
-    octet PKS[n];
-    char sigs[n][BFS_ZZZ+1];
-    octet SIGS[n];
-    for(int i=0; i<n; i++)
+    char pks[NUM_SHARES][G2LEN];
+    octet PKS[NUM_SHARES];
+    char sigs[NUM_SHARES][BFS_ZZZ+1];
+    octet SIGS[NUM_SHARES];
+    for(int i=0; i<NUM_SHARES; i++)
     {
         memset(&sigs[i], 0, sizeof(sigs[i]));
         SIGS[i].max = BFS_ZZZ+1;
@@ -182,13 +183,13 @@ int bls_sss(csprng *RNG)
         BLS_ZZZ_SIGN(&SIGS[i],&M,&Y[i]);
     }
 
-    for(int i=0; i<n; i++)
+    for(int i=0; i<NUM_SHARES; i++)
     {
         printf("PKS[%d] ", i);
         OCT_output(&PKS[i]);
     }
 
-    for(int i=0; i<n; i++)
+    for(int i=0; i<NUM_SHARES; i++)
     {
         printf("SIGS[%d] ", i);
         OCT_output(&SIGS[i]);
