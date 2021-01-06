@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "ecp_ZZZ.h"
+#include "bench.h"
 
 #define MIN_TIME 10.0
 #define MIN_ITERS 10
@@ -59,15 +60,7 @@ int main()
     printf("Montgomery parameterization\n");
 #endif
 
-#if CHUNK==16
-    printf("16-bit Build\n\n");
-#endif
-#if CHUNK==32
-    printf("32-bit Build\n\n");
-#endif
-#if CHUNK==64
-    printf("64-bit Build\n\n");
-#endif
+    print_system_info();
 
     time((time_t *)&ran);
     pr[0]=ran;

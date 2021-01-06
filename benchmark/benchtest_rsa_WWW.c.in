@@ -28,6 +28,7 @@
 #include <time.h>
 
 #include "rsa_WWW.h"
+#include "bench.h"
 
 #define MIN_TIME 10.0
 #define MIN_ITERS 10
@@ -35,10 +36,12 @@
 int main()
 {
     csprng RNG;
+
     int i,iterations;
     clock_t start;
     double elapsed;
     char pr[10];
+
     unsigned long ran;
     rsa_public_key_WWW pub;
     rsa_private_key_WWW priv;
@@ -47,17 +50,7 @@ int main()
     octet D= {0,sizeof(d),d};
     octet C= {0,sizeof(c),c};
 
-    printf("\nBechmark test RSA - ");
-
-#if CHUNK==16
-    printf("16-bit Build\n\n");
-#endif
-#if CHUNK==32
-    printf("32-bit Build\n\n");
-#endif
-#if CHUNK==64
-    printf("64-bit Build\n\n");
-#endif
+    print_system_info();
 
     time((time_t *)&ran);
     pr[0]=ran;

@@ -1,0 +1,265 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+*/
+
+/*
+   Benchmark FF exponentiations.
+ */
+
+#include <stdio.h>
+#include "bench.h"
+#include "arch.h"
+#include "amcl.h"
+#include "utils.h"
+#include "ff_WWW.h"
+
+#define MIN_TIME 5.0
+#define MIN_ITERS 10
+
+#define FS_WWW MODBYTES_XXX*FFLEN_WWW
+
+#if WWW == 2048
+char *Nhex = "c1bdd91e09594d376ec23bdb2de1cd08033fc89cdc44c4fa12a3d3295fa8a351a093e0bd23cc1c0faf7dd04cc306103581089f2756a2e3b233ec00c3544f4cf82634b0a33fb23e8f9991ea94a61e7212340db0c5d6b1c5c6e3ff7700117ee10ec08c7db17d1ccc765781dd64f03b068bca83125d8afb714739fea60a95777082aebba70aafd8757ec93f8340712eb4b652fdecb3522e175951b987b4403e7a7f3eb87eaf2b58159ff3d43cc3f1c7a08a305669dd6cc5682186ea1a61228ccf25185c9895ab637186263d0d57769abc3c3a0ba78e86ff0bbea6479f514a51495293dcaf4d4f1eec997ebf3bd972c77a7fc359ba310d606f58698e9b9f15b141c7";
+#elif WWW == 3072
+char *Nhex = "ed9eb99a931743d83c465d65f4e467808105ea2dba2662741315985c9416f482dcb527da186e96e4cff1541ec7584a832ab0c849c2356f0821b1d1ff2606834411fdaa2a82ee6380e2c97e5b7324ecdc0a0a224349e405b8f5ed6d6d46c3b5564f98c432b1c56143b665821831bb3eb09b230873622a3fbce9d563a46f2574110442284fae27a90d926050572b620d676f37cef349a77632a3171e9288d6c8c85e3fdbe0df1f0ca9028b9edeebdad15ee2a9b65aa12e3902fa7f17a4e4dc4fcecc4ed264a7a2107d2cef8e7239037249ca33d82b900d24b605ae870dc16cdcc87e701b6456129a25839fb0d16c5508190a20ead935f02e8ecd8c8c3775ff69c2e314cadbbe97deab373da1e0531ac92d147be7c0e2077fccbe772f99a1507e2a436ce7ebe2e4e0f404fe3fb769fded87908eee53c1580b3b1b73fa3af777a2863a858b4fa9e139371e02975ca773ad9cd905238da1c2597f6753dd289e0f50087c148dac87a8f9c8bde04a1e32c119546e7371d1553ae435e1bf673bdd6f5c5d";
+#else
+char *Nhex = "c01b73cc3f6232c4b525ee17053d1c90aa21750422c19718bf0caa688c70f9fba2df575dffe03bc7fa2cf568235323afaba8cf466aaad86909e189af3f8d941c37d8c68cd68a07b2329c7c8183ab0af013f2737decc59c1b69af3a80bc13d47742df98b0f5f398ce396d2dcf015bd97618d1ea9ad8dc653d408950821b021c1176a9f645c479c205a4810c33e6993fc7448848ad07470f77fd859b0c8acee2f89e6724770b43c2b6f8621bd0b91cf16e46fbad293399fed1864e9e8f558c3f17f1714d6d2f1ae43933404cf692375b65a8af9dfd2ca237c8722ae2b58d21272ec5fb0c03a118186adcdd6a393019caee593038b65a6f900ebf6bca7a3b77f5cebf9f8109fef6074f8bbe2617750ec72a59caee345842146225da21be9cc95f10be3ae1f64c6ee5aad0c0e5d6e29266ef1a66ca125dae470ffd21505ee8d10979d835a252b376f81c4fa2a03cb99159e45268d9b1211581fadfcfec27821a1321d5e42652b27acce84dd47f1fddd0bdc423b059233d5c87890d22cc9de35efd2ae2ee01bc08ee4cd1fde1328959410a2801fc9404dc8bc200c8d251bdc947d3e5023e603acb13adbe3c156388e390b6c87f60e1416f6c1bc8c6e8268483663db637a5e12d73b24afb2e7d7e33cc1f3b9d7a8fb6c53f728d5230b818be5c6f40d6bfcb65c550caf9b3795456a18dd4c3313a03614ea549840d52df36631fd58587";
+#endif
+
+int main()
+{
+    int iterations;
+    clock_t start;
+    double elapsed;
+
+    // Material for exponents
+    BIG_XXX A[FFLEN_WWW], B[FFLEN_WWW], C[FFLEN_WWW], D[FFLEN_WWW];
+    BIG_XXX E[FFLEN_WWW], F[FFLEN_WWW], G[FFLEN_WWW], H[FFLEN_WWW];
+    BIG_XXX N[FFLEN_WWW];
+    BIG_XXX R[FFLEN_WWW];
+
+    // Material for precomputation
+    BIG_XXX T_mem[16][FFLEN_WWW];
+    BIG_XXX *T[] =
+    {
+        T_mem[0],  T_mem[1],  T_mem[2],  T_mem[3],
+        T_mem[4],  T_mem[5],  T_mem[6],  T_mem[7],
+        T_mem[8],  T_mem[9],  T_mem[10], T_mem[11],
+        T_mem[12], T_mem[13], T_mem[14], T_mem[15],
+    };
+
+    BIG_XXX *X[] = {A, B, C, D};
+    BIG_XXX *EXP[] = {E, F, G, H};
+
+    BIG_XXX ND[FFLEN_WWW];
+
+    char oct[FS_WWW];
+    octet OCT = {0,sizeof(oct),oct};
+
+    /* Fake random source */
+    int i;
+    char seed[256];
+    csprng RNG;
+
+    RAND_clean(&RNG);
+    for (i=0; i<256; i++) seed[i]=(char)i;
+    RAND_seed(&RNG,256,seed);
+
+    /* Read N from hex */
+    OCT_fromHex(&OCT, Nhex);
+    FF_WWW_fromOctet(N, &OCT, FFLEN_WWW);
+
+    /* Compute additional values */
+    FF_WWW_invmod2m(ND, N, FFLEN_WWW);
+
+    printf("\nBechmark FF exponentiation - FF_WWW\n");
+
+    print_system_info();
+
+    FF_WWW_random(A, &RNG, FFLEN_WWW);
+    FF_WWW_random(B, &RNG, FFLEN_WWW);
+    FF_WWW_random(C, &RNG, FFLEN_WWW);
+    FF_WWW_random(D, &RNG, FFLEN_WWW);
+
+    FF_WWW_random(E, &RNG, FFLEN_WWW);
+    FF_WWW_random(F, &RNG, FFLEN_WWW);
+    FF_WWW_random(G, &RNG, FFLEN_WWW);
+    FF_WWW_random(H, &RNG, FFLEN_WWW);
+
+    /* Benchmark non constant-time exponents */
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_nt_pow(R, A, E, N, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_nt_pow\t\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_nt_pow_2(R, A, E, B, F, N, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_nt_pow_2\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_nt_pow_3(R, A, E, B, F, C, G, N, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_nt_pow_3\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_nt_pow_4(R, A, E, B, F, C, G, D, H, N, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_nt_pow_4\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    /* Benchmark constant-time exponenets */
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_ct_pow(R, A, E, N, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_ct_pow\t\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_ct_pow_2(R, A, E, B, F, N, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_ct_pow_2\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_ct_pow_3(R, A, E, B, F, C, G, N, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_ct_pow_3\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    /* Benchmark standalone precomputation/evaluation */
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_2w_precompute(X, T, 4, 1, N, ND, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_2w_precompute\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_ct_2w_pow(R, T, EXP, 4, 1, N, ND, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_ct_2w_pow\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_nt_2w_pow(R, T, EXP, 4, 1, N, ND, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_nt_2w_pow\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_bi_precompute(X, T, 4, 3, N, ND, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_bi_precompute\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+
+    iterations=0;
+    start=clock();
+    do
+    {
+        FF_WWW_bi_pow(R, T, EXP, 4, 3, N, ND, FFLEN_WWW, FFLEN_WWW);
+        iterations++;
+        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("FF_WWW_bi_pow\t\t%8d iterations\t",iterations);
+    printf("%8.2lf ms per iteration\n",elapsed);
+}
