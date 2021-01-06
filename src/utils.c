@@ -88,11 +88,11 @@ void amcl_bin2hex(char *src, char *dst, size_t src_len, size_t dst_len)
     unsigned char ch;
     for (size_t i = 0; i < src_len && i< dst_len/2; i++)
     {
-       ch=src[i];
-       uint8_t res = ch / 16;
-       uint8_t mod = ch % 16;
-       dst[i*2] = hexadecimals[res];
-       dst[(i*2)+1] = hexadecimals[mod];
+        ch=src[i];
+        uint8_t res = ch / 16;
+        uint8_t mod = ch % 16;
+        dst[i*2] = hexadecimals[res];
+        dst[(i*2)+1] = hexadecimals[mod];
     }
 }
 
@@ -132,7 +132,8 @@ int generateOTP(csprng* RNG)
 void generateRandom(csprng *RNG,octet *randomValue)
 {
     int i;
-    for (i=0; i<randomValue->len; i++) {
+    for (i=0; i<randomValue->len; i++)
+    {
         randomValue->val[i] = RAND_byte(RNG);
     }
 }
