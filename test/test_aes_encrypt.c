@@ -152,7 +152,8 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             IVLen = l1/2;
             IV = (char*) malloc (IVLen);
-            if (IV==NULL) {
+            if (IV==NULL)
+            {
                 exit(EXIT_FAILURE);
                 fclose(fp);
             }
@@ -172,7 +173,8 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             PLAINTEXTLen = l1/2;
             PLAINTEXT = (char*) malloc(PLAINTEXTLen);
-            if (PLAINTEXT==NULL) {
+            if (PLAINTEXT==NULL)
+            {
                 fclose(fp);
                 exit(EXIT_FAILURE);
             }
@@ -192,7 +194,8 @@ int main(int argc, char** argv)
             // Allocate memory
             l1 = strlen(linePtr);
             CIPHERTEXT1 = (char*) malloc(PLAINTEXTLen+1);
-            if (CIPHERTEXT1==NULL) {
+            if (CIPHERTEXT1==NULL)
+            {
                 fclose(fp);
                 exit(EXIT_FAILURE);
             }

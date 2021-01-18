@@ -153,7 +153,8 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             IVLen = l1/2;
             IV = (char*) malloc (IVLen);
-            if (IV==NULL) {
+            if (IV==NULL)
+            {
                 fclose(fp);
                 exit(EXIT_FAILURE);
             }

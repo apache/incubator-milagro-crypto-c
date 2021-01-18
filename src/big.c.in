@@ -1275,6 +1275,20 @@ int BIG_XXX_bit(BIG_XXX a,int n)
     return ((int)(a[n/BASEBITS_XXX]>>(n%BASEBITS_XXX))) & 1;
 }
 
+/* return w bits of a starting from the n-th */
+int BIG_XXX_bits(BIG_XXX a, int n, int w)
+{
+    int i, b = 0;
+
+    for (i=n+w-1; i>=n; i--)
+    {
+        b <<=1;
+        b |= ((int)(a[i/BASEBITS_XXX]>>(i%BASEBITS_XXX))) & 1;
+    }
+
+    return b;
+}
+
 /* return last n bits of a, where n is small < BASEBITS */
 /* SU= 16 */
 int BIG_XXX_lastbits(BIG_XXX a,int n)

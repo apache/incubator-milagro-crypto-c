@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include "config_curve_ZZZ.h"
+#include "bench.h"
+
 #if CURVE_SECURITY_ZZZ == 128
 #include "pair_ZZZ.h"
 #elif CURVE_SECURITY_ZZZ == 192
@@ -81,15 +83,7 @@ int main()
 
     printf("Bechmark test PAIR - ZZZ Curve\n");
 
-#if CHUNK==16
-    printf("16-bit Build\n\n");
-#endif
-#if CHUNK==32
-    printf("32-bit Build\n\n");
-#endif
-#if CHUNK==64
-    printf("64-bit Build\n\n");
-#endif
+    print_system_info();
 
     time((time_t *)&ran);
     pr[0]=ran;

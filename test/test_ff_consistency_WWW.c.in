@@ -47,7 +47,6 @@ char *Qhex = "ec0a7fd563b3e58212e3ce6437a07df1294c8cb44ed3f66af0e5145db048db2e02
 
 int main()
 {
-
     int i;
     char seed[256];
     csprng RNG;
@@ -74,8 +73,8 @@ int main()
     }
 
     /* Testing isunity */
-    FF_WWW_one(A, HFLEN_WWW);
-    if(!FF_WWW_isunity(A, HFLEN_WWW))
+    FF_WWW_one(E, FFLEN_WWW);
+    if(!FF_WWW_isunity(E, FFLEN_WWW))
     {
         printf("ERROR comparing or setting to unity\n");
         exit(EXIT_FAILURE);
@@ -310,6 +309,7 @@ int main()
     FF_WWW_random(G, &RNG, HFLEN_WWW);
     FF_WWW_random(H, &RNG, HFLEN_WWW);
 
+    // Test double exponent
     FF_WWW_nt_pow(L, A, E, P, HFLEN_WWW, HFLEN_WWW);
     FF_WWW_nt_pow(N, B, F, P, HFLEN_WWW, HFLEN_WWW);
     FF_WWW_mul(Q, L, N, HFLEN_WWW);
@@ -319,7 +319,16 @@ int main()
 
     if(FF_WWW_comp(N, L, HFLEN_WWW))
     {
-        printf("ERROR testing bpow2");
+        printf("ERROR testing nt_pow_2");
+        exit(EXIT_FAILURE);
+    }
+
+    FF_WWW_zero(N, HFLEN_WWW);
+    FF_WWW_ct_pow_2(N, A, E, B, F, P, HFLEN_WWW, HFLEN_WWW);
+
+    if(FF_WWW_comp(N, L, HFLEN_WWW))
+    {
+        printf("ERROR testing ct_pow_2");
         exit(EXIT_FAILURE);
     }
 
@@ -332,17 +341,16 @@ int main()
 
     if(FF_WWW_comp(N, L, HFLEN_WWW))
     {
-        printf("ERROR testing pow3");
+        printf("ERROR testing nt_pow_3");
         exit(EXIT_FAILURE);
     }
 
-    // Test triple exponent for secret key
     FF_WWW_zero(N, HFLEN_WWW);
     FF_WWW_ct_pow_3(N, A, E, B, F, C, G, P, HFLEN_WWW, HFLEN_WWW);
 
     if(FF_WWW_comp(N, L, HFLEN_WWW))
     {
-        printf("ERROR testing pow3");
+        printf("ERROR testing ct_pow_3");
         exit(EXIT_FAILURE);
     }
 
@@ -355,7 +363,7 @@ int main()
 
     if(FF_WWW_comp(N, L, HFLEN_WWW))
     {
-        printf("ERROR testing pow4");
+        printf("ERROR testing nt_pow_4");
         exit(EXIT_FAILURE);
     }
 

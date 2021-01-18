@@ -114,7 +114,8 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             l2 = l1/2;
             Msg = (char*) malloc (l2);
-            if (Msg==NULL) {
+            if (Msg==NULL)
+            {
                 fclose(fp);
                 exit(EXIT_FAILURE);
             }
@@ -168,7 +169,8 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             l2 = l1/2;
             R = (char*) malloc (l2);
-            if (R==NULL) {
+            if (R==NULL)
+            {
                 fclose(fp);
                 exit(EXIT_FAILURE);
             }
@@ -192,7 +194,8 @@ int main(int argc, char** argv)
             l1 = strlen(linePtr)-1;
             l2 = l1/2;
             S = (char*) malloc (l2);
-            if (S==NULL) {
+            if (S==NULL)
+            {
                 fclose(fp);
                 exit(EXIT_FAILURE);
             }
