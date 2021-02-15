@@ -113,7 +113,7 @@ int generateOTP(csprng* RNG)
 
     int i = 0;
     int val = 0;
-    char byte[6] = {0};
+    unsigned char byte[6] = {0};
     int mult=1;
 
     // Generate random 6 digit random value
