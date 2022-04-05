@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_NIST384.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve NIST384 */
 
 #if CHUNK==16
@@ -53,3 +57,7 @@ const BIG_384_56 CURVE_Gy_NIST384= {0x431D7C90EA0E5FL,0xB1CE1D7E819D7AL,0x13B5F0
 #endif
 
 
+
+#ifdef __cplusplus
+}
+#endif

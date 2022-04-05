@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_ANSSI.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* ANSSI Curve */
 
 #if CHUNK==16
@@ -50,3 +54,7 @@ const BIG_256_56 CURVE_Gx_ANSSI= {0xC97A2DD98F5CFFL,0xD2DCAF98B70164L,0x4749D423
 const BIG_256_56 CURVE_Gy_ANSSI= {0x115A1554062CFBL,0xC307E8E4C9E183L,0xF0F3ECEF8C2701L,0xC8B204911F9271L,0x6142E0F7L};
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

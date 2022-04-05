@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_C25519.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve 25519 */
 
 #if CHUNK==16
@@ -44,3 +48,7 @@ const BIG_256_56 CURVE_Order_C25519= {0x12631A5CF5D3ED,0xF9DEA2F79CD658,0x14DE,0
 const BIG_256_56 CURVE_Gx_C25519= {0x9};
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_C41417.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve C41417 */
 
 #if CHUNK==16
@@ -52,3 +56,7 @@ const BIG_416_60 CURVE_Gx_C41417= {0x4FD3812F3CBC595L,0x1A73FAA8537C64CL,0x4AB4D
 const BIG_416_60 CURVE_Gy_C41417= {0x22L,0x0L,0x0L,0x0L,0x0L,0x0L,0x0L};
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

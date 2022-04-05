@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_NIST256.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve NIST256 */
 
 #if CHUNK==16
@@ -54,3 +58,7 @@ const BIG_256_56 CURVE_Gx_NIST256= {0xA13945D898C296L,0x7D812DEB33A0F4L,0xE563A4
 const BIG_256_56 CURVE_Gy_NIST256= {0xB6406837BF51F5L,0x33576B315ECECBL,0x4A7C0F9E162BCEL,0xFE1A7F9B8EE7EBL,0x4FE342E2L};
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_SECP256K1.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve SECP256K1 */
 
 #if CHUNK==16
@@ -56,3 +60,7 @@ const BIG_256_56 CURVE_Gy_SECP256K1= {0x47D08FFB10D4B8L,0xB448A68554199CL,0xFC0E
 
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

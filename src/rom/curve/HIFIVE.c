@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_HIFIVE.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve HIFIVE */
 
 
@@ -54,3 +58,7 @@ const BIG_336_60 CURVE_Gy_HIFIVE= {0x2BEC68505FE8632L,0x5D5650CA0365DB1L,0x3811C
 #endif
 
 
+
+#ifdef __cplusplus
+}
+#endif

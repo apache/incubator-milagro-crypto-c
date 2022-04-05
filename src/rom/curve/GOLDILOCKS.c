@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_GOLDILOCKS.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve GOLDILOCKS */
 
 #if CHUNK==16
@@ -54,3 +58,7 @@ const BIG_448_58 CURVE_Gy_GOLDILOCKS= {0x2EAFBCDEA9386EDL,0x32CAFB473681AF6L,0x2
 #endif
 
 
+
+#ifdef __cplusplus
+}
+#endif

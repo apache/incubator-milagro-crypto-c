@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_BRAINPOOL.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Brainpool Curve  */
 /* Note that the original curve has been transformed to an isomorphic curve with A=-3 */
 
@@ -53,3 +57,7 @@ const BIG_256_56 CURVE_Gx_BRAINPOOL= {0xA191562E1305F4L,0x42C47AAFBC2B79L,0xB23A
 const BIG_256_56 CURVE_Gy_BRAINPOOL= {0xABE8F35B25C9BEL,0xB6DE39D027001DL,0xE14644417E69BCL,0x3439C56D7F7B22L,0x2D996C82L};
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

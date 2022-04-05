@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "ecp_NUMS256W.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /*  NUMS 256-bit Curve - Weierstrass */
 
 #if CHUNK==16
@@ -50,4 +54,8 @@ const BIG_256_56 CURVE_Order_NUMS256W= {0xAB20294751A825L,0x8275EA265C6020L,0xFF
 const BIG_256_56 CURVE_Gx_NUMS256W= {0x52EE1EB21AACB1L,0x9B0903D4C73ABCL,0xA04F42CB098357L,0x5AAADB61297A95L,0xBC9ED6B6L};
 const BIG_256_56 CURVE_Gy_NUMS256W= {0xB5B9CB2184DE9FL,0xC3D115310FBB80L,0xF77E04E035C955L,0x3399B6A673448BL,0xD08FC0F1L};
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
