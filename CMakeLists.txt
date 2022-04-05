@@ -432,7 +432,7 @@ foreach(curve ${AMCL_CURVE})
   add_library(amcl_curve_${TC}
     ${amcl_curve_${TC}_GEN_SRCS}
     src/rom/curve/${TC}.c
-    src/rom_field_${TF}.c
+    src/rom/field/${TF}.c
   )
   list(APPEND AMCL_LIBRARIES amcl_curve_${TC})
 
