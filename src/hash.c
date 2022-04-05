@@ -30,6 +30,9 @@ under the License.
 #include "arch.h"
 #include "amcl.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 #define H0_256 0x6A09E667L
 #define H1_256 0xBB67AE85L
@@ -604,3 +607,7 @@ int main()
 }
 
 */
+
+#ifdef __cplusplus
+}
+#endif

@@ -26,6 +26,10 @@ under the License.
 
 #include "pbc_support.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* general purpose hash function w=hash(p|n|x|y) */
 void mhashit(int sha,int n,octet *x,octet *w)
 {
@@ -178,3 +182,7 @@ void AES_GCM_DECRYPT(octet *K,octet *IV,octet *H,octet *C,octet *P,octet *T)
     T->len=16;
 }
 
+
+#ifdef __cplusplus
+}
+#endif

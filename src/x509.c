@@ -28,6 +28,10 @@ under the License.
 #include "amcl.h"  // for octet support only
 #include "x509.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // ASN.1 tags
 
 #define ANY 0x00
@@ -1094,4 +1098,8 @@ int main()
     return 0;
 }
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

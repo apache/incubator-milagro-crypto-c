@@ -19,6 +19,10 @@ under the License.
 
 #include "randapi.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Initialise a Cryptographically Strong Random Number Generator from
    an octet of raw random data */
 
@@ -32,3 +36,7 @@ void KILL_CSPRNG(csprng *RNG)
     RAND_clean(RNG);
 }
 
+
+#ifdef __cplusplus
+}
+#endif

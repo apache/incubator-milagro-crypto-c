@@ -34,6 +34,10 @@
 #include "amcl.h"
 #include "utils.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Decode a byte to a 2 chars string */
 
 /** Decode hex value */
@@ -137,3 +141,7 @@ void generateRandom(csprng *RNG,octet *randomValue)
         randomValue->val[i] = RAND_byte(RNG);
     }
 }
+
+#ifdef __cplusplus
+}
+#endif

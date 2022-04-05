@@ -27,6 +27,10 @@ under the License.
 #include "ff_2048.h"
 #include "paillier.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // generate a Paillier key pair
 void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV)
 {
@@ -302,3 +306,8 @@ void PAILLIER_PK_toOctet(octet *PK, PAILLIER_public_key *PUB)
 {
     FF_4096_toOctet(PK, PUB->n, HFLEN_4096);
 }
+
+
+#ifdef __cplusplus
+}
+#endif
