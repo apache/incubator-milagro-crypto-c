@@ -24,6 +24,10 @@ under the License.
 
 #include "fp4_YYY.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* test x==0 ? */
 /* SU= 8 */
 int FP4_YYY_iszilch(FP4_YYY *x)
@@ -673,4 +677,8 @@ void FP4_YYY_div_2i(FP4_YYY *f)
     FP2_YYY_copy(&(f->b),&u);
 }
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

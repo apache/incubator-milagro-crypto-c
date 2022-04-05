@@ -27,6 +27,10 @@ under the License.
 #include "rsa_WWW.h"
 #include "rsa_support.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* generate an RSA key pair */
 void RSA_WWW_KEY_PAIR(csprng *RNG,sign32 e,rsa_private_key_WWW *PRIV,rsa_public_key_WWW *PUB,octet *P, octet* Q)
 {
@@ -160,3 +164,7 @@ void RSA_WWW_DECRYPT(rsa_private_key_WWW *PRIV,octet *G,octet *F)
     return;
 }
 
+
+#ifdef __cplusplus
+}
+#endif

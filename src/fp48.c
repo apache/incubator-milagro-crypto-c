@@ -23,6 +23,10 @@ under the License.
 
 #include "fp48_YYY.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* return 1 if b==c, no branching */
 static int teq(sign32 b,sign32 c)
 {
@@ -1244,3 +1248,7 @@ void FP48_YYY_cmove(FP48_YYY *f,FP48_YYY *g,int d)
     d=~(d-1);
     f->type^=(f->type^g->type)&d;
 }
+
+#ifdef __cplusplus
+}
+#endif

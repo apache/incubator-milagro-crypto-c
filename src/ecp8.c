@@ -23,6 +23,10 @@ under the License.
 #include "ecp8_ZZZ.h"
 
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 int ECP8_ZZZ_isinf(ECP8_ZZZ *P)
 {
     return (FP8_YYY_iszilch(&(P->x)) & FP8_YYY_iszilch(&(P->z)));
@@ -1025,3 +1029,7 @@ void ECP8_ZZZ_generator(ECP8_ZZZ *G)
 
     ECP8_ZZZ_set(G,&X,&Y);
 }
+
+#ifdef __cplusplus
+}
+#endif

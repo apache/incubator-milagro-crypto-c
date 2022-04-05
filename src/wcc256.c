@@ -24,6 +24,10 @@ under the License.
 #include "wcc256_ZZZ.h"
 
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Perform sha256 of EC Points and Id. Map to an integer modulo the curve order.  */
 void WCC_ZZZ_Hq(int sha, octet *A,octet *B,octet *C,octet *D,octet *h)
 {
@@ -405,3 +409,7 @@ int WCC_ZZZ_RECOMBINE_G2(octet *W1,octet *W2,octet *W)
     }
     return res;
 }
+
+#ifdef __cplusplus
+}
+#endif

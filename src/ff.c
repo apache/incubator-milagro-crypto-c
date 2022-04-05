@@ -24,6 +24,10 @@ under the License.
 // Constant time comparison of two 32 bit signed integers.
 #define ct_equals(a,b) (int)((((a)^(b))-1)>>31&1)
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* x=y */
 void FF_WWW_copy(BIG_XXX x[],BIG_XXX y[],int n)
 {
@@ -1367,3 +1371,7 @@ void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *invp,
     FF_WWW_add(r, r, a, 2*n);
     FF_WWW_mod(r, pq, 2*n);
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -22,6 +22,10 @@
 
 #include "big_XXX.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* test a=0? */
 /* libsodium constant time implementation */
 int BIG_XXX_iszilch(BIG_XXX a)
@@ -1651,3 +1655,7 @@ void BIG_XXX_dfromBytesLen(DBIG_XXX a,char *b,int s)
     a[DMNV_XXX]=0;
 #endif
 }
+
+#ifdef __cplusplus
+}
+#endif

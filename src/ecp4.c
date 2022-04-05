@@ -21,6 +21,10 @@ under the License.
 
 #include "ecp4_ZZZ.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 int ECP4_ZZZ_isinf(ECP4_ZZZ *P)
 {
     return (FP4_YYY_iszilch(&(P->x)) & FP4_YYY_iszilch(&(P->z)));
@@ -823,3 +827,6 @@ void ECP4_ZZZ_generator(ECP4_ZZZ *G)
     ECP4_ZZZ_set(G,&X,&Y);
 }
 
+#ifdef __cplusplus
+}
+#endif

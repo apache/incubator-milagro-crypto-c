@@ -45,6 +45,10 @@ under the License.
 #define NB 4
 #define MR_TOBYTE(x) ((uchar)((x)))
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 static unsign32 pack(const uchar *b)
 {
     /* pack bytes into a 32-bit Word */
@@ -409,3 +413,7 @@ int main()
 }
 
 */
+
+#ifdef __cplusplus
+}
+#endif

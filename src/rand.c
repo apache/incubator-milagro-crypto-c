@@ -29,6 +29,10 @@ under the License.
 
 #include "amcl.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* SU= 20 */
 static unsign32 sbrand(csprng *rng)
 {
@@ -170,3 +174,7 @@ void main()
 }
 
 */
+
+#ifdef __cplusplus
+}
+#endif

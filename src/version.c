@@ -27,6 +27,10 @@
 
 #include "version.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* AMCL version support function */
 
 /* Print version number and information about the build */
@@ -134,3 +138,7 @@ void amcl_version(void)
 #endif
 
 }
+
+#ifdef __cplusplus
+}
+#endif

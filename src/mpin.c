@@ -29,6 +29,10 @@ under the License.
 
 #define ROUNDUP(a,b) ((a)-1)/(b)+1
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Special mpin hashing */
 static void mpin_hash(int sha,FP4_YYY *f, ECP_ZZZ *P,octet *w)
 {
@@ -931,3 +935,7 @@ int MPIN_ZZZ_GET_DVS_KEYPAIR(csprng *R,octet *Z,octet *Pa)
 
     return res;
 }
+
+#ifdef __cplusplus
+}
+#endif

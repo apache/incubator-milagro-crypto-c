@@ -21,6 +21,10 @@ under the License.
 
 #define ROUNDUP(a,b) ((a)-1)/(b)+1
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* general purpose hash function w=hash(p|n|x|y) */
 int hashit(int sha,octet *p,int n,octet *w)
 {
@@ -254,3 +258,7 @@ int OAEP_DECODE(int sha,octet *p,octet *f)
 
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -24,6 +24,10 @@ under the License.
 #include "fp16_YYY.h"
 
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* test x==0 ? */
 int FP16_YYY_iszilch(FP16_YYY *x)
 {
@@ -580,3 +584,6 @@ void FP16_YYY_xtr_pow2(FP16_YYY *r,FP16_YYY *ck,FP16_YYY *cl,FP16_YYY *ckml,FP16
 
 #endif
 
+#ifdef __cplusplus
+}
+#endif

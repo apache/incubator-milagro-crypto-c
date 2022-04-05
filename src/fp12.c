@@ -24,6 +24,10 @@ under the License.
 #include "fp12_YYY.h"
 #include "config_curve_ZZZ.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* return 1 if b==c, no branching */
 static int teq(sign32 b,sign32 c)
 {
@@ -941,3 +945,6 @@ void FP12_YYY_cmove(FP12_YYY *f,FP12_YYY *g,int d)
     f->type^=(f->type^g->type)&d;
 }
 
+#ifdef __cplusplus
+}
+#endif

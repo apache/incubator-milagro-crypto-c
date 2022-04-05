@@ -24,6 +24,10 @@ under the License.
 
 #include "ecp_ZZZ.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* test for P=O point-at-infinity */
 int ECP_ZZZ_isinf(ECP_ZZZ *P)
 {
@@ -1286,4 +1290,8 @@ int main()
     return 0;
 }
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

@@ -23,6 +23,10 @@ under the License.
 
 #include "fp_YYY.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Fast Modular Reduction Methods */
 
 /* r=d mod m */
@@ -785,3 +789,7 @@ void FP_YYY_sqrt(FP_YYY *r,FP_YYY *a)
 #endif
     }
 }
+
+#ifdef __cplusplus
+}
+#endif

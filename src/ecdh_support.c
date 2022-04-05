@@ -28,6 +28,10 @@ under the License.
 
 #define ROUNDUP(a,b) ((a)-1)/(b)+1
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* general purpose hash function w=hash(p|n|x|y) */
 /* pad or truncate ouput to length pad if pad!=0 */
 void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad)
@@ -327,3 +331,7 @@ int AES_CBC_IV0_DECRYPT(octet *k,octet *c,octet *m)
     if (bad) return 0;
     return 1;
 }
+
+#ifdef __cplusplus
+}
+#endif

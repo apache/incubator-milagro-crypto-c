@@ -22,6 +22,10 @@ under the License.
 
 #include "ecp2_ZZZ.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 int ECP2_ZZZ_isinf(ECP2_ZZZ *P)
 {
     return (FP2_YYY_iszilch(&(P->x)) & FP2_YYY_iszilch(&(P->z)));
@@ -723,3 +727,7 @@ void ECP2_ZZZ_generator(ECP2_ZZZ *G)
 
     ECP2_ZZZ_set(G,&wx,&wy);
 }
+
+#ifdef __cplusplus
+}
+#endif

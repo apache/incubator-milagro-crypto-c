@@ -37,6 +37,10 @@ under the License.
 #define ROTL16(x) (((x)<<16)|((x)>>16))
 #define ROTL24(x) (((x)<<24)|((x)>>8))
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 static const uchar InCo[4]= {0xB,0xD,0x9,0xE}; /* Inverse Coefficients */
 
 static const uchar ptab[]=
@@ -702,3 +706,7 @@ int main()
 
 */
 
+
+#ifdef __cplusplus
+}
+#endif

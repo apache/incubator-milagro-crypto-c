@@ -25,6 +25,10 @@ under the License.
 #include <time.h>
 #include "bls256_ZZZ.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // Polynomial interpolation coefficients
 static void recover_coefficients(int k, octet* X, BIG_XXX* coefs)
 {
@@ -349,3 +353,7 @@ int BLS_ZZZ_RECOVER_SIGNATURE(int k, octet* X, octet* Y, octet* SIG)
 
     return BLS_OK;
 }
+
+#ifdef __cplusplus
+}
+#endif

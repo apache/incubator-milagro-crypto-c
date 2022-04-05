@@ -26,6 +26,10 @@ under the License.
 
 #include "ecdh_ZZZ.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Calculate a public/private EC GF(p) key pair. W=S.G mod EC(p),
  * where S is the secret key and W is the public key
  * and G is fixed generator.
@@ -367,4 +371,8 @@ int ECP_ZZZ_ECIES_DECRYPT(int sha,octet *P1,octet *P2,octet *V,octet *C,octet *T
 
 }
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

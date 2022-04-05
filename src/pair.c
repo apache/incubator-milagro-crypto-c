@@ -23,6 +23,10 @@ under the License.
 
 #include "pair_ZZZ.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Line function */
 static void PAIR_ZZZ_line(FP12_YYY *v,ECP2_ZZZ *A,ECP2_ZZZ *B,FP_YYY *Qx,FP_YYY *Qy)
 {
@@ -910,4 +914,8 @@ int main()
     printf("\n");
 }
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

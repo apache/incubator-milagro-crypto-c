@@ -23,6 +23,9 @@ under the License.
 
 #include "pair192_ZZZ.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 /* Line function */
 static void PAIR_ZZZ_line(FP24_YYY *v,ECP4_ZZZ *A,ECP4_ZZZ *B,FP_YYY *Qx,FP_YYY *Qy)
@@ -766,4 +769,8 @@ int main()
 
 }
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

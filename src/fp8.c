@@ -24,6 +24,10 @@ under the License.
 #include "fp8_YYY.h"
 
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* test x==0 ? */
 int FP8_YYY_iszilch(FP8_YYY *x)
 {
@@ -676,3 +680,6 @@ void FP8_YYY_div_2i(FP8_YYY *f)
 
 #endif
 
+#ifdef __cplusplus
+}
+#endif

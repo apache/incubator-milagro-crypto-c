@@ -24,6 +24,10 @@ under the License.
 
 #include "fp2_YYY.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* test x==0 ? */
 /* SU= 8 */
 int FP2_YYY_iszilch(FP2_YYY *x)
@@ -433,3 +437,6 @@ void FP2_YYY_times_i(FP2_YYY *w)
 //    Output NOT normed, so use with care
 }
 
+#ifdef __cplusplus
+}
+#endif

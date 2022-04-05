@@ -23,6 +23,10 @@ under the License.
 #include <string.h>
 #include "amcl.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Output an octet string (Debug Only) */
 
 /* SU= 16 */
@@ -422,3 +426,7 @@ void OCT_toStr(octet *src,char *dst)
     }
 }
 
+
+#ifdef __cplusplus
+}
+#endif
