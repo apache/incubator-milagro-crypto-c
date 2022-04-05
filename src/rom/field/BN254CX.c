@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_BN254CX.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve BN254CX - Pairing friendly BN curve */
 
 /* CertiVox BN curve/field  */
@@ -55,3 +59,7 @@ const BIG_256_56 Fra_BN254CX= {0xD9083355C80EA3L,0x7326F173F8215BL,0x8AACA718986
 const BIG_256_56 Frb_BN254CX= {0x8D1BBC06534710L,0x63C7269546C062L,0xD9CDBC4E3ABBD8L,0x623628A900DC53L,0x10A6F7D0L};
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

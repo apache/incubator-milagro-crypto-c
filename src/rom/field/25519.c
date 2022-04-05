@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_25519.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve 25519 */
 
 #if CHUNK==16
@@ -50,3 +54,6 @@ const chunk MConst_25519= 0x13L;
 
 #endif
 
+#ifdef __cplusplus
+}
+#endif

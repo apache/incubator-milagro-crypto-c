@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_256PME.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* NUMS 256-bit modulus */
 
 
@@ -44,4 +48,8 @@ const BIG_256_56 Modulus_256PME= {0xFFFFFFFFFFFF43L,0xFFFFFFFFFFFFFFL,0xFFFFFFFF
 const BIG_256_56 R2modp_256PME= {0x89000000000000L,0x8BL,0x0L,0x0L,0x0L};
 const chunk MConst_256PME= 0xBDL;
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

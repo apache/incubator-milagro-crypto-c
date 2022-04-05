@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_FP256BN.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve FP256BN - Pairing friendly BN curve */
 
 /* ISO fast curve */
@@ -53,3 +57,7 @@ const BIG_256_56 Frb_FP256BN= {0xB32AB2FF3EFF0DL,0xF4A9F45D57F35EL,0xD113693CCFD
 
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_NIST384.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve NIST384 */
 
 #if CHUNK==16
@@ -44,3 +48,7 @@ const chunk MConst_NIST384= 0x100000001L;
 #endif
 
 
+
+#ifdef __cplusplus
+}
+#endif

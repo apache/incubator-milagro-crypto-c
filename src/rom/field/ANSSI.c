@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_ANSSI.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* ANNSI Curve */
 
 #if CHUNK==16
@@ -42,3 +46,6 @@ const BIG_256_56 R2modp_ANSSI= {0x18D2374288CC9CL,0x4929E67646BD2BL,0x220E6C1D6F
 const chunk MConst_ANSSI= 0x97483A164E1155L;
 #endif
 
+#ifdef __cplusplus
+}
+#endif

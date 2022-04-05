@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_NIST521.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve NIST521 */
 
 #if CHUNK==16
@@ -42,3 +46,7 @@ const BIG_528_60 R2modp_NIST521= {0x4000000000L,0x0L,0x0L,0x0L,0x0L,0x0L,0x0L,0x
 const chunk MConst_NIST521= 0x1L;
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

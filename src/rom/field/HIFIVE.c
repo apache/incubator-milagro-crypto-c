@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_HIFIVE.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve HIFIVE */
 
 
@@ -44,3 +48,7 @@ const chunk MConst_HIFIVE= 0x3L;
 #endif
 
 
+
+#ifdef __cplusplus
+}
+#endif

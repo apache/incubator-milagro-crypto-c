@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_GOLDILOCKS.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve GOLDILOCKS */
 
 #if CHUNK==16
@@ -47,3 +51,7 @@ const chunk MConst_GOLDILOCKS= 0x1L;
 #endif
 
 
+
+#ifdef __cplusplus
+}
+#endif

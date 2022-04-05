@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_BLS24.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve BLS24 - Pairing friendly BLS24 curve */
 
 #if CHUNK==16
@@ -48,4 +52,8 @@ const BIG_480_56 Fra_BLS24= {0x5CA74ABBF96F1DL,0x1FF8BD0C6FFBADL,0x49E9E26237469
 const BIG_480_56 Frb_BLS24= {0xE81A1C8E0CA60EL,0xDFEA2B20C0DF4AL,0x25327A5B7F5FA6L,0xF5343A828239A6L,0x76C78F2EADF9CFL,0x5D68B24660B8ABL,0xB50AF61628B387L,0xB555A18CDE6D5EL,0x99F78BEL};
 
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_SECP256K1.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve SECP256K1 */
 
 #if CHUNK==16
@@ -45,3 +49,7 @@ const chunk MConst_SECP256K1= 0x38091DD2253531L;
 
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

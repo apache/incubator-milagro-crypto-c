@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_512PM.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* NUMS 512-bit modulus */
 
 
@@ -41,4 +45,8 @@ const chunk MConst_512PM= 0x239;
 const BIG_512_56 Modulus_512PM= {0xFFFFFFFFFFFDC7L,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFL};
 const BIG_512_56 R2modp_512PM= {0x0L,0xF0B10000000000L,0x4L,0x0L,0x0L,0x0L,0x0L,0x0L,0x0L,0x0L};
 const chunk MConst_512PM= 0x239L;
+#endif
+
+#ifdef __cplusplus
+}
 #endif

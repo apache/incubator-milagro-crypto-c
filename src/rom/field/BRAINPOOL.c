@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_BRAINPOOL.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Brainpool Modulus  */
 
 #if CHUNK==16
@@ -42,3 +46,7 @@ const BIG_256_56 R2modp_BRAINPOOL= {0x9E04F49B9A3787L,0x29317218F3CF49L,0x54E8C3
 const chunk MConst_BRAINPOOL= 0xA75590CEFD89B9L;
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

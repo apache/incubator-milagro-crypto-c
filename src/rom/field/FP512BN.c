@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_FP512BN.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve FP512BN - Pairing friendly BN curve */
 
 /* ISO fast curve */
@@ -55,3 +59,7 @@ const BIG_512_60 Frb_FP512BN= {0x5510572DF6B481L,0xF9047EFD49B595CL,0xD055DD765E
 
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif

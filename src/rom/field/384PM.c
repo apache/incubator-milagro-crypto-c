@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_384PM.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* NUMS 384-bit modulus */
 
 
@@ -41,4 +45,8 @@ const chunk MConst_384PM= 0x13D;
 const BIG_384_56 Modulus_384PM= {0xFFFFFFFFFFFEC3L,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFFFL,0xFFFFFFFFFFFFL};
 const BIG_384_56 R2modp_384PM= {0x188890000L,0x0L,0x0L,0x0L,0x0L,0x0L,0x0L};
 const chunk MConst_384PM= 0x13DL;
+#endif
+
+#ifdef __cplusplus
+}
 #endif

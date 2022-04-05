@@ -20,6 +20,10 @@ under the License.
 #include "arch.h"
 #include "fp_BN254.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 /* Curve BN254 - Pairing friendly BN curve */
 
 /* Nogami's fast curve */
@@ -54,3 +58,7 @@ const BIG_256_56 Fra_BN254= {0x7DE6C06F2A6DE9L,0x74924D3F77C2E1L,0x50A846953F850
 const BIG_256_56 Frb_BN254= {0x82193F90D5922AL,0x8B6DB2C08850C5L,0x2F57B96AC8DC17L,0x1ED1837503EAB2L,0x9EBEE69L};
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif
