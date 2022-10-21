@@ -150,7 +150,6 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT);
  *  @param   CT1              Ciphertext one
  *  @param   CT2              Ciphertext two
  *  @param   CT               Ciphertext
- *  @return                   Returns 0 or else error code
  */
 void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT);
 
