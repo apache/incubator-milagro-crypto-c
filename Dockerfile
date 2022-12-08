@@ -5,6 +5,8 @@ RUN dpkg --add-architecture i386
 # add repositories cache
 RUN apt-get update -y
 
+ENV ASAN_OPTIONS=verify_asan_link_order=0
+
 # install packages
 RUN apt-get install -y \
     build-essential \

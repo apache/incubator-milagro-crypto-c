@@ -54,7 +54,6 @@ log(PROJECT_VERSION)
 log(CMAKE_GENERATOR)
 
 add_definitions(-DCMAKE)
-
 set(AMCL_VERSION       ${PROJECT_VERSION})
 set(AMCL_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(AMCL_VERSION_MINOR ${PROJECT_VERSION_MINOR})
@@ -208,6 +207,9 @@ set_target_properties(amcl_core PROPERTIES
   SOVERSION ${AMCL_SOVERSION}
 )
 
+target_compile_options(amcl_core PUBLIC
+  "$<$<CONFIG:DEBUG>:-DDEBUG>"
+)
 target_include_directories(amcl_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

@@ -175,6 +175,12 @@ make doc
 sudo make install
 ```
 
+NOTE: When running the ASan tests, make sure to export the following variable:
+
+```
+export ASAN_OPTIONS=verify_asan_link_order=0
+```
+
 On Debian/Ubuntu machine instead of executing the *"sudo make install"* command it is possible to execute *"sudo checkinstall"* to build and install a DEB package.
 
 Now you can set the path to where libs and python package are installed:
