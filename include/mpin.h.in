@@ -185,7 +185,6 @@ int MPIN_ZZZ_SERVER(int h,int d,octet *HID,octet *HTID,octet *y,octet *SS,octet 
 	@param ID is the input claimed client identity
 	@param HID is output H(ID), a hash of the client ID
 	@param HTID is output H(ID)+H(d|H(ID))
-	@return 0 or an error code
  */
 void MPIN_ZZZ_SERVER_1(int h,int d,octet *ID,octet *HID,octet *HTID);
 /**	@brief Perform third pass on the server side of the 3-pass version of the M-Pin protocol
@@ -342,4 +341,3 @@ int MPIN_ZZZ_CLIENT_KEY(int h,octet *g1,octet *g2,int pin,octet *r,octet *x,octe
 int MPIN_ZZZ_GET_DVS_KEYPAIR(csprng *R,octet *Z,octet *Pa);
 
 #endif
-
