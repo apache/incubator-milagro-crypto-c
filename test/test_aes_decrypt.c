@@ -154,8 +154,10 @@ int main(int argc, char** argv)
             IVLen = l1/2;
             IV = (char*) malloc (IVLen);
             if (IV==NULL)
+            {
+                fclose(fp);
                 exit(EXIT_FAILURE);
-
+            }
             // IV binary value
             amcl_hex2bin(linePtr, IV, l1);
         }
@@ -228,6 +230,7 @@ int main(int argc, char** argv)
             if (!rc)
             {
                 printf("TEST AES DECRYPT FAILED COMPARE PLAINTEXT LINE %d\n",lineNo);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
 

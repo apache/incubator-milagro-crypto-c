@@ -40,7 +40,7 @@ under the License.
 #define BFS_ZZZ MODBYTES_XXX  /**< BLS Field Size */
 
 #define BLS_OK             0   /**< Function completed without error */
-#define BLS_FAIL	   41  /**< Invalid signature */
+#define BLS_FAIL	       41  /**< Invalid signature */
 #define BLS_INVALID_G1     42  /**< Not a valid G1 point on the curve */
 #define BLS_INVALID_G2     43  /**< Not a valid G2 point on the curve */
 
@@ -95,7 +95,7 @@ int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W);
  *
 	@param  k   Threshold
 	@param  n   Number of shares
-        @param  RNG Pointer to a cryptographically secure random number generator
+    @param  RNG Pointer to a cryptographically secure random number generator
 	@param  X   X values
 	@param  Y   Y values. Valid BLS secret keys
 	@param  SKI Input secret key to be shared. Ignored if set to NULL

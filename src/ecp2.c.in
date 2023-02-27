@@ -641,6 +641,7 @@ void ECP2_ZZZ_mapit(ECP2_ZZZ *Q,octet *W)
         FP2_YYY_from_BIGs(&X,one,hv);
         if (ECP2_ZZZ_setx(Q,&X)) break;
         BIG_XXX_inc(hv,1);
+        BIG_XXX_norm(hv);
     }
 
     BIG_XXX_rcopy(Fx,Fra_YYY);

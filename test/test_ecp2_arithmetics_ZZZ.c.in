@@ -150,6 +150,7 @@ int main(int argc, char** argv)
             if(!read_ECP2_ZZZ(&ecp2[0],linePtr) || ECP2_ZZZ_isinf(&ecp2[0]))
             {
                 printf("ERROR getting test vector input ECP2_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP2_ZZZ_get(&FP2aux1,&FP2aux2,&ecp2[0]);
@@ -158,6 +159,7 @@ int main(int argc, char** argv)
             if (!FP2_YYY_equals(&FP2aux1,&FP2aux2))
             {
                 printf("ERROR computing right hand side of equation ECP, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP2_ZZZ_toOctet(&OCTaux,&ecp2[0]);
@@ -165,6 +167,7 @@ int main(int argc, char** argv)
             if(!ECP2_ZZZ_equals(&ECP2aux1,&ecp2[0]))
             {
                 printf("ERROR converting ECP2_ZZZ to/from OCTET, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -175,6 +178,7 @@ int main(int argc, char** argv)
             if(!read_ECP2_ZZZ(&ecp2[1],linePtr) || ECP2_ZZZ_isinf(&ecp2[1]))
             {
                 printf("ERROR getting test vector input ECP2_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -185,6 +189,7 @@ int main(int argc, char** argv)
             if(!read_ECP2_ZZZ(&ecp2[2],linePtr) || ECP2_ZZZ_isinf(&ecp2[2]))
             {
                 printf("ERROR getting test vector input ECP2_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -195,6 +200,7 @@ int main(int argc, char** argv)
             if(!read_ECP2_ZZZ(&ecp2[3],linePtr) || ECP2_ZZZ_isinf(&ecp2[3]))
             {
                 printf("ERROR getting test vector input ECP2_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -205,6 +211,7 @@ int main(int argc, char** argv)
             if(!read_ECP2_ZZZ(&ecp2sum,linePtr))
             {
                 printf("ERROR reading test vector input ECP2_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP2_ZZZ_copy(&ECP2aux1,&ecp2[0]);
@@ -216,6 +223,7 @@ int main(int argc, char** argv)
             if(!ECP2_ZZZ_equals(&ECP2aux1,&ecp2sum) || !ECP2_ZZZ_equals(&ECP2aux2,&ecp2sum))
             {
                 printf("ERROR adding two ECP2_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP2_ZZZ_copy(&ECP2aux1,&ecp2[0]); // testing associativity (P+Q)+R = P+(Q+R)
@@ -229,6 +237,7 @@ int main(int argc, char** argv)
             if(!ECP2_ZZZ_equals(&ECP2aux1,&ECP2aux2))
             {
                 printf("ERROR testing associativity bewtween three ECP2_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -239,6 +248,7 @@ int main(int argc, char** argv)
             if(!read_ECP2_ZZZ(&ecp2neg,linePtr))
             {
                 printf("ERROR getting test vector input ECP2_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP2_ZZZ_copy(&ECP2aux1,&ecp2[0]);
@@ -247,6 +257,7 @@ int main(int argc, char** argv)
             if(!ECP2_ZZZ_equals(&ECP2aux1,&ecp2neg))
             {
                 printf("ERROR computing negative of ECP2_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -257,6 +268,7 @@ int main(int argc, char** argv)
             if(!read_ECP2_ZZZ(&ecp2sub,linePtr))
             {
                 printf("ERROR getting test vector input ECP2_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP2_ZZZ_copy(&ECP2aux1,&ecp2[0]);

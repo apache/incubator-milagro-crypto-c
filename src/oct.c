@@ -73,27 +73,42 @@ void OCT_jstring(octet *y,char *s)
 int OCT_comp(octet *x,octet *y)
 {
     int i;
-    if (x->len>y->len) return 0;
-    if (x->len<y->len) return 0;
+    byte res = 0;
+
+    if (x->len != y->len) return 0;
     for (i=0; i<x->len; i++)
     {
-        if (x->val[i]!=y->val[i]) return 0;
+        res |= (x->val[i] ^ y->val[i]);
     }
-    return 1;
+
+    // Condense result to one bit
+    res = ~res;
+    res &= res >> 4;
+    res &= res >> 2;
+    res &= res >> 1;
+
+    return (int)res;
 }
 
 /* check are first n bytes the same (in constant time) */
 
 int OCT_ncomp(octet *x,octet *y,int n)
 {
-    int i,res=0;
+    int i;
+    byte res = 0;
     if (n>y->len || n>x->len) return 0;
     for (i=0; i<n; i++)
     {
-        res|=(int)(x->val[i]^y->val[i]);
+        res |= (x->val[i] ^ y->val[i]);
     }
-    if (res==0) return 1;
-    return 0;
+
+    // Condense result to one bit
+    res = ~res;
+    res &= res >> 4;
+    res &= res >> 2;
+    res &= res >> 1;
+
+    return (int)res;
 }
 
 /* Shift octet to the left by n bytes. Leftmost bytes disappear  */
@@ -267,6 +282,8 @@ void OCT_frombase64(octet *w,char *b)
 {
     int i,j,k,pads,len=(int)strlen(b);
     int c,ch[4],ptr[3];
+    OCT_clear(w);
+
     j=k=0;
     while (j<len && k<w->max)
     {
@@ -351,13 +368,18 @@ void OCT_rand(octet *x,csprng *RNG,int len)
 /* Convert an octet to a hex string */
 void OCT_toHex(octet *src,char *dst)
 {
+    const char * hexadecimals = "0123456789abcdef";
     int i;
     unsigned char ch;
     for (i=0; i<src->len; i++)
     {
         ch=src->val[i];
-        sprintf(&dst[i*2],"%02x", ch);
+        uint8_t res = ch / 16;
+        uint8_t mod = ch % 16;
+        dst[i*2] = hexadecimals[res];
+        dst[(i*2)+1] = hexadecimals[mod];
     }
+    dst[i*2] =0;
 }
 
 static int char2int(char input)
@@ -376,9 +398,10 @@ void OCT_fromHex(octet *dst,char *src)
 {
     int i=0;
     int j=0;
+    int len = (int)strlen(src);
     OCT_clear(dst);
 
-    while(src[j]!=0)
+    while(j < len && i < dst->max)
     {
         dst->val[i++] = char2int(src[j])*16 + char2int(src[j+1]);
         j += 2;

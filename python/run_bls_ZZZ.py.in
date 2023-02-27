@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+
+"""
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+"""
+
+
+"""
+example for using bls
+
+"""
+
+import cffi
+import platform
+import os
+import bls_ZZZ
+if __name__ == "__main__":
+    # Print hex values
+    DEBUG = False
+
+    # Seed
+    seed_hex = "78d0fb6705ce77dee47d03eb5b9c5d30"
+    seed = bytes.fromhex(seed_hex)
+
+    # Message
+    message = b"test message"
+
+    # random number generator
+    rng = bls_ZZZ.create_csprng(seed)
+
+    # Generate key pairs
+    rtn, sk1, pktmp = bls_ZZZ.key_pair_generate(rng)
+    if rtn != 0:
+        print("Error: key_pair_generate {}".format(rtn))
+        raise SystemExit(0)
+    print("sk1: {}".format(sk1.hex()))
+    print("pktmp: {}".format(pktmp.hex()))
+
+    rtn, sk1, pk1 = bls_ZZZ.key_pair_generate(rng, sk1)
+    if rtn != 0:
+        print("Error: key_pair_generate {}".format(rtn))
+        raise SystemExit(0)
+    print("sk1: {}".format(sk1.hex()))
+    print("pk1: {}".format(pk1.hex()))
+
+    rtn, sk2, pk2 = bls_ZZZ.key_pair_generate(rng)
+    if rtn != 0:
+        print("Error: key_pair_generate {}".format(rtn))
+        raise SystemExit(0)
+    print("sk2: {}".format(sk2.hex()))
+    print("pk2: {}".format(pk2.hex()))
+
+    rtn, sk3, pk3 = bls_ZZZ.key_pair_generate(rng)
+    if rtn != 0:
+        print("Error: key_pair_generate {}".format(rtn))
+        raise SystemExit(0)
+    print("sk3: {}".format(sk3.hex()))
+    print("pk3: {}".format(pk3.hex()))
+
+    # Sign and verify
+    rtn, sig1 = bls_ZZZ.sign(message, sk1)
+    if rtn != 0:
+        print("Error: sign {}".format(rtn))
+        raise SystemExit(0)
+    print("sig1: {}".format(sig1.hex()))
+
+    rtn = bls_ZZZ.verify(sig1, message, pk1)
+    if rtn != 0:
+        print("Error: Invalid signature {}".format(rtn))
+        raise SystemExit(0)
+    print("Success: Signature is valid")
+
+    rtn, sig2 = bls_ZZZ.sign(message, sk2)
+    if rtn != 0:
+        print("Error: sign {}".format(rtn))
+        raise SystemExit(0)
+    print("sig2: {}".format(sig2.hex()))
+
+    rtn = bls_ZZZ.verify(sig2, message, pk2)
+    if rtn != 0:
+        print("Error: Invalid signature {}".format(rtn))
+        raise SystemExit(0)
+    print("Success: Signature is valid")
+
+    rtn, sig3 = bls_ZZZ.sign(message, sk3)
+    if rtn != 0:
+        print("Error: sign {}".format(rtn))
+        raise SystemExit(0)
+    print("sig3: {}".format(sig3.hex()))
+
+    rtn = bls_ZZZ.verify(sig3, message, pk3)
+    if rtn != 0:
+        print("Error: Invalid signature {}".format(rtn))
+        raise SystemExit(0)
+    print("Success: Signature is valid")
+
+    # Add Signatures
+    rtn, sig12 = bls_ZZZ.add_G1(sig1, sig2)
+    if rtn != 0:
+        print("Error: add_G1 {}".format(rtn))
+        raise SystemExit(0)
+    print("sig12: {}".format(sig12.hex()))
+
+    rtn, sig123 = bls_ZZZ.add_G1(sig12, sig3)
+    if rtn != 0:
+        print("Error: add_G1 {}".format(rtn))
+        raise SystemExit(0)
+    print("sig123: {}".format(sig123.hex()))
+
+    # Add Public keys
+    rtn, pk12 = bls_ZZZ.add_G2(pk1, pk2)
+    if rtn != 0:
+        print("Error: add_G2 {}".format(rtn))
+        raise SystemExit(0)
+    print("pk12: {}".format(pk12.hex()))
+
+    rtn, pk123 = bls_ZZZ.add_G2(pk12, pk3)
+    if rtn != 0:
+        print("Error: add_G2 {}".format(rtn))
+        raise SystemExit(0)
+    print("pk123: {}".format(pk123.hex()))
+
+    # Verify aggretated values
+    rtn = bls_ZZZ.verify(sig123, message, pk123)
+    if rtn != 0:
+        print("Error: Invalid aggregated signature {}".format(rtn))
+        raise SystemExit(0)
+    print("Success: Aggregated signature is valid")
+
+    # Clear memory
+    bls_ZZZ.kill_csprng(rng)
+    del sk1
+    del pk1
+    del sk2
+    del pk2
+    del sk3
+    del pk3

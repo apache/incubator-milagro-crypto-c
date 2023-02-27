@@ -24,6 +24,8 @@ under the License.
 #include <time.h>
 #include "config_curve_ZZZ.h"
 #include "randapi.h"
+#include "bench.h"
+
 #if CURVE_SECURITY_ZZZ == 128
 #include "mpin_ZZZ.h"
 #elif CURVE_SECURITY_ZZZ == 192
@@ -84,6 +86,12 @@ int mpin(csprng *RNG)
     int iterations;
     clock_t start;
     double elapsed;
+
+    printf("\nBechmark test MPIN - ");
+
+    printf("ZZZ Curve\n");
+
+    print_system_info();
 
     /* Trusted Authority set-up */
     MPIN_ZZZ_RANDOM_GENERATE(RNG,&S);

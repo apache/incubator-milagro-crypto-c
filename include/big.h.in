@@ -61,19 +61,19 @@ typedef chunk DBIG_XXX[DNLEN_XXX];   /**< Define type DBIG as array of chunks */
 
 /* BIG number prototypes */
 
-/**	@brief Tests for BIG equal to zero
+/**	@brief Tests for BIG equal to zero - input must be normalised
  *
 	@param x a BIG number
 	@return 1 if zero, else returns 0
  */
 extern int BIG_XXX_iszilch(BIG_XXX x);
-/**	@brief Tests for BIG equal to one
+/**	@brief Tests for BIG equal to one - input must be normalised
  *
 	@param x a BIG number
 	@return 1 if one, else returns 0
  */
 extern int BIG_XXX_isunity(BIG_XXX x);
-/**	@brief Tests for DBIG equal to zero
+/**	@brief Tests for DBIG equal to zero - input must be normalised
  *
 	@param x a DBIG number
 	@return 1 if zero, else returns 0
@@ -408,33 +408,33 @@ extern int BIG_XXX_comp(BIG_XXX x,BIG_XXX y);
 	@return -1 is x<y, 0 if x=y, 1 if x>y
  */
 extern int BIG_XXX_dcomp(DBIG_XXX x,DBIG_XXX y);
-/**	@brief Calculate number of bits in a BIG - output normalised
+/**	@brief Calculate number of bits in a BIG - output normalised - leaks log2(x)
  *
 	@param x BIG number
 	@return Number of bits in x
  */
 extern int BIG_XXX_nbits(BIG_XXX x);
-/**	@brief Calculate number of bits in a DBIG - output normalised
+/**	@brief Calculate number of bits in a DBIG - output normalised - leaks log2(x)
  *
 	@param x DBIG number
 	@return Number of bits in x
  */
 extern int BIG_XXX_dnbits(DBIG_XXX x);
-/**	@brief Reduce x mod n - input and output normalised
+/**	@brief Reduce x mod n - input and output normalised - leaks log2(x)-log2(n)
  *
 	Slow but rarely used
 	@param x BIG number to be reduced mod n
 	@param n The modulus
  */
 extern void BIG_XXX_mod(BIG_XXX x,BIG_XXX n);
-/**	@brief Divide x by n - output normalised
+/**	@brief Divide x by n - output normalised - leaks log2(x)-log2(n)
  *
 	Slow but rarely used
 	@param x BIG number to be divided by n
 	@param n The Divisor
  */
 extern void BIG_XXX_sdiv(BIG_XXX x,BIG_XXX n);
-/**	@brief  x=y mod n - output normalised
+/**	@brief  x=y mod n - output normalised - leaks log2(y)-log2(n)
  *
 	Slow but rarely used. y is destroyed.
 	@param x BIG number, on exit = y mod n
@@ -442,7 +442,7 @@ extern void BIG_XXX_sdiv(BIG_XXX x,BIG_XXX n);
 	@param n Modulus
  */
 extern void BIG_XXX_dmod(BIG_XXX x,DBIG_XXX y,BIG_XXX n);
-/**	@brief  x=y/n - output normalised
+/**	@brief  x=y/n - output normalised - leaks log2(y)-log2(n)
  *
 	Slow but rarely used. y is destroyed.
 	@param x BIG number, on exit = y/n
@@ -463,6 +463,14 @@ extern int BIG_XXX_parity(BIG_XXX x);
 	@return 0 or 1
  */
 extern int BIG_XXX_bit(BIG_XXX x,int i);
+/**	@brief  return i-th of BIG
+ *
+	@param x BIG number
+	@param i the first bit of x to be returned
+	@param w the width of the window to return
+	@return bits in the window as an integer
+ */
+int BIG_XXX_bits(BIG_XXX x, int i, int w);
 /**	@brief  return least significant bits of a BIG
  *
 	@param x BIG number
@@ -477,7 +485,7 @@ extern int BIG_XXX_lastbits(BIG_XXX x,int n);
 	@param r A pointer to a Cryptographically Secure Random Number Generator
  */
 extern void BIG_XXX_random(BIG_XXX x,csprng *r);
-/**	@brief  Create an unbiased random BIG from a random number generator, reduced with respect to a modulus
+/**	@brief  Create an unbiased random BIG from a random number generator, reduced with respect to a modulus - leaks log2(n)
  *
 	Assumes that the random number generator has been suitably initialised
 	@param x BIG number, on exit a random number
@@ -496,7 +504,7 @@ extern void BIG_XXX_randomnum(BIG_XXX x,BIG_XXX n,csprng *r);
 	return + or - 1, 3 or 5
 */
 
-/**	@brief  Calculate x=y*z mod n
+/**	@brief  Calculate x=y*z mod n - leaks log2(x)-log2(n)
  *
 	Slow method for modular multiplication
 	@param x BIG number, on exit = y*z mod n
@@ -505,7 +513,7 @@ extern void BIG_XXX_randomnum(BIG_XXX x,BIG_XXX n,csprng *r);
 	@param n The BIG Modulus
  */
 extern void BIG_XXX_modmul(BIG_XXX x,BIG_XXX y,BIG_XXX z,BIG_XXX n);
-/**	@brief  Calculate x=y/z mod n
+/**	@brief  Calculate x=y/z mod n - leaks log2(x)-log2(n)
  *
 	Slow method for modular division
 	@param x BIG number, on exit = y/z mod n
@@ -514,7 +522,7 @@ extern void BIG_XXX_modmul(BIG_XXX x,BIG_XXX y,BIG_XXX z,BIG_XXX n);
 	@param n The BIG Modulus
  */
 extern void BIG_XXX_moddiv(BIG_XXX x,BIG_XXX y,BIG_XXX z,BIG_XXX n);
-/**	@brief  Calculate x=y^2 mod n
+/**	@brief  Calculate x=y^2 mod n - leaks log2(x)-log2(n)
  *
 	Slow method for modular squaring
 	@param x BIG number, on exit = y^2 mod n
@@ -522,7 +530,7 @@ extern void BIG_XXX_moddiv(BIG_XXX x,BIG_XXX y,BIG_XXX z,BIG_XXX n);
 	@param n The BIG Modulus
  */
 extern void BIG_XXX_modsqr(BIG_XXX x,BIG_XXX y,BIG_XXX n);
-/**	@brief  Calculate x=-y mod n
+/**	@brief  Calculate x=-y mod n - leaks log2(x)-log2(n)
  *
 	Modular negation
 	@param x BIG number, on exit = -y mod n
@@ -530,7 +538,7 @@ extern void BIG_XXX_modsqr(BIG_XXX x,BIG_XXX y,BIG_XXX n);
 	@param n The BIG Modulus
  */
 extern void BIG_XXX_modneg(BIG_XXX x,BIG_XXX y,BIG_XXX n);
-/**	@brief  Calculate jacobi Symbol (x/y)
+/**	@brief  Calculate jacobi Symbol (x/y) - not constant time
  *
 	@param x BIG number
 	@param y BIG number

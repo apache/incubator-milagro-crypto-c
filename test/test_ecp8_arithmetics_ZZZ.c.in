@@ -161,6 +161,7 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp81,linePtr) || ECP8_ZZZ_isinf(&ecp81))
             {
                 printf("ERROR getting test vector input ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_get(&FP8aux1,&FP8aux2,&ecp81);
@@ -169,6 +170,7 @@ int main(int argc, char** argv)
             if (!FP8_YYY_equals(&FP8aux1,&FP8aux2))
             {
                 printf("ERROR computing right hand side of equation ECP, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_toOctet(&OCTaux,&ecp81);
@@ -176,6 +178,7 @@ int main(int argc, char** argv)
             if(!ECP8_ZZZ_equals(&ECP8aux1,&ecp81))
             {
                 printf("ERROR converting ECP8_ZZZ to/from OCTET, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_copy(ecp8frobs,&ecp81);
@@ -192,6 +195,7 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp82,linePtr) || ECP8_ZZZ_isinf(&ecp82))
             {
                 printf("ERROR getting test vector input ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -202,6 +206,7 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp8sum,linePtr))
             {
                 printf("ERROR reading test vector input ECP8_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_copy(&ECP8aux1,&ecp81);
@@ -215,6 +220,7 @@ int main(int argc, char** argv)
             if(!ECP8_ZZZ_equals(&ECP8aux1,&ecp8sum) || !ECP8_ZZZ_equals(&ECP8aux2,&ecp8sum))
             {
                 printf("ERROR adding two ECP8_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_copy(&ECP8aux1,&ecp81); // testing associativity (P+Q)+R = P+(Q+R)
@@ -228,6 +234,7 @@ int main(int argc, char** argv)
             if(!ECP8_ZZZ_equals(&ECP8aux1,&ECP8aux2))
             {
                 printf("ERROR testing associativity bewtween three ECP8_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -238,6 +245,7 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp8neg,linePtr))
             {
                 printf("ERROR getting test vector input ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_copy(&ECP8aux1,&ecp81);
@@ -246,6 +254,7 @@ int main(int argc, char** argv)
             if(!ECP8_ZZZ_equals(&ECP8aux1,&ecp8neg))
             {
                 printf("ERROR computing negative of ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -256,6 +265,7 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp8sub,linePtr))
             {
                 printf("ERROR getting test vector input ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_copy(&ECP8aux1,&ecp81);
@@ -264,6 +274,7 @@ int main(int argc, char** argv)
             if(!ECP8_ZZZ_equals(&ECP8aux1,&ecp8sub))
             {
                 printf("ERROR performing subtraction bewtween two ECP8_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -274,6 +285,7 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp8dbl,linePtr))
             {
                 printf("ERROR getting test vector input ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_copy(&ECP8aux1,&ecp81);
@@ -282,6 +294,7 @@ int main(int argc, char** argv)
             if(!ECP8_ZZZ_equals(&ECP8aux1,&ecp8dbl))
             {
                 printf("ERROR computing double of ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -301,6 +314,7 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp8mul,linePtr))
             {
                 printf("ERROR getting test vector input ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_copy(&ECP8aux1,&ecp81);
@@ -309,6 +323,7 @@ int main(int argc, char** argv)
             if(!ECP8_ZZZ_equals(&ECP8aux1,&ecp8mul))
             {
                 printf("ERROR computing multiplication of ECP8_ZZZ by a scalar, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -323,6 +338,7 @@ int main(int argc, char** argv)
                 if(!FP2_YYY_equals(&fp2fr,F+k))
                 {
                     printf("ERROR computing %d-th frobenius constant, line %d\n",k+1,i);
+                    fclose(fp);
                     exit(EXIT_FAILURE);
                 }
             }
@@ -339,6 +355,7 @@ int main(int argc, char** argv)
             if(!ECP8_ZZZ_equals(&ecp8frob,&ECP8aux1))
             {
                 printf("ERROR computing frobenius action (P^3), line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -349,6 +366,7 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp8mul16,linePtr))
             {
                 printf("ERROR getting test vector input ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
 
@@ -358,6 +376,7 @@ int main(int argc, char** argv)
             if(!ECP8_ZZZ_equals(&ECP8aux1,&ecp8mul16))
             {
                 printf("ERROR computing linear combination of 8 ECP8_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -368,6 +387,7 @@ int main(int argc, char** argv)
             if(read_ECP8_ZZZ(&ecp8wrong,linePtr) || !ECP8_ZZZ_isinf(&ecp8wrong) || !ECP8_ZZZ_equals(&ecp8wrong,&inf))
             {
                 printf("ERROR identifying a wrong ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -378,6 +398,7 @@ int main(int argc, char** argv)
             if(read_ECP8_ZZZ(&ecp8inf,linePtr) || !ECP8_ZZZ_isinf(&ecp8inf) || !ECP8_ZZZ_equals(&ecp8inf,&inf))
             {
                 printf("ERROR identifying infinite point ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -388,6 +409,7 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp8set1,linePtr))
             {
                 printf("ERROR getting test vector input ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP8_ZZZ_get(&FP8aux1,&FP8aux2,&ecp81);
@@ -400,11 +422,13 @@ int main(int argc, char** argv)
             if(!read_ECP8_ZZZ(&ecp8set2,linePtr))
             {
                 printf("ERROR getting test vector input ECP8_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             if((!ECP8_ZZZ_equals(&ECP8aux1,&ecp8set2)) && (!ECP8_ZZZ_equals(&ECP8aux1,&ecp8set1)))
             {
                 printf("ERROR computing ECP8_ZZZ from coordinate x and with y set2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }

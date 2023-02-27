@@ -151,7 +151,10 @@ int main(int argc, char** argv)
             l2 = l1/2;
             dIUT = (char*) malloc (l2);
             if (dIUT==NULL)
+            {
+                fclose(fp);
                 exit(EXIT_FAILURE);
+            }
 
             // dIUT binary value
             amcl_hex2bin(linePtr, dIUT, l1);
@@ -206,8 +209,10 @@ int main(int argc, char** argv)
             l2 = l1/2;
             ZIUT = (char*) malloc (l2);
             if (ZIUT==NULL)
+            {
+                fclose(fp);
                 exit(EXIT_FAILURE);
-
+            }
             // ZIUT binary value
             amcl_hex2bin(linePtr, ZIUT, l1);
 
@@ -255,6 +260,7 @@ int main(int argc, char** argv)
                 OCT_output(&QIUTOct);
                 printf("\n");
 #endif
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
 
@@ -272,6 +278,7 @@ int main(int argc, char** argv)
                 OCT_output(&ZIUTOct);
                 printf("\n");
 #endif
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             free(dIUT);

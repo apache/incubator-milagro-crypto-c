@@ -39,7 +39,7 @@ int main()
     char raw[256], bytes[len+1], bytes64[len64+1], bytesHex[lenHex+1], v[len], w[len];
     octet V= {0,sizeof(v),v}, W= {0,sizeof(w),w};
     csprng rng;
-
+    char originByteHex[lenHex+1];
     /* Fake random source */
     RAND_clean(&rng);
     for (i=0; i<256; i++) raw[i]=(char)i;
@@ -59,7 +59,7 @@ int main()
         {
             if(!OCT_ncomp(&V,&W,i))
             {
-                printf("ERROR comparing two equal octet, OCTET\n");
+                printf("ERROR comparing %d bytes out of two equal octet, OCTET\n", i);
                 exit(EXIT_FAILURE);
             }
         }
@@ -67,6 +67,11 @@ int main()
         if(OCT_comp(&V,&W))
         {
             printf("ERROR comparing two different octet, OCTET\n");
+            exit(EXIT_FAILURE);
+        }
+        if(OCT_ncomp(&V,&W,len))
+        {
+            printf("ERROR comparing %d bytes out of two different octet, OCTET\n", len);
             exit(EXIT_FAILURE);
         }
     }
@@ -103,10 +108,15 @@ int main()
             OCT_rand(&W,&rng,len);
             OCT_copy(&V,&W);
             OCT_toHex(&W,bytesHex);
+
             OCT_fromHex(&W,bytesHex);
+            // originByteHex
+            OCT_toHex(&W,originByteHex);
+            printf("Bucket %d\n", strcmp(bytesHex, originByteHex));
+
             if(!OCT_comp(&V,&W))
             {
-                printf("ERROR converting to and from Hex OCTET\n");
+                printf("ERROR converting to and from Hex OCTET : %s %s\n", bytesHex, originByteHex);
                 exit(EXIT_FAILURE);
             }
         }

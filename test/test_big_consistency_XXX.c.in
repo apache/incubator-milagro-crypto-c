@@ -59,14 +59,14 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    /* Testing coping and equal function */
+    /* Testing copying and equal function */
     BIG_XXX_random(F,&rng);
     BIG_XXX_random(DF,&rng);
     BIG_XXX_copy(G,F);
     BIG_XXX_dcopy(DG,DF);
     if(BIG_XXX_comp(G,F) | BIG_XXX_dcomp(DG,DF))
     {
-        printf("ERROR testing coping and equal BIG_XXX\n");
+        printf("ERROR testing copying and equal BIG_XXX\n");
         exit(EXIT_FAILURE);
     }
 
@@ -112,7 +112,7 @@ int main()
 
     /* Testing small multiplication and addition */
     BIG_XXX_random(F,&rng);
-    for (j = 1; j <= 20; ++j)
+    for (j = 1; j <= NEXCESS_XXX; ++j)
     {
         BIG_XXX_imul(H,F,j);
         BIG_XXX_copy(G,F);

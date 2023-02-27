@@ -53,6 +53,7 @@ foreach(curve ${AMCL_CURVE})
 
   if(TARGET amcl_bls_${TC})
     amcl_configure_file_curve(bls_ZZZ.py.in bls_${TC}.py ${curve} amcl_bls_${TC}_GEN_PYS)
+    amcl_configure_file_curve(run_bls_ZZZ.py.in run_bls_${TC}.py ${curve} __no_install)    
     install(FILES "${amcl_bls_${TC}_GEN_PYS}" DESTINATION ${PYTHON3_SITE_PACKAGES})
   endif()
   

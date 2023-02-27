@@ -23,12 +23,19 @@ under the License.
  *
  */
 
+#ifndef PAILLIER_H
+#define PAILLIER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "ff_4096.h"
 #include "ff_2048.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Field size
 #define FS_4096 MODBYTES_512_60*FFLEN_4096    /**< 4096 field size in bytes */
@@ -41,17 +48,17 @@ under the License.
 /*!
  * \brief Paillier Public Key
  */
-typedef struct{
-    BIG_512_60 n[FFLEN_4096]; /**< Paillier Modulus - \f$ n = pq \f$ */
-    BIG_512_60 g[FFLEN_4096]; /**< Public Base - \f$ g = n+1 \f$ */
-
+typedef struct
+{
+    BIG_512_60 n[HFLEN_4096];  /**< Paillier Modulus - \f$ n = pq \f$ */
     BIG_512_60 n2[FFLEN_4096]; /**< Precomputed \f$ n^2 \f$ */
-}PAILLIER_public_key;
+} PAILLIER_public_key;
 
 /*!
  * \brief Paillier Private Key
  */
-typedef struct{
+typedef struct
+{
     BIG_1024_58 p[HFLEN_2048]; /**< Secret Prime */
     BIG_1024_58 q[HFLEN_2048]; /**< Secret Prime */
 
@@ -61,12 +68,14 @@ typedef struct{
     BIG_1024_58 invp[FFLEN_2048]; /**< Precomputed \f$ p^{-1} \pmod{2^m} \f$ */
     BIG_1024_58 invq[FFLEN_2048]; /**< Precomputed \f$ q^{-1} \pmod{2^m} \f$ */
 
+    BIG_1024_58 invpq[HFLEN_2048]; /**< Precomputed \f$ p^{-1} \pmod{q} \f$ */
+
     BIG_1024_58 p2[FFLEN_2048]; /**< Precomputed \f$ p^2 \f$ */
     BIG_1024_58 q2[FFLEN_2048]; /**< Precomputed \f$ q^2 \f$ */
 
     BIG_1024_58 mp[HFLEN_2048]; /**< Precomputed \f$ L(g^{lp} \pmod{p^2})^{-1} \f$ */
     BIG_1024_58 mq[HFLEN_2048]; /**< Precomputed \f$ L(g^{lq} \pmod{q^2})^{-1} \f$ */
-}PAILLIER_private_key;
+} PAILLIER_private_key;
 
 /*! \brief Generate the key pair
  *
@@ -173,3 +182,9 @@ void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK);
  * @param   PUB   Public key
  */
 void PAILLIER_PK_toOctet(octet *PK, PAILLIER_public_key *PUB);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

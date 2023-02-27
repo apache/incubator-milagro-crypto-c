@@ -153,6 +153,7 @@ int main(int argc, char** argv)
             if(!read_ECP4_ZZZ(&ecp41,linePtr) || ECP4_ZZZ_isinf(&ecp41))
             {
                 printf("ERROR getting test vector input ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP4_ZZZ_get(&FP4aux1,&FP4aux2,&ecp41);
@@ -161,6 +162,7 @@ int main(int argc, char** argv)
             if (!FP4_YYY_equals(&FP4aux1,&FP4aux2))
             {
                 printf("ERROR computing right hand side of equation ECP, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP4_ZZZ_toOctet(&OCTaux,&ecp41);
@@ -169,6 +171,7 @@ int main(int argc, char** argv)
             if(!ECP4_ZZZ_equals(&ECP4aux1,&ecp41))
             {
                 printf("ERROR converting ECP4_ZZZ to/from OCTET, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP4_ZZZ_copy(ecp4frobs,&ecp41);
@@ -185,6 +188,7 @@ int main(int argc, char** argv)
             if(!read_ECP4_ZZZ(&ecp42,linePtr) || ECP4_ZZZ_isinf(&ecp42))
             {
                 printf("ERROR getting test vector input ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -195,6 +199,7 @@ int main(int argc, char** argv)
             if(!read_ECP4_ZZZ(&ecp4sum,linePtr))
             {
                 printf("ERROR reading test vector input ECP4_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP4_ZZZ_copy(&ECP4aux1,&ecp41);
@@ -208,6 +213,7 @@ int main(int argc, char** argv)
             if(!ECP4_ZZZ_equals(&ECP4aux1,&ecp4sum) || !ECP4_ZZZ_equals(&ECP4aux2,&ecp4sum))
             {
                 printf("ERROR adding two ECP4_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP4_ZZZ_copy(&ECP4aux1,&ecp41); // testing associativity (P+Q)+R = P+(Q+R)
@@ -221,6 +227,7 @@ int main(int argc, char** argv)
             if(!ECP4_ZZZ_equals(&ECP4aux1,&ECP4aux2))
             {
                 printf("ERROR testing associativity bewtween three ECP4_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -239,6 +246,7 @@ int main(int argc, char** argv)
             if(!ECP4_ZZZ_equals(&ECP4aux1,&ecp4neg))
             {
                 printf("ERROR computing negative of ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -249,6 +257,7 @@ int main(int argc, char** argv)
             if(!read_ECP4_ZZZ(&ecp4sub,linePtr))
             {
                 printf("ERROR getting test vector input ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP4_ZZZ_copy(&ECP4aux1,&ecp41);
@@ -257,6 +266,7 @@ int main(int argc, char** argv)
             if(!ECP4_ZZZ_equals(&ECP4aux1,&ecp4sub))
             {
                 printf("ERROR performing subtraction bewtween two ECP4_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -267,6 +277,7 @@ int main(int argc, char** argv)
             if(!read_ECP4_ZZZ(&ecp4dbl,linePtr))
             {
                 printf("ERROR getting test vector input ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP4_ZZZ_copy(&ECP4aux1,&ecp41);
@@ -275,6 +286,7 @@ int main(int argc, char** argv)
             if(!ECP4_ZZZ_equals(&ECP4aux1,&ecp4dbl))
             {
                 printf("ERROR computing double of ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -294,6 +306,7 @@ int main(int argc, char** argv)
             if(!read_ECP4_ZZZ(&ecp4mul,linePtr))
             {
                 printf("ERROR getting test vector input ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP4_ZZZ_copy(&ECP4aux1,&ecp41);
@@ -302,6 +315,7 @@ int main(int argc, char** argv)
             if(!ECP4_ZZZ_equals(&ECP4aux1,&ecp4mul))
             {
                 printf("ERROR computing multiplication of ECP4_ZZZ by a scalar, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -316,6 +330,7 @@ int main(int argc, char** argv)
                 if(!FP2_YYY_equals(&fp2fr,F+k))
                 {
                     printf("ERROR computing %d-th frobenius constant, line %d\n",k+1,i);
+                    fclose(fp);
                     exit(EXIT_FAILURE);
                 }
             }
@@ -332,6 +347,7 @@ int main(int argc, char** argv)
             if(!ECP4_ZZZ_equals(&ecp4frob,&ECP4aux1))
             {
                 printf("ERROR computing frobenius action (P^3), line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -342,6 +358,7 @@ int main(int argc, char** argv)
             if(!read_ECP4_ZZZ(&ecp4mul8,linePtr))
             {
                 printf("ERROR getting test vector input ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
 
@@ -351,6 +368,7 @@ int main(int argc, char** argv)
             if(!ECP4_ZZZ_equals(&ECP4aux1,&ecp4mul8))
             {
                 printf("ERROR computing linear combination of 8 ECP4_ZZZs, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -361,6 +379,7 @@ int main(int argc, char** argv)
             if(read_ECP4_ZZZ(&ecp4wrong,linePtr) || !ECP4_ZZZ_isinf(&ecp4wrong) || !ECP4_ZZZ_equals(&ecp4wrong,&inf))
             {
                 printf("ERROR identifying a wrong ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             if(ECP4_ZZZ_setx(&ECP4aux1,&ecp4wrong.x))
@@ -375,6 +394,7 @@ int main(int argc, char** argv)
             if(read_ECP4_ZZZ(&ecp4inf,linePtr) || !ECP4_ZZZ_isinf(&ecp4inf) || !ECP4_ZZZ_equals(&ecp4inf,&inf))
             {
                 printf("ERROR identifying infinite point ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -385,6 +405,7 @@ int main(int argc, char** argv)
             if(!read_ECP4_ZZZ(&ecp4set1,linePtr))
             {
                 printf("ERROR getting test vector input ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             ECP4_ZZZ_get(&FP4aux1,&FP4aux2,&ecp41);
@@ -397,11 +418,13 @@ int main(int argc, char** argv)
             if(!read_ECP4_ZZZ(&ecp4set2,linePtr))
             {
                 printf("ERROR getting test vector input ECP4_ZZZ, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             if((!ECP4_ZZZ_equals(&ECP4aux1,&ecp4set2)) && (!ECP4_ZZZ_equals(&ECP4aux1,&ecp4set1)))
             {
                 printf("ERROR computing ECP4_ZZZ from coordinate x and with y set2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }

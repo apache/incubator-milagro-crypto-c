@@ -30,15 +30,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "amcl.h"
 #include "utils.h"
 
-/* Decode hex value */
-void amcl_hex2bin(const char *src, char *dst, int src_len)
+/* Decode a byte to a 2 chars string */
+
+/** Decode hex value */
+void amcl_hex2bin(const char *src, char *dst, size_t src_len)
 {
-    int i;
     char v,c;
-    for (i = 0; i < src_len/2; i++)
+    for (size_t i = 0; i < src_len/2; i++)
     {
         c = src[2*i];
         if (c >= '0' && c <= '9')
@@ -80,20 +82,24 @@ void amcl_hex2bin(const char *src, char *dst, int src_len)
 }
 
 /* Encode binary string */
-void amcl_bin2hex(char *src, char *dst, int src_len)
+void amcl_bin2hex(char *src, char *dst, size_t src_len, size_t dst_len)
 {
-    int i;
-    for (i = 0; i < src_len; i++)
+    const char * hexadecimals = "0123456789abcdef";
+    unsigned char ch;
+    for (size_t i = 0; i < src_len && i< dst_len/2; i++)
     {
-        sprintf(&dst[i*2],"%02x", (unsigned char) src[i]);
+        ch=src[i];
+        uint8_t res = ch / 16;
+        uint8_t mod = ch % 16;
+        dst[i*2] = hexadecimals[res];
+        dst[(i*2)+1] = hexadecimals[mod];
     }
 }
 
 /* Print encoded binary string in hex */
-void amcl_print_hex(char *src, int src_len)
+void amcl_print_hex(char *src, size_t src_len)
 {
-    int i;
-    for (i = 0; i < src_len; i++)
+    for (size_t i = 0; i < src_len; i++)
     {
         printf("%02x", (unsigned char) src[i]);
     }
@@ -107,7 +113,7 @@ int generateOTP(csprng* RNG)
 
     int i = 0;
     int val = 0;
-    char byte[6] = {0};
+    unsigned char byte[6] = {0};
     int mult=1;
 
     // Generate random 6 digit random value
@@ -127,5 +133,7 @@ void generateRandom(csprng *RNG,octet *randomValue)
 {
     int i;
     for (i=0; i<randomValue->len; i++)
-        randomValue->val[i]=RAND_byte(RNG);
+    {
+        randomValue->val[i] = RAND_byte(RNG);
+    }
 }

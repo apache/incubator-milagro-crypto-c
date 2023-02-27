@@ -66,6 +66,13 @@ extern void FF_WWW_zero(BIG_XXX *x,int n);
 	@return 1 if zero, else returns 0
  */
 extern int FF_WWW_iszilch(BIG_XXX *x,int n);
+/**	@brief Tests for FF element equal to one
+ *
+	@param x FF number to be tested
+	@param n size of FF in BIGs
+	@return 1 if unity, else returns 0
+ */
+extern int FF_WWW_isunity(BIG_XXX *x,int n);
 /**	@brief  return parity of an FF, that is the least significant bit
  *
 	@param x FF number
@@ -178,7 +185,7 @@ extern void FF_WWW_fromOctet(BIG_XXX *x,octet *S,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_mul(BIG_XXX *x,BIG_XXX *y,BIG_XXX *z,int n);
-/**	@brief Reduce FF mod a modulus
+/**	@brief Reduce FF mod a modulus - leaks log2(p)-log2(n)
  *
 	This is slow
 	@param x FF instance to be reduced mod p - on exit = x mod p
@@ -194,7 +201,7 @@ extern void FF_WWW_mod(BIG_XXX *x,BIG_XXX *p,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_sqr(BIG_XXX *x,BIG_XXX *y,int n);
-/**	@brief Reduces a double-length FF with respect to a given modulus
+/**	@brief Reduces a double-length FF with respect to a given modulus - leaks log2(y)-log2(z)
  *
 	This is slow
 	@param x FF instance, on exit = y mod z
@@ -225,7 +232,7 @@ extern void FF_WWW_invmod2m(BIG_XXX U[],BIG_XXX a[],int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_random(BIG_XXX *x,csprng *R,int n);
-/**	@brief Create a random FF less than a given modulus from a random number generator
+/**	@brief Create a random FF less than a given modulus from a random number generator - leaks log2(y)
  *
 	@param x FF instance, on exit x is a random number < y
 	@param y FF instance, the modulus
@@ -233,6 +240,88 @@ extern void FF_WWW_random(BIG_XXX *x,csprng *R,int n);
 	@param n size of FF in BIGs
  */
 extern void FF_WWW_randomnum(BIG_XXX *x,BIG_XXX *y,csprng *R,int n);
+/**	@brief Precomputation step for the 2^w-ary method
+ *  Given bases X = {x1,...xk}, fill the precomputation table T
+ *  for the given window size w.
+ *  T must have size 2^(w*k)
+ *
+	@param X     FF instances, the base(s) for the multiple exponent
+	@param T     FF instances, the resulting precomputation table
+	@param k     size of X, the number of bases in the multiple exponent
+	@param w     window size
+	@param p     FF instance, modulus for the exponent
+	@param ND    FF instance, p^-1 mod 2^|p| for operations in Montgomery form
+	@param plen  size of p in BIGS
+ */
+extern void FF_WWW_2w_precompute(BIG_XXX *X[], BIG_XXX *T[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen);
+/**	@brief Constant time evaluation step for the 2^w-ary method
+ *  Given precomputation table T and exponents E = {e1,...ek}, compute the
+ *  multiple exponent.
+ *  Side channel resistant.
+ *
+ *  Remark. This function assumes that the window size divides the number
+ *  of bits in a BIG_XXX
+ *
+	@param r     FF instance, on exit the computed power
+	@param T     FF instances, the precomputed table
+	@param E     FF instance, exponent(s) for the multiple exponent
+	@param k     size of E, the number of exponents in the multiple exponent
+	@param w     window size
+	@param p     FF instance, modulus for the exponent
+	@param ND    FF instance, p^-1 mod 2^|p| for operations in Montgomery form
+	@param plen  size of p in BIGS
+	@param elen  size of exponents in BIGS
+ */
+extern void FF_WWW_ct_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen, int elen);
+/**	@brief Non constant time evaluation step for the 2^w-ary method
+ *  Given precomputation table T and exponents E = {e1,...ek}, compute the
+ *  multiple exponent.
+ *  NOT Side channel resistant, but slightly faster
+ *
+ *  Remark. This function assumes that the window size divides the number
+ *  of bits in a BIG_XXX
+ *
+	@param r     FF instance, on exit the computed power
+	@param T     FF instances, the precomputed table
+	@param E     FF instance, exponent(s) for the multiple exponent
+	@param k     size of E, the number of exponents in the multiple exponent
+	@param w     window size
+	@param p     FF instance, modulus for the exponent
+	@param ND    FF instance, p^-1 mod 2^|p| for operations in Montgomery form
+	@param plen  size of p in BIGS
+	@param elen  size of exponents in BIGS
+ */
+extern void FF_WWW_nt_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen, int elen);
+/**	@brief Precomputation step for the Basic Interleaving method
+ *  Given bases X = {x1,...xk}, fill the precomputation table T
+ *  for the given window size w.
+ *  T must have size k * 2^(w-1)
+ *
+	@param X     FF instances, the base(s) for the multiple exponent
+	@param T     FF instances, the resulting precomputation table
+	@param k     size of X, the number of bases in the multiple exponent
+	@param w     window size
+	@param p     FF instance, modulus for the exponent
+	@param ND    FF instance, p^-1 mod 2^|p| for operations in Montgomery form
+	@param plen  size of p in BIGS
+ */
+extern void FF_WWW_bi_precompute(BIG_XXX *X[], BIG_XXX *T[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen);
+/**	@brief Non constant time evaluation step for the basic interleaving method
+ *  Given precomputation table T and exponents E = {e1,...ek}, compute the
+ *  multiple exponent.
+ *  NOT Side channel resistant.
+ *
+	@param r     FF instance, on exit the computed power
+	@param T     FF instances, the precomputed table
+	@param E     FF instance, exponent(s) for the multiple exponent
+	@param k     size of E, the number of exponents in the multiple exponent
+	@param w     window size
+	@param p     FF instance, modulus for the exponent
+	@param ND    FF instance, p^-1 mod 2^|p| for operations in Montgomery form
+	@param plen  size of p in BIGS
+	@param elen  size of exponents in BIGS
+ */
+extern void FF_WWW_bi_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen, int elen);
 /**	@brief Calculate r=x^e mod p, side channel resistant
  *
 	@param r FF instance, on exit = x^e mod p
@@ -242,7 +331,7 @@ extern void FF_WWW_randomnum(BIG_XXX *x,BIG_XXX *y,csprng *R,int n);
 	@param n size of FF in BIGs
 	@param en size of the exponent in BIGs
  */
-extern void FF_WWW_skpow(BIG_XXX *r,BIG_XXX *x,BIG_XXX * e,BIG_XXX *p,int n, int en);
+extern void FF_WWW_ct_pow(BIG_XXX *r,BIG_XXX *x,BIG_XXX * e,BIG_XXX *p,int n, int en);
 /**	@brief Calculate r=x^e mod p, side channel resistant
  *
 	For short BIG exponent
@@ -252,8 +341,8 @@ extern void FF_WWW_skpow(BIG_XXX *r,BIG_XXX *x,BIG_XXX * e,BIG_XXX *p,int n, int
 	@param p FF modulus
 	@param n size of FF in BIGs
  */
-extern void FF_WWW_skspow(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *p,int n);
-/**	@brief Calculate r=x^e.y^f mod p for big e and f, side channel resistant
+extern void FF_WWW_ct_pow_big(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *p,int n);
+/**	@brief Calculate r=x^e.y^f mod p for FF e and f, side channel resistant
  *
 	@param r  FF instance, on exit = x^e.y^f mod p
 	@param x  FF instance
@@ -264,8 +353,22 @@ extern void FF_WWW_skspow(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *p,int n);
 	@param n  size of FF in BIGs
 	@param en size of the exponent in BIGs
  */
-extern void FF_WWW_skpow2(BIG_XXX *r,BIG_XXX *x, BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *p, int n, int en);
-/**	@brief Calculate r=x^e mod p
+extern void FF_WWW_ct_pow_2(BIG_XXX *r,BIG_XXX *x, BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *p, int n, int en);
+/**	@brief Calculate r=x^e.y^f.z^g mod p for FF e, f and g, side channel resistant
+ *
+	@param r  FF instance, on exit = x^e.y^f.z^g mod p
+	@param x  FF instance
+	@param e  FF exponent
+	@param y  FF instance
+	@param f  FF exponent
+	@param z  FF instance
+	@param g  FF exponent
+	@param p  FF modulus
+	@param n  size of FF in BIGs
+	@param en size of the exponent in BIGs
+ */
+extern void FF_WWW_ct_pow_3(BIG_XXX *r,BIG_XXX *x, BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *p, int n, int en);
+/**	@brief Calculate r=x^e mod p. Faster but not constant time
  *
 	For very short integer exponent
 	@param r  FF instance, on exit = x^e mod p
@@ -274,27 +377,59 @@ extern void FF_WWW_skpow2(BIG_XXX *r,BIG_XXX *x, BIG_XXX *e, BIG_XXX *y, BIG_XXX
 	@param p  FF modulus
 	@param n  size of FF in BIGs
  */
-extern void FF_WWW_power(BIG_XXX *r,BIG_XXX *x,int e,BIG_XXX *p,int n);
+extern void FF_WWW_nt_pow_int(BIG_XXX *r,BIG_XXX *x,int e,BIG_XXX *p,int n);
 /**	@brief Calculate r=x^e mod p
  *
-	@param r FF instance, on exit = x^e mod p
-	@param x FF instance
-	@param e FF exponent
-	@param p FF modulus
-	@param n size of FF in BIGs
+	@param r  FF instance, on exit = x^e mod p
+	@param x  FF instance
+	@param e  FF exponent
+	@param p  FF modulus
+	@param n  size of base in BIGs
+	@param en size of exponent in BIGs
  */
-extern void FF_WWW_pow(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e,BIG_XXX *p,int n);
-/**	@brief Calculate r=x^e.y^f mod m
+extern void FF_WWW_nt_pow(BIG_XXX *r, BIG_XXX *x, BIG_XXX *e, BIG_XXX *p, int n, int en);
+/**	@brief Calculate r=x^e.y^f mod p. Faster but non constant time
  *
-	@param r FF instance, on exit = x^e.y^f mod p
-	@param x FF instance
-	@param e BIG exponent
-	@param y FF instance
-	@param f BIG exponent
-	@param m FF modulus
-	@param n size of FF in BIGs
+	@param r  FF instance, on exit = x^e.y^f mod p
+	@param x  FF instance
+	@param e  BIG exponent
+	@param y  FF instance
+	@param f  BIG exponent
+	@param p  FF modulus
+	@param n   size of FF in BIGs
+	@param en size of exponent in BIGs
  */
-extern void FF_WWW_pow2(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *y,BIG_XXX f,BIG_XXX *m,int n);
+void FF_WWW_nt_pow_2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *p,int n, int en);
+/**	@brief Calculate r=x^e.y^f.z^g mod p. Faster but non constant time
+ *
+	@param r  FF instance, on exit = x^e.y^f.z^g mod p
+	@param x  FF instance
+	@param e  BIG exponent
+	@param y  FF instance
+	@param f  BIG exponent
+	@param z  FF instance
+	@param g  BIG exponent
+	@param p  FF modulus
+	@param n  size of FF in BIGs
+	@param en size of exponent in BIGs
+ */
+void FF_WWW_nt_pow_3(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *p, int n, int en);
+/**	@brief Calculate r=x^e.y^f.z^g.w^h mod p. Faster but non constant time
+ *
+	@param r  FF instance, on exit = x^e.y^f.z^g.w^h mod p
+	@param x  FF instance
+	@param e  BIG exponent
+	@param y  FF instance
+	@param f  BIG exponent
+	@param z  FF instance
+	@param g  BIG exponent
+	@param w  FF instance
+	@param h  BIG exponent
+	@param p  FF modulus
+	@param n  size of FF in BIGs
+	@param en size of exponent in BIGs
+ */
+extern void FF_WWW_nt_pow_4(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *w, BIG_XXX *h, BIG_XXX *p, int n, int en);
 /**	@brief Test if an FF has factor in common with integer s
  *
 	@param x FF instance to be tested
@@ -314,13 +449,14 @@ extern int FF_WWW_cfactor(BIG_XXX *x,sign32 s,int n);
 extern int FF_WWW_prime(BIG_XXX *x,csprng *R,int n);
 /**	@brief Combine rp and rq using the Chinese Remainder Theorem
  *
-	@param r  FF instance, on exit the solution of the system
-	@param rp FF instance, solution modulo p
-	@param rq FF instance, solution modulo q
-	@param p  FF instance, MUST be coprime with q
-	@param q  FF instance, MUST be coprime with p
-	@param n size of p and q in BIGs
+	@param r     FF instance, on exit the solution of the system
+	@param rp    FF instance, solution modulo p
+	@param rq    FF instance, solution modulo q
+	@param p     FF instance, MUST be coprime with q
+	@param invpq FF instance, p^(-1) mod q
+	@param pq    FF instance, p*q
+	@param n     size of p in BIGs
  */
-extern void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *q, int n);
+extern void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *invpq, BIG_XXX *pq, int n);
 
 #endif

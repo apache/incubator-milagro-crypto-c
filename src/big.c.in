@@ -23,31 +23,57 @@
 #include "big_XXX.h"
 
 /* test a=0? */
+/* libsodium constant time implementation */
 int BIG_XXX_iszilch(BIG_XXX a)
 {
     int i;
+    chunk d = 0;
+
+#ifdef DEBUG_NORM
+    if ((a[MPV_XXX]!=1 && a[MPV_XXX]!=0) || a[MNV_XXX]!=0) printf("Input to iszilch not normed\n");
+#endif
+
     for (i=0; i<NLEN_XXX; i++)
-        if (a[i]!=0) return 0;
-    return 1;
+        d |= a[i];
+
+    return (1 & ((d-1)>>BASEBITS_XXX));
 }
 
 /* test a=1? */
+/* libsodium constant time implementation for
+   comparison to zero of a[1],..,a[NLEN_XXX-1]
+   then checking if a[0] == 1
+ */
 int BIG_XXX_isunity(BIG_XXX a)
 {
     int i;
+    chunk d = 0;
+
+#ifdef DEBUG_NORM
+    if ((a[MPV_XXX]!=1 && a[MPV_XXX]!=0) || a[MNV_XXX]!=0) printf("Input to isunity not normed\n");
+#endif
+
     for(i=1; i<NLEN_XXX; i++)
-        if (a[i]!=0) return 0;
-    if (a[0]!=1) return 0;
-    return 1;
+        d |= a[i];
+
+    return (1 & ((d-1)>>BASEBITS_XXX) & ((a[0]^1)-1)>>BASEBITS_XXX);
 }
 
 /* test a=0? */
+/* libsodium constant time implementation */
 int BIG_XXX_diszilch(DBIG_XXX a)
 {
     int i;
+    chunk d = 0;
+
+#ifdef DEBUG_NORM
+    if ((a[DMPV_XXX]!=1 && a[DMPV_XXX]!=0) || a[DMNV_XXX]!=0) printf("Input to diszilch not normed\n");
+#endif
+
     for (i=0; i<DNLEN_XXX; i++)
-        if (a[i]!=0) return 0;
-    return 1;
+        d |= a[i];
+
+    return (1 & ((d-1)>>BASEBITS_XXX));
 }
 
 /* SU= 56 */
@@ -785,12 +811,7 @@ void BIG_XXX_monty(BIG_XXX a,BIG_XXX md,chunk MC,DBIG_XXX d)
     chunk m,carry;
     for (i=0; i<NLEN_XXX; i++)
     {
-        if (MC==-1) m=(-d[i])&BMASK_XXX;
-        else
-        {
-            if (MC==1) m=d[i];
-            else m=(MC*d[i])&BMASK_XXX;
-        }
+        m = (MC*d[i])&BMASK_XXX;
         carry=0;
         for (j=0; j<NLEN_XXX; j++)
             carry=muladd_XXX(m,md[j],carry,&d[i+j]);
@@ -1011,28 +1032,48 @@ void BIG_XXX_dnorm(DBIG_XXX a)
 
 /* Compare a and b. Return 1 for a>b, -1 for a<b, 0 for a==b */
 /* a and b MUST be normalised before call */
-int BIG_XXX_comp(BIG_XXX a,BIG_XXX b)
+/* libsodium constant time implementation */
+int BIG_XXX_comp(BIG_XXX b1,BIG_XXX b2)
 {
     int i;
-    for (i=NLEN_XXX-1; i>=0; i--)
+    chunk gt = 0;
+    chunk eq = 1;
+
+#ifdef DEBUG_NORM
+    if ((b1[MPV_XXX]!=1 && b1[MPV_XXX]!=0) || b1[MNV_XXX]!=0) printf("First input to comp not normed\n");
+    if ((b2[MPV_XXX]!=1 && b2[MPV_XXX]!=0) || b2[MNV_XXX]!=0) printf("Second input to comp not normed\n");
+#endif
+
+    for (i = NLEN_XXX-1; i>=0; i--)
     {
-        if (a[i]==b[i]) continue;
-        if (a[i]>b[i]) return 1;
-        else  return -1;
+        gt |= ((b2[i]-b1[i]) >> BASEBITS_XXX) & eq;
+        eq &= ((b2[i]^b1[i])-1) >> BASEBITS_XXX;
     }
-    return 0;
+
+    return (int)(gt+gt+eq) - 1;
 }
 
-int BIG_XXX_dcomp(DBIG_XXX a,DBIG_XXX b)
+/* Compare b1 and b2. Return 1 for b1>b2, -1 for a<b, 0 for a==b */
+/* a and b MUST be normalised before call */
+/* libsodium constant time implementation */
+int BIG_XXX_dcomp(DBIG_XXX b1,DBIG_XXX b2)
 {
     int i;
+    chunk gt = 0;
+    chunk eq = 1;
+
+#ifdef DEBUG_NORM
+    if ((b1[DMPV_XXX]!=1 && b1[DMPV_XXX]!=0) || b1[DMNV_XXX]!=0) printf("First input to dcomp not normed\n");
+    if ((b2[DMPV_XXX]!=1 && b2[DMPV_XXX]!=0) || b2[DMNV_XXX]!=0) printf("Second input to dcomp not normed\n");
+#endif
+
     for (i=DNLEN_XXX-1; i>=0; i--)
     {
-        if (a[i]==b[i]) continue;
-        if (a[i]>b[i]) return 1;
-        else  return -1;
+        gt |= ((b2[i]-b1[i]) >> BASEBITS_XXX) & eq;
+        eq &= ((b2[i]^b1[i])-1) >> BASEBITS_XXX;
     }
-    return 0;
+
+    return (int)(gt+gt+eq) - 1;
 }
 
 /* return number of bits in a */
@@ -1231,8 +1272,21 @@ int BIG_XXX_parity(BIG_XXX a)
 /* SU= 16 */
 int BIG_XXX_bit(BIG_XXX a,int n)
 {
-    if (a[n/BASEBITS_XXX]&((chunk)1<<(n%BASEBITS_XXX))) return 1;
-    else return 0;
+    return ((int)(a[n/BASEBITS_XXX]>>(n%BASEBITS_XXX))) & 1;
+}
+
+/* return w bits of a starting from the n-th */
+int BIG_XXX_bits(BIG_XXX a, int n, int w)
+{
+    int i, b = 0;
+
+    for (i=n+w-1; i>=n; i--)
+    {
+        b <<=1;
+        b |= ((int)(a[i/BASEBITS_XXX]>>(i%BASEBITS_XXX))) & 1;
+    }
+
+    return b;
 }
 
 /* return last n bits of a, where n is small < BASEBITS */
@@ -1343,6 +1397,7 @@ void BIG_XXX_moddiv(BIG_XXX r,BIG_XXX a1,BIG_XXX b1,BIG_XXX m)
     BIG_XXX_copy(b,b1);
 
     BIG_XXX_mod(a,m);
+    BIG_XXX_mod(b,m);
     BIG_XXX_invmodp(z,b,m);
 
     BIG_XXX_mul(d,a,z);
@@ -1471,69 +1526,84 @@ void BIG_XXX_invmod2m(BIG_XXX a)
     BIG_XXX_mod2m(a,BIGBITS_XXX);
 }
 
-/* Set r=1/a mod p. Binary method */
-/* SU= 240 */
+/* Set r=1/a mod p. Kaliski method - on entry a < p*/
 void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
 {
-    BIG_XXX u,v,x1,x2,t,one;
-    BIG_XXX_mod(a,p);
-    BIG_XXX_copy(u,a);
-    BIG_XXX_copy(v,p);
-    BIG_XXX_one(one);
-    BIG_XXX_copy(x1,one);
-    BIG_XXX_zero(x2);
+    int k, p1, pu, pv, psw, pmv;
+    BIG_XXX u, v, s, w;
 
-    while (BIG_XXX_comp(u,one)!=0 && BIG_XXX_comp(v,one)!=0)
+    BIG_XXX_copy(u, p);
+    BIG_XXX_copy(v, a);
+    BIG_XXX_mod(v, p);
+    BIG_XXX_zero(r);
+    BIG_XXX_one(s);
+
+    // v = a2^BIGBITS_XXX mod p
+    for (k = 0; k < BIGBITS_XXX; k++)
     {
-        while (BIG_XXX_parity(u)==0)
-        {
-            BIG_XXX_fshr(u,1);
-            if (BIG_XXX_parity(x1)!=0)
-            {
-                BIG_XXX_add(x1,p,x1);
-                BIG_XXX_norm(x1);
-            }
-            BIG_XXX_fshr(x1,1);
-        }
-        while (BIG_XXX_parity(v)==0)
-        {
-            BIG_XXX_fshr(v,1);
-            if (BIG_XXX_parity(x2)!=0)
-            {
-                BIG_XXX_add(x2,p,x2);
-                BIG_XXX_norm(x2);
-            }
-            BIG_XXX_fshr(x2,1);
-        }
-        if (BIG_XXX_comp(u,v)>=0)
-        {
-            BIG_XXX_sub(u,u,v);
-            BIG_XXX_norm(u);
-            if (BIG_XXX_comp(x1,x2)>=0) BIG_XXX_sub(x1,x1,x2);
-            else
-            {
-                BIG_XXX_sub(t,p,x2);
-                BIG_XXX_add(x1,x1,t);
-            }
-            BIG_XXX_norm(x1);
-        }
-        else
-        {
-            BIG_XXX_sub(v,v,u);
-            BIG_XXX_norm(v);
-            if (BIG_XXX_comp(x2,x1)>=0) BIG_XXX_sub(x2,x2,x1);
-            else
-            {
-                BIG_XXX_sub(t,p,x1);
-                BIG_XXX_add(x2,x2,t);
-            }
-            BIG_XXX_norm(x2);
-        }
+        BIG_XXX_sub(w, v, p);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(v, w, (BIG_XXX_comp(v, p) > 0));
+        BIG_XXX_fshl(v, 1);
     }
-    if (BIG_XXX_comp(u,one)==0)
-        BIG_XXX_copy(r,x1);
-    else
-        BIG_XXX_copy(r,x2);
+
+    // CT Kaliski almost inverse
+    // The correction step is included
+    for (k = 0; k < 2 * BIGBITS_XXX; k++)
+    {
+        p1 = !BIG_XXX_iszilch(v);
+
+        pu = BIG_XXX_parity(u);
+        pv = BIG_XXX_parity(v);
+        // Cases 2-4 of Kaliski
+        psw = p1 & ((!pu) | (pv & (BIG_XXX_comp(u,v)>0)));
+        // Cases 3-4 of Kaliski
+        pmv = p1 & pu & pv;
+
+        // Swap necessary for cases 2-4 of Kaliski
+        BIG_XXX_cswap(u, v, psw);
+        BIG_XXX_cswap(r, s, psw);
+
+        // Addition and subtraction for cases 3-4 of Kaliski
+        BIG_XXX_sub(w, v, u);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(v, w, pmv);
+
+        BIG_XXX_add(w, r, s);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(s, w, pmv);
+
+        // Subtraction for correction step
+        BIG_XXX_sub(w, r, p);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(r, w, (!p1) & (BIG_XXX_comp(r, p) > 0));
+
+        // Shifts for all Kaliski cases and correction step
+        BIG_XXX_fshl(r, 1);
+        BIG_XXX_fshr(v, 1);
+
+        // Restore u,v,r,s to the original position
+        BIG_XXX_cswap(u, v, psw);
+        BIG_XXX_cswap(r, s, psw);
+    }
+
+    // Last step of kaliski
+    // Moved after the correction step
+    BIG_XXX_sub(w, r, p);
+    BIG_XXX_norm(w);
+    BIG_XXX_cmove(r, w, (BIG_XXX_comp(r,p)>0));
+
+    BIG_XXX_sub(r, p, r);
+    BIG_XXX_norm(r);
+
+    // Restore inverse from Montgomery form
+    for (k = 0; k < BIGBITS_XXX; k++)
+    {
+        BIG_XXX_add(w, r, p);
+        BIG_XXX_norm(w);
+        BIG_XXX_cmove(r, w, BIG_XXX_parity(r));
+        BIG_XXX_fshr(r, 1);
+    }
 }
 
 /* set x = x mod 2^m */

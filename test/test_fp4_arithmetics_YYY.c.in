@@ -192,6 +192,7 @@ int main(int argc, char** argv)
     if(FP4_YYY_equals(&FP4aux1,&FP4aux2) || !FP4_YYY_isunity(&FP4aux1) || FP4_YYY_isunity(&FP4aux2) || FP4_YYY_iszilch(&FP4aux1) || !FP4_YYY_isreal(&FP4aux1))
     {
         printf("ERROR comparing FP4s or setting FP4 to unity FP\n");
+
         exit(EXIT_FAILURE);
     }
 
@@ -217,6 +218,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4_1))
             {
                 printf("ERROR in generating FP4 from two FP2s, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             // test FP4_from_FP2
@@ -226,6 +228,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4aux2))
             {
                 printf("ERROR in generating FP4 from one FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             // test FP4_from_FP2H
@@ -235,6 +238,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4aux2))
             {
                 printf("ERROR in generating \"complex\" FP4 from one FP2 , line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -288,6 +292,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4add) || !FP4_YYY_equals(&FP4aux2,&FP4add))
             {
                 printf("ERROR adding two FP4, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
             // test associativity (P+Q)+R = P+(Q+R)
@@ -304,6 +309,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4aux2))
             {
                 printf("ERROR testing associativity between three FP4s, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -318,6 +324,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4neg))
             {
                 printf("ERROR in computing negative of FP4, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -333,6 +340,7 @@ int main(int argc, char** argv)
             if(FP4_YYY_equals(&FP4aux1,&FP4sub) == 0)
             {
                 printf("ERROR subtraction between two FP4, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -347,6 +355,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4conj))
             {
                 printf("ERROR computing conjugate of FP4, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -361,6 +370,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4nconj))
             {
                 printf("ERROR computing negative conjugate of FP4, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -381,6 +391,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4pmul))
             {
                 printf("ERROR in multiplication by FP2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -395,6 +406,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4imul))
             {
                 printf("ERROR in multiplication by small integer, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -409,6 +421,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4sqr))
             {
                 printf("ERROR in squaring FP4, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -422,6 +435,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4mul))
             {
                 printf("ERROR in multiplication between two FP4s, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -436,6 +450,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4inv))
             {
                 printf("ERROR in computing inverse of FP4, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -450,6 +465,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4mulj))
             {
                 printf("ERROR in  multiplication of an FP4 instance by sqrt(1+sqrt(-1)), line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -476,6 +492,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4pow))
             {
                 printf("ERROR in raising FP4 by BIG power, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -489,6 +506,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4_xtrA))
             {
                 printf("ERROR in testing the XTR addition function r=w*x-conj(x)*y+z, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -502,6 +520,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4_xtrD))
             {
                 printf("ERROR in testing the XTR doubling function r=x^2-2*conj(x), line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -515,6 +534,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4_xtrpow))
             {
                 printf("ERROR computing FP4 trace of an FP12 raised to the power of a BIG number, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -529,6 +549,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4_xtrpow2))
             {
                 printf("ERROR computing FP4 trace of an FP12 raised to the power of a BIG number (Double), line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }
@@ -541,6 +562,7 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4div2))
             {
                 printf("ERROR dividing FP4 by sqrt(sqrt(1+sqrt(-1)))/2, line %d\n",i);
+                fclose(fp);
                 exit(EXIT_FAILURE);
             }
         }

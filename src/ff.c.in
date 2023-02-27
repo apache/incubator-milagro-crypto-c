@@ -21,6 +21,9 @@ under the License.
 
 #include "ff_WWW.h"
 
+// Constant time comparison of two 32 bit signed integers.
+#define ct_equals(a,b) (int)((((a)^(b))-1)>>31&1)
+
 /* x=y */
 void FF_WWW_copy(BIG_XXX x[],BIG_XXX y[],int n)
 {
@@ -71,9 +74,26 @@ void FF_WWW_zero(BIG_XXX x[],int n)
 int FF_WWW_iszilch(BIG_XXX x[],int n)
 {
     int i;
+    int rc = 1;
+
     for (i=0; i<n; i++)
-        if (!BIG_XXX_iszilch(x[i])) return 0;
-    return 1;
+        rc &= BIG_XXX_iszilch(x[i]);
+
+    return rc;
+}
+
+/* test equals 1 */
+int FF_WWW_isunity(BIG_XXX x[], int n)
+{
+    int i;
+    int rc;
+
+    rc = BIG_XXX_isunity(x[0]);
+
+    for (i=1; i<n; i++)
+        rc &= BIG_XXX_iszilch(x[i]);
+
+    return rc;
 }
 
 /* shift right by BIGBITS-bit words */
@@ -137,13 +157,19 @@ void FF_WWW_init(BIG_XXX x[],sign32 m,int n)
 /* compare x and y - must be normalised */
 int FF_WWW_comp(BIG_XXX x[],BIG_XXX y[],int n)
 {
-    int i,j;
+    int i;
+    int c;
+    int eq = 1;
+    int gt = 0;
+
     for (i=n-1; i>=0; i--)
     {
-        j=BIG_XXX_comp(x[i],y[i]);
-        if (j!=0) return j;
+        c = BIG_XXX_comp(x[i],y[i]);
+        gt += eq * (c * c + c);
+        eq *= 1 - c * c;
     }
-    return 0;
+
+    return gt + eq - 1;
 }
 
 /* recursive add */
@@ -305,6 +331,15 @@ static void FF_WWW_cswap(BIG_XXX a[],BIG_XXX b[],int d,int n)
     return;
 }
 
+/* copy b to a - side channel resistant */
+static void FF_WWW_cmove(BIG_XXX a[],BIG_XXX b[],int d,int n)
+{
+    int i;
+    for (i=0; i<n; i++)
+        BIG_XXX_cmove(a[i],b[i],d);
+    return;
+}
+
 /* z=x*y, t is workspace */
 static void FF_WWW_karmul(BIG_XXX z[],int zp,BIG_XXX x[],int xp,BIG_XXX y[],int yp,BIG_XXX t[],int tp,int n)
 {
@@ -425,6 +460,12 @@ void FF_WWW_mod(BIG_XXX b[],BIG_XXX c[],int n)
 {
     int k=0;
 
+#ifndef C99
+    BIG_XXX r[FFLEN_WWW];
+#else
+    BIG_XXX r[n];
+#endif
+
     FF_WWW_norm(b,n);
     if (FF_WWW_comp(b,c,n)<0)
         return;
@@ -438,11 +479,9 @@ void FF_WWW_mod(BIG_XXX b[],BIG_XXX c[],int n)
     while (k>0)
     {
         FF_WWW_shr(c,n);
-        if (FF_WWW_comp(b,c,n)>=0)
-        {
-            FF_WWW_sub(b,b,c,n);
-            FF_WWW_norm(b,n);
-        }
+        FF_WWW_sub(r,b,c,n);
+        FF_WWW_norm(r,n);
+        FF_WWW_cmove(b,r,FF_WWW_comp(b,c,n)>=0,n);
         k--;
     }
 }
@@ -488,9 +527,11 @@ void FF_WWW_dmod(BIG_XXX r[],BIG_XXX a[],BIG_XXX b[],int n)
 {
     int k;
 #ifndef C99
+    BIG_XXX s[2*FFLEN_WWW];
     BIG_XXX m[2*FFLEN_WWW];
     BIG_XXX x[2*FFLEN_WWW];
 #else
+    BIG_XXX s[2*n];
     BIG_XXX m[2*n];
     BIG_XXX x[2*n];
 #endif
@@ -508,87 +549,98 @@ void FF_WWW_dmod(BIG_XXX r[],BIG_XXX a[],BIG_XXX b[],int n)
     while (k>0)
     {
         FF_WWW_shr(m,2*n);
-
-        if (FF_WWW_comp(x,m,2*n)>=0)
-        {
-            FF_WWW_sub(x,x,m,2*n);
-            FF_WWW_norm(x,2*n);
-        }
-
+        FF_WWW_sub(s,x,m,2*n);
+        FF_WWW_norm(s,2*n);
+        FF_WWW_cmove(x,s,FF_WWW_comp(x,m,2*n)>=0,2*n);
         k--;
     }
     FF_WWW_copy(r,x,n);
     FF_WWW_mod(r,b,n);
 }
 
-/* Set r=1/a mod p. Binary method - a<p on entry */
-
+/* Set r=1/a mod p. Kaliski method - a<p on entry */
 void FF_WWW_invmodp(BIG_XXX r[],BIG_XXX a[],BIG_XXX p[],int n)
 {
 #ifndef C99
-    BIG_XXX u[FFLEN_WWW],v[FFLEN_WWW],x1[FFLEN_WWW],x2[FFLEN_WWW],t[FFLEN_WWW],one[FFLEN_WWW];
+    BIG_XXX u[FFLEN_WWW],v[FFLEN_WWW],s[FFLEN_WWW],w[FFLEN_WWW];
 #else
-    BIG_XXX u[n],v[n],x1[n],x2[n],t[n],one[n];
+    BIG_XXX u[n],v[n],s[n],w[n];
 #endif
-    FF_WWW_copy(u,a,n);
-    FF_WWW_copy(v,p,n);
-    FF_WWW_one(one,n);
-    FF_WWW_copy(x1,one,n);
-    FF_WWW_zero(x2,n);
 
-    // reduce n in here as well!
-    while (FF_WWW_comp(u,one,n)!=0 && FF_WWW_comp(v,one,n)!=0)
+    int k, p1, pu, pv, psw, pmv;
+
+    FF_WWW_copy(u, p, n);
+    FF_WWW_copy(v, a, n);
+    FF_WWW_mod(v, p, n);
+    FF_WWW_zero(r, n);
+    FF_WWW_one(s, n);
+
+    // v = a2^(n*BIGBITS_XXX) mod p
+    for(k = 0; k < n*BIGBITS_XXX; k++)
     {
-        while (FF_WWW_parity(u)==0)
-        {
-            FF_WWW_shr(u,n);
-            if (FF_WWW_parity(x1)!=0)
-            {
-                FF_WWW_add(x1,p,x1,n);
-                FF_WWW_norm(x1,n);
-            }
-            FF_WWW_shr(x1,n);
-        }
-        while (FF_WWW_parity(v)==0)
-        {
-            FF_WWW_shr(v,n);
-            if (FF_WWW_parity(x2)!=0)
-            {
-                FF_WWW_add(x2,p,x2,n);
-                FF_WWW_norm(x2,n);
-            }
-            FF_WWW_shr(x2,n);
-        }
-        if (FF_WWW_comp(u,v,n)>=0)
-        {
-
-            FF_WWW_sub(u,u,v,n);
-            FF_WWW_norm(u,n);
-            if (FF_WWW_comp(x1,x2,n)>=0) FF_WWW_sub(x1,x1,x2,n);
-            else
-            {
-                FF_WWW_sub(t,p,x2,n);
-                FF_WWW_add(x1,x1,t,n);
-            }
-            FF_WWW_norm(x1,n);
-        }
-        else
-        {
-            FF_WWW_sub(v,v,u,n);
-            FF_WWW_norm(v,n);
-            if (FF_WWW_comp(x2,x1,n)>=0) FF_WWW_sub(x2,x2,x1,n);
-            else
-            {
-                FF_WWW_sub(t,p,x1,n);
-                FF_WWW_add(x2,x2,t,n);
-            }
-            FF_WWW_norm(x2,n);
-        }
+        FF_WWW_sub(w, v, p, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(v, w, (FF_WWW_comp(v, p, n) > 0), n);
+        FF_WWW_shl(v, n);
     }
-    if (FF_WWW_comp(u,one,n)==0)
-        FF_WWW_copy(r,x1,n);
-    else
-        FF_WWW_copy(r,x2,n);
+
+    // CT Kaliski almost inverse
+    // The correction step is included
+    for (k = 0; k < 2*n*BIGBITS_XXX; k++)
+    {
+        p1 = !FF_WWW_iszilch(v, n);
+
+        pu = FF_WWW_parity(u);
+        pv = FF_WWW_parity(v);
+        // Cases 2-4 of Kaliski
+        psw = p1 & ((!pu) | (pv & (FF_WWW_comp(u, v, n)>0)));
+        // Cases 3-4 of Kaliski
+        pmv = p1 & pu & pv;
+
+        // Swap for cases 2-4 of Kaliski
+        FF_WWW_cswap(u, v, psw, n);
+        FF_WWW_cswap(r, s, psw, n);
+
+        // Addition and subtraction for cases 3-4 of Kaliski
+        FF_WWW_sub(w, v, u, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(v, w, pmv, n);
+
+        FF_WWW_add(w, r, s, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(s, w, pmv, n);
+
+        // Subtraction for correction step
+        FF_WWW_sub(w, r, p, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(r, w, (!p1) & (FF_WWW_comp(r, p, n)>0), n);
+
+        // Shifts for all Kaliski cases and correction step
+        FF_WWW_shl(r, n);
+        FF_WWW_shr(v, n);
+
+        // Restore u,v,r,s to the original position
+        FF_WWW_cswap(u, v, psw, n);
+        FF_WWW_cswap(r, s, psw, n);
+    }
+
+    // Last step of Kaliski
+    // Moved after the correction step
+    FF_WWW_sub(w, r, p, n);
+    FF_WWW_norm(w, n);
+    FF_WWW_cmove(r, w, (FF_WWW_comp(r, p, n)>0), n);
+
+    FF_WWW_sub(r, p, r, n);
+    FF_WWW_norm(r, n);
+
+    // Restore inverse from Montgomery form
+    for (k = 0; k < n*BIGBITS_XXX; k++)
+    {
+        FF_WWW_add(w, r, p, n);
+        FF_WWW_norm(w, n);
+        FF_WWW_cmove(r, w, FF_WWW_parity(r), n);
+        FF_WWW_shr(r, n);
+    }
 }
 
 /* nesidue mod m */
@@ -766,39 +818,206 @@ static void FF_WWW_modsqr(BIG_XXX z[],BIG_XXX x[],BIG_XXX p[],BIG_XXX ND[],int n
     }
 }
 
-/* r=x^e mod p using side-channel resistant Montgomery Ladder, for large e */
-void FF_WWW_skpow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX p[],int n, int en)
+void FF_WWW_2w_precompute(BIG_XXX *X[], BIG_XXX *T[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen)
 {
-    int i,b;
-#ifndef C99
-    BIG_XXX R0[FFLEN_WWW],R1[FFLEN_WWW],ND[FFLEN_WWW];
-#else
-    BIG_XXX R0[n],R1[n],ND[n];
-#endif
-    FF_WWW_invmod2m(ND,p,n);
+    int i, j, z, b;
 
-    FF_WWW_one(R0,n);
-    FF_WWW_copy(R1,x,n);
-    FF_WWW_nres(R0,p,n);
-    FF_WWW_nres(R1,p,n);
+    FF_WWW_one(T[0], plen);
+    FF_WWW_nres(T[0], p, plen);
 
-    for (i=8*MODBYTES_XXX*en-1; i>=0; i--)
+    for (i = 0; i < k; i++)
     {
-        b=BIG_XXX_bit(e[i/BIGBITS_XXX],i%BIGBITS_XXX);
-        FF_WWW_modmul(r,R0,R1,p,ND,n);
+        j = 1<<(i*w);
 
-        FF_WWW_cswap(R0,R1,b,n);
-        FF_WWW_modsqr(R0,R0,p,ND,n);
+        FF_WWW_copy(T[j], X[i], plen);
+        FF_WWW_nres(T[j], p, plen);
 
-        FF_WWW_copy(R1,r,n);
-        FF_WWW_cswap(R0,R1,b,n);
+        for (j++; j < (1<<((i+1)*w)); j++)
+        {
+            // Perform parity checks on windows.
+            // z==k <==> all exponents are even
+            for (z = 0; (z < k) && !((j >> (w*z)) & 1); z++);
+
+            if (z<k)
+            {
+                // Find the LSB of j. Set b as 2^LSB
+                for (b = 1; !(j & b); b<<=1);
+
+                FF_WWW_modmul(T[j], T[j-b], T[b], p, ND, plen);
+            }
+            else
+            {
+                FF_WWW_modsqr(T[j], T[j>>1], p, ND, plen);
+            }
+        }
     }
-    FF_WWW_copy(r,R0,n);
-    FF_WWW_redc(r,p,ND,n);
+}
+
+void FF_WWW_ct_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen, int elen)
+{
+    int i, j;
+    sign32 index, e;
+
+#ifndef C99
+    BIG_XXX ws[FFLEN_WWW];
+#else
+    BIG_XXX ws[plen];
+#endif
+
+    FF_WWW_one(r, plen);
+    FF_WWW_nres(r, p, plen);
+
+    for (i=8*MODBYTES_XXX*elen-w; i>=0; i-=w)
+    {
+        // Square
+        for (j=0; j<w; j++)
+        {
+            FF_WWW_modsqr(r,r,p,ND,plen);
+        }
+
+        // Choose element from precomputed table and multiply
+        e = 0;
+        for (j=k-1; j>=0; j--)
+        {
+            e <<= w;
+            // This is assuming the window divides the BIGBITS
+            e |= BIG_XXX_bits(E[j][i/BIGBITS_XXX],i%BIGBITS_XXX,w);
+        }
+
+        for (index = 0; index < 1<<(w*k); index++)
+        {
+            FF_WWW_cmove(ws, T[index], ct_equals(index,e), plen);
+        }
+
+        FF_WWW_modmul(r,r,ws,p,ND,plen);
+    }
+
+    FF_WWW_redc(r,p,ND,plen);
+}
+
+void FF_WWW_nt_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen, int elen)
+{
+    int i, j, e;
+
+    FF_WWW_one(r, plen);
+    FF_WWW_nres(r, p, plen);
+
+    for (i=8*MODBYTES_XXX*elen-w; i>=0; i-=w)
+    {
+        // Square
+        for (j=0; j<w; j++)
+        {
+            FF_WWW_modsqr(r,r,p,ND,plen);
+        }
+
+        // Choose element from precomputed table and multiply
+        e = 0;
+        for (j=k-1; j>=0; j--)
+        {
+            e <<= w;
+            // This is assuming the window divides the BIGBITS
+            e |= BIG_XXX_bits(E[j][i/BIGBITS_XXX],i%BIGBITS_XXX,w);
+        }
+
+        if (e != 0)
+        {
+            FF_WWW_modmul(r,r,T[e],p,ND,plen);
+        }
+    }
+
+    FF_WWW_redc(r,p,ND,plen);
+}
+
+
+void FF_WWW_bi_precompute(BIG_XXX *X[], BIG_XXX *T[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen)
+{
+    int i, j, window;
+
+#ifndef C99
+    BIG_XXX gsqr[FFLEN_WWW];
+#else
+    BIG_XXX gsqr[plen];
+#endif
+
+    window = 1<<(w-1);
+    j = 0;
+
+    for (i=0; i<k; i++)
+    {
+        FF_WWW_copy(T[j], X[i], plen);
+        FF_WWW_nres(T[j], p, plen);
+
+        FF_WWW_modsqr(gsqr, T[j], p, ND, plen);
+
+        for(j++; j<((i+1) * window); j++)
+        {
+            FF_WWW_modmul(T[j], T[j - 1], gsqr, p, ND, plen);
+        }
+    }
+}
+
+void FF_WWW_bi_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen, int elen)
+{
+    int i, j, l, pos;
+
+#ifndef C99
+    int w_handle[4];
+    int e[4];
+#else
+    int w_handle[k];
+    int e[k];
+#endif
+
+    FF_WWW_one(r, plen);
+    FF_WWW_nres(r, p, plen);
+
+    for (i=0; i<k; i++)
+    {
+        w_handle[i] = -1;
+    }
+
+    for (i=8*MODBYTES_XXX*elen-1; i>=0; i--)
+    {
+        FF_WWW_modsqr(r,r,p,ND,plen);
+
+        for (j=0; j<k; j++)
+        {
+            // Prepare table entry and position for multiplication if none
+            // is selected
+            if (w_handle[j] < 0 && (BIG_XXX_bit(E[j][i/BIGBITS_XXX], i%BIGBITS_XXX) == 1))
+            {
+                // Skip position until the exponent is odd
+                for(pos = i - w + 1; BIG_XXX_bit(E[j][pos/BIGBITS_XXX], pos%BIGBITS_XXX) == 0; pos++);
+
+                // Save exponent for multiplication step
+                e[j] = 0;
+                for(l=i; l>pos; l--)
+                {
+                    e[j] <<= 1;
+                    e[j] |= BIG_XXX_bit(E[j][l/BIGBITS_XXX], l%BIGBITS_XXX);
+                }
+
+                // Set position for multiplication step
+                w_handle[j] = pos;
+            }
+
+            // Multiplication step
+            if (w_handle[j] == i)
+            {
+                FF_WWW_modmul(r, r, T[j * (1<<(w-1)) + e[j]], p, ND, plen);
+
+                // Multiplication done. Reset multiplication position
+                // to unselected
+                w_handle[j] = -1;
+            }
+        }
+    }
+
+    FF_WWW_redc(r, p, ND, plen);
 }
 
 /* r=x^e mod p using side-channel resistant Montgomery Ladder, for short e */
-void FF_WWW_skspow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX p[],int n)
+void FF_WWW_ct_pow_big(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX p[],int n)
 {
     int i,b;
 #ifndef C99
@@ -824,49 +1043,84 @@ void FF_WWW_skspow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX p[],int n)
     FF_WWW_redc(r,p,ND,n);
 }
 
-/* r=x^e*y^f mod p - side channel resistant */
-void FF_WWW_skpow2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX p[], int n, int en) {
-    int i,eb,fb;
+/* r=x^e mod p using side-channel resistant implementation */
+void FF_WWW_ct_pow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX p[],int n, int en)
+{
 #ifndef C99
-    BIG_XXX xn[FFLEN_WWW],yn[FFLEN_WWW],xy[FFLEN_WWW],w[FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
 #else
-    BIG_XXX xn[n],yn[n],xy[n],w[n],ND[n];
+    BIG_XXX T_mem[16][n],ND[n];
 #endif
+
+    BIG_XXX *T[] =
+    {
+        T_mem[0],  T_mem[1],  T_mem[2],  T_mem[3],
+        T_mem[4],  T_mem[5],  T_mem[6],  T_mem[7],
+        T_mem[8],  T_mem[9],  T_mem[10], T_mem[11],
+        T_mem[12], T_mem[13], T_mem[14], T_mem[15],
+    };
+
+    BIG_XXX *X[] = {x};
+    BIG_XXX *E[] = {e};
 
     FF_WWW_invmod2m(ND,p,n);
 
-    FF_WWW_copy(xn,x,n);
-    FF_WWW_copy(yn,y,n);
-    FF_WWW_nres(xn,p,n);
-    FF_WWW_nres(yn,p,n);
-    FF_WWW_modmul(xy,xn,yn,p,ND,n);
-    FF_WWW_one(w,n);
-    FF_WWW_nres(w,p,n);
-    FF_WWW_one(r,n);
-    FF_WWW_nres(r,p,n);
+    FF_WWW_2w_precompute(X, T, 1, 4, p, ND, n);
+    FF_WWW_ct_2w_pow(r, T, E, 1, 4, p, ND, n, en);
+}
 
-    for (i=8*MODBYTES_XXX*en-1; i>=0; i--)
+/* r=x^e*y^f mod p - side channel resistant */
+void FF_WWW_ct_pow_2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX p[], int n, int en)
+{
+#ifndef C99
+    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
+#else
+    BIG_XXX T_mem[16][n],ND[n];
+#endif
+
+    BIG_XXX *T[] =
     {
-        eb=BIG_XXX_bit(e[i/BIGBITS_XXX],i%BIGBITS_XXX);
-        fb=BIG_XXX_bit(f[i/BIGBITS_XXX],i%BIGBITS_XXX);
+        T_mem[0],  T_mem[1],  T_mem[2],  T_mem[3],
+        T_mem[4],  T_mem[5],  T_mem[6],  T_mem[7],
+        T_mem[8],  T_mem[9],  T_mem[10], T_mem[11],
+        T_mem[12], T_mem[13], T_mem[14], T_mem[15],
+    };
 
-        FF_WWW_cswap(w, xn, eb & (eb ^ fb), n);
-        FF_WWW_cswap(w, yn, fb & (eb ^ fb), n);
-        FF_WWW_cswap(w, xy, eb & fb, n);
+    BIG_XXX *X[] = {x, y};
+    BIG_XXX *E[] = {e, f};
 
-        FF_WWW_modsqr(r,r,p,ND,n);
-        FF_WWW_modmul(r,w,r,p,ND,n);
+    FF_WWW_invmod2m(ND,p,n);
 
-        FF_WWW_cswap(w, xn, eb & (eb ^ fb), n);
-        FF_WWW_cswap(w, yn, fb & (eb ^ fb), n);
-        FF_WWW_cswap(w, xy, eb & fb, n);
-    }
+    FF_WWW_2w_precompute(X, T, 2, 2, p, ND, n);
+    FF_WWW_ct_2w_pow(r, T, E, 2, 2, p, ND, n, en);
+}
 
-    FF_WWW_redc(r,p,ND,n);
+/* r=x^e*y^f*z^g mod p - side channel resistant */
+void FF_WWW_ct_pow_3(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX z[], BIG_XXX g[], BIG_XXX p[], int n, int en)
+{
+#ifndef C99
+    BIG_XXX T_mem[8][FFLEN_WWW],ND[FFLEN_WWW];
+#else
+    BIG_XXX T_mem[8][n],ND[n];
+#endif
+
+    BIG_XXX *T[] =
+    {
+        T_mem[0], T_mem[1], T_mem[2], T_mem[3],
+        T_mem[4], T_mem[5], T_mem[6], T_mem[7],
+    };
+
+    BIG_XXX *X[] = {x, y, z};
+    BIG_XXX *E[] = {e, f, g};
+
+    FF_WWW_invmod2m(ND,p,n);
+
+    FF_WWW_2w_precompute(X, T, 3, 1, p, ND, n);
+    FF_WWW_ct_2w_pow(r, T, E, 3, 1, p, ND, n, en);
 }
 
 /* raise to an integer power - right-to-left method */
-void FF_WWW_power(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
+void FF_WWW_nt_pow_int(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
 {
     int f=1;
 #ifndef C99
@@ -900,66 +1154,102 @@ void FF_WWW_power(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
 }
 
 /* r=x^e mod p, faster but not side channel resistant */
-void FF_WWW_pow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX p[],int n)
+void FF_WWW_nt_pow(BIG_XXX r[], BIG_XXX x[], BIG_XXX e[], BIG_XXX p[], int n, int en)
 {
-    int i,b;
 #ifndef C99
-    BIG_XXX w[FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
 #else
-    BIG_XXX w[n],ND[n];
+    BIG_XXX T_mem[16][n],ND[n];
 #endif
+
+    BIG_XXX *T[] =
+    {
+        T_mem[0],  T_mem[1],  T_mem[2],  T_mem[3],
+        T_mem[4],  T_mem[5],  T_mem[6],  T_mem[7],
+        T_mem[8],  T_mem[9],  T_mem[10], T_mem[11],
+        T_mem[12], T_mem[13], T_mem[14], T_mem[15],
+    };
+
+    BIG_XXX *X[] = {x};
+    BIG_XXX *E[] = {e};
+
     FF_WWW_invmod2m(ND,p,n);
 
-    FF_WWW_copy(w,x,n);
-    FF_WWW_one(r,n);
-    FF_WWW_nres(r,p,n);
-    FF_WWW_nres(w,p,n);
-
-    for (i=8*MODBYTES_XXX*n-1; i>=0; i--)
-    {
-        FF_WWW_modsqr(r,r,p,ND,n);
-        b=BIG_XXX_bit(e[i/BIGBITS_XXX],i%BIGBITS_XXX);
-        if (b==1) FF_WWW_modmul(r,r,w,p,ND,n);
-    }
-    FF_WWW_redc(r,p,ND,n);
+    FF_WWW_bi_precompute(X, T, 1, 5, p, ND, n);
+    FF_WWW_bi_pow(r, T, E, 1, 5, p, ND, n, en);
 }
 
-/* double exponentiation r=x^e.y^f mod p */
-void FF_WWW_pow2(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX y[],BIG_XXX f,BIG_XXX p[],int n)
+void FF_WWW_nt_pow_2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *p,int n, int en)
 {
-    int i,eb,fb;
 #ifndef C99
-    BIG_XXX xn[FFLEN_WWW],yn[FFLEN_WWW],xy[FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
 #else
-    BIG_XXX xn[n],yn[n],xy[n],ND[n];
+    BIG_XXX T_mem[16][n],ND[n];
 #endif
+
+    BIG_XXX *T[] =
+    {
+        T_mem[0],  T_mem[1],  T_mem[2],  T_mem[3],
+        T_mem[4],  T_mem[5],  T_mem[6],  T_mem[7],
+        T_mem[8],  T_mem[9],  T_mem[10], T_mem[11],
+        T_mem[12], T_mem[13], T_mem[14], T_mem[15],
+    };
+
+    BIG_XXX *X[] = {x,y};
+    BIG_XXX *E[] = {e,f};
 
     FF_WWW_invmod2m(ND,p,n);
 
-    FF_WWW_copy(xn,x,n);
-    FF_WWW_copy(yn,y,n);
-    FF_WWW_nres(xn,p,n);
-    FF_WWW_nres(yn,p,n);
-    FF_WWW_modmul(xy,xn,yn,p,ND,n);
-    FF_WWW_one(r,n);
-    FF_WWW_nres(r,p,n);
+    FF_WWW_bi_precompute(X, T, 2, 4, p, ND, n);
+    FF_WWW_bi_pow(r, T, E, 2, 4, p, ND, n, en);
+}
 
-    for (i=8*MODBYTES_XXX-1; i>=0; i--)
+void FF_WWW_nt_pow_3(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *p, int n, int en)
+{
+#ifndef C99
+    BIG_XXX T_mem[8][FFLEN_WWW],ND[FFLEN_WWW];
+#else
+    BIG_XXX T_mem[8][n],ND[n];
+#endif
+
+    BIG_XXX *T[] =
     {
-        eb=BIG_XXX_bit(e,i);
-        fb=BIG_XXX_bit(f,i);
-        FF_WWW_modsqr(r,r,p,ND,n);
-        if (eb==1)
-        {
-            if (fb==1) FF_WWW_modmul(r,r,xy,p,ND,n);
-            else FF_WWW_modmul(r,r,xn,p,ND,n);
-        }
-        else
-        {
-            if (fb==1) FF_WWW_modmul(r,r,yn,p,ND,n);
-        }
-    }
-    FF_WWW_redc(r,p,ND,n);
+        T_mem[0],  T_mem[1],  T_mem[2],  T_mem[3],
+        T_mem[4],  T_mem[5],  T_mem[6],  T_mem[7],
+    };
+
+    BIG_XXX *X[] = {x,y,z};
+    BIG_XXX *E[] = {e,f,g};
+
+    FF_WWW_invmod2m(ND,p,n);
+
+    FF_WWW_2w_precompute(X, T, 3, 1, p, ND, n);
+    FF_WWW_nt_2w_pow(r, T, E, 3, 1, p, ND, n, en);
+}
+
+void FF_WWW_nt_pow_4(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *w, BIG_XXX *h, BIG_XXX *p, int n, int en)
+{
+#ifndef C99
+    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
+#else
+    BIG_XXX T_mem[16][n],ND[n];
+#endif
+
+    BIG_XXX *T[] =
+    {
+        T_mem[0],  T_mem[1],  T_mem[2],  T_mem[3],
+        T_mem[4],  T_mem[5],  T_mem[6],  T_mem[7],
+        T_mem[8],  T_mem[9],  T_mem[10], T_mem[11],
+        T_mem[12], T_mem[13], T_mem[14], T_mem[15],
+    };
+
+    BIG_XXX *X[] = {x,y,z,w};
+    BIG_XXX *E[] = {e,f,g,h};
+
+    FF_WWW_invmod2m(ND,p,n);
+
+    FF_WWW_2w_precompute(X, T, 4, 1, p, ND, n);
+    FF_WWW_nt_2w_pow(r, T, E, 4, 1, p, ND, n, en);
 }
 
 static sign32 igcd(sign32 x,sign32 y)
@@ -1008,9 +1298,9 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 {
     int i,j,loop,s=0;
 #ifndef C99
-    BIG_XXX d[FFLEN_WWW],x[FFLEN_WWW],unity[FFLEN_WWW],nm1[FFLEN_WWW];
+    BIG_XXX d[FFLEN_WWW],x[FFLEN_WWW],nm1[FFLEN_WWW];
 #else
-    BIG_XXX d[n],x[n],unity[n],nm1[n];
+    BIG_XXX d[n],x[n],nm1[n];
 #endif
     sign32 sf=4849845;/* 3*5*.. *19 */
 
@@ -1018,8 +1308,8 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 
     if (FF_WWW_cfactor(p,sf,n)) return 0;
 
-    FF_WWW_one(unity,n);
-    FF_WWW_sub(nm1,p,unity,n);
+    FF_WWW_copy(nm1,p,n);
+    FF_WWW_dec(nm1,1,n);
     FF_WWW_norm(nm1,n);
     FF_WWW_copy(d,nm1,n);
     while (FF_WWW_parity(d)==0)
@@ -1032,13 +1322,13 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
     for (i=0; i<10; i++)
     {
         FF_WWW_randomnum(x,p,rng,n);
-        FF_WWW_pow(x,x,d,p,n);
-        if (FF_WWW_comp(x,unity,n)==0 || FF_WWW_comp(x,nm1,n)==0) continue;
+        FF_WWW_nt_pow(x,x,d,p,n,n);
+        if (FF_WWW_isunity(x,n) || FF_WWW_comp(x,nm1,n)==0) continue;
         loop=0;
         for (j=1; j<s; j++)
         {
-            FF_WWW_power(x,x,2,p,n);
-            if (FF_WWW_comp(x,unity,n)==0) return 0;
+            FF_WWW_nt_pow_int(x,x,2,p,n);
+            if (FF_WWW_isunity(x,n)) return 0;
             if (FF_WWW_comp(x,nm1,n)==0 )
             {
                 loop=1;
@@ -1053,18 +1343,15 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 }
 
 /* Chinese Remainder Theorem to reconstruct results mod pq*/
-void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *q, int n)
+void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *invp, BIG_XXX *pq, int n)
 {
 #ifndef C99
-    BIG_XXX pq[FFLEN_WWW], invp[HFLEN_WWW], c[FFLEN_WWW], a[FFLEN_WWW], b[2*FFLEN_WWW];
+    BIG_XXX c[FFLEN_WWW], a[FFLEN_WWW], b[2*FFLEN_WWW];
 #else
-    BIG_XXX pq[2*n], invp[n], c[2*n], a[2*n], b[4*n];
+    BIG_XXX c[2*n], a[2*n], b[4*n];
 #endif
 
-    FF_WWW_mul(pq, p, q, n);
-
     // c = p * (p^-1 mod q)
-    FF_WWW_invmodp(invp, p, q, n);
     FF_WWW_mul(c, p, invp, n);
 
     // a = (rq - rp) mod pq
