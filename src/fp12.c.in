@@ -731,7 +731,9 @@ void FP12_YYY_pow(FP12_YYY *r,FP12_YYY *a,BIG_XXX b)
 void FP12_YYY_pow4(FP12_YYY *p,FP12_YYY *q,BIG_XXX u[4])
 {
     int i,j,k,nb,pb,bt;
-    FP12_YYY g[8],r;
+    // Initialise r to 0 to provide a (hopefully) safe default,
+    // for when it gets read from before being written to otherwise.
+    FP12_YYY g[8],r={0};
     BIG_XXX t[4],mt;
     sign8 w[NLEN_XXX*BASEBITS_XXX+1];
     sign8 s[NLEN_XXX*BASEBITS_XXX+1];
@@ -940,4 +942,3 @@ void FP12_YYY_cmove(FP12_YYY *f,FP12_YYY *g,int d)
     d=~(d-1);
     f->type^=(f->type^g->type)&d;
 }
-

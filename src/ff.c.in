@@ -859,7 +859,9 @@ void FF_WWW_ct_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG
     sign32 index, e;
 
 #ifndef C99
-    BIG_XXX ws[FFLEN_WWW];
+    // Initialise to 0 to provide a (hopefully) safe default,
+    // for when it gets read from before being written to otherwise.
+    BIG_XXX ws[FFLEN_WWW]={0};
 #else
     BIG_XXX ws[plen];
 #endif

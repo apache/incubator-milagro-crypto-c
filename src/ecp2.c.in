@@ -539,7 +539,9 @@ void ECP2_ZZZ_frob(ECP2_ZZZ *P,FP2_YYY *X)
 void ECP2_ZZZ_mul4(ECP2_ZZZ *P,ECP2_ZZZ Q[4],BIG_XXX u[4])
 {
     int i,j,k,nb,pb,bt;
-    ECP2_ZZZ T[8],W;
+    // We set W to 0 to provide a (hopefully) safe default,
+    // for when it gets read from before being written to otherwise.
+    ECP2_ZZZ T[8],W={0};
     BIG_XXX t[4],mt;
     sign8 w[NLEN_XXX*BASEBITS_XXX+1];
     sign8 s[NLEN_XXX*BASEBITS_XXX+1];
