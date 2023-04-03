@@ -19,14 +19,6 @@
 
 # AMCL - *Apache Milagro Crypto Library*
 
-[![Master Branch](https://img.shields.io/badge/-master:-gray.svg)](https://github.com/apache/incubator-milagro-crypto-c/tree/master)
-[![Master Build Status](https://travis-ci.org/apache/incubator-milagro-crypto-c.svg?branch=master)](https://travis-ci.org/apache/incubator-milagro-crypto-c)
-[![Master Coverage Status](https://coveralls.io/repos/github/apache/incubator-milagro-crypto-c/badge.svg?branch=master)](https://coveralls.io/github/apache/incubator-milagro-crypto-c?branch=master)
-
-[![Develop Branch](https://img.shields.io/badge/-develop:-gray.svg)](https://github.com/apache/incubator-milagro-crypto-c/tree/develop)
-[![Develop Build Status](https://travis-ci.org/apache/incubator-milagro-crypto-c.svg?branch=develop)](https://travis-ci.org/apache/incubator-milagro-crypto-c)
-[![Develop Coverage Status](https://coveralls.io/repos/github/apache/incubator-milagro-crypto-c/badge.svg?branch=develop)](https://coveralls.io/github/apache/incubator-milagro-crypto-c?branch=develop)
-
 * **category**:    Library
 * **copyright**:   2019 The Apache Software Foundation
 * **license**:     ASL 2.0 ([Apache License Version 2.0, January 2004](http://www.apache.org/licenses/LICENSE-2.0))
@@ -308,7 +300,7 @@ To format the code (please use this command before submitting any pull request):
 ```
 make format
 ```
-### Contributors 
+### Contributors
 
 The following people have contributed to milagro-crypto-c
 
@@ -322,7 +314,7 @@ Please add yourself here if you make or have made a contribution.
 ### Making a Contribution
 
 1.  [Check for open issues](https://github.com/apache/incubator-milagro-crypto-c/issues) or start a discussion around a feature idea or a bug by sending a mail to dev@milagro.incubator.apache.org
-2.  Fork the repository to start making your changes. Please use the "development" branch as a basis.
+2.  Fork the repository to start making your changes. Please use the master branch as a basis.
 3.  Write a test which shows that the bug was fixed or that the feature works as expected.
 4.  Make a pull request with a reference to the issue
 
