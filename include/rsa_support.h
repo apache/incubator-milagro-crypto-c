@@ -38,7 +38,7 @@
 	@param W is the output encoding, ready for RSA signature
 	@return 1 if OK, else 0
  */
-extern int PKCS15(int h,octet *M,octet *W);
+extern int PKCS15(int h,const octet *M,octet *W);
 /**	@brief OAEP padding of a message prior to RSA encryption
  *
 	@param h is the hash type
@@ -48,7 +48,7 @@ extern int PKCS15(int h,octet *M,octet *W);
 	@param F is the output encoding, ready for RSA encryption
 	@return 0 if OK, else 1
  */
-extern int	OAEP_ENCODE(int h,octet *M,csprng *R,octet *P,octet *F);
+extern int	OAEP_ENCODE(int h,const octet *M,csprng *R,const octet *P,octet *F);
 /**	@brief OAEP unpadding of a message after RSA decryption
  *
 	Unpadding is done in-place
@@ -57,6 +57,6 @@ extern int	OAEP_ENCODE(int h,octet *M,csprng *R,octet *P,octet *F);
 	@param F is input padded message, unpadded on output
 	@return 0 if OK, else 1
  */
-extern int  OAEP_DECODE(int h,octet *P,octet *F);
+extern int  OAEP_DECODE(int h,const octet *P,octet *F);
 
 #endif

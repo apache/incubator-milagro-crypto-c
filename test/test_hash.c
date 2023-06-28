@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     int i=0;
     FILE * fp = NULL;
     char line[LINE_LEN];
-    char * linePtr = NULL;
+    const char * linePtr = NULL;
     int l1=0;
     char * Msg = NULL;
     int MsgLen = 0;
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
     bool readLine = false;
 
     int lineNo=0;
-    while ( (fgets(line, LINE_LEN, fp) != NULL))
+    while (fgets(line, LINE_LEN, fp) != NULL)
     {
         readLine = true;
         if (!strncmp(line, MsgStr, strlen(MsgStr)))
@@ -102,7 +102,10 @@ int main(int argc, char** argv)
             linePtr = line + strlen(MsgStr);
 
             // Allocate memory
-            l1 = strlen(linePtr)-1;
+            free(Msg);
+            Msg = NULL;
+
+            l1 = (int)strlen(linePtr)-1;
             MsgLen = l1/2;
             Msg = (char*) malloc(MsgLen);
             if (Msg==NULL)
@@ -121,9 +124,14 @@ int main(int argc, char** argv)
             linePtr = line + strlen(MDStr);
 
             // Allocate memory
-            l1 = strlen(linePtr);
+            l1 = (int)strlen(linePtr);
 
             // Allocate memory for digest
+            free(MD1);
+            MD1 = NULL;
+            free(MD);
+            MD = NULL;
+
             MDLen = l1/2;
             MD = (char*) malloc(MDLen);
             if (MD==NULL)
@@ -164,15 +172,15 @@ int main(int argc, char** argv)
                 printf("TEST HASH FAILED COMPARE MD LINE %d\n",lineNo);
                 exit(EXIT_FAILURE);
             }
-            free(Msg);
-            Msg = NULL;
-            free(MD1);
-            MD1 = NULL;
-            free(MD);
-            MD = NULL;
         }
         lineNo++;
     }
+    free(Msg);
+    Msg = NULL;
+    free(MD1);
+    MD1 = NULL;
+    free(MD);
+    MD = NULL;
     fclose(fp);
     if (!readLine)
     {

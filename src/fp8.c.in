@@ -173,14 +173,14 @@ void FP8_YYY_qmul(FP8_YYY *w,FP8_YYY *x,FP2_YYY *s)
 }
 
 /* Set w=s*x, where s is FP2 */
-void FP8_YYY_tmul(FP8_YYY *w,FP8_YYY *x,FP_YYY *s)
+void FP8_YYY_tmul(FP8_YYY *w,const FP8_YYY *x,FP_YYY *s)
 {
     FP4_YYY_qmul(&(w->a),&(x->a),s);
     FP4_YYY_qmul(&(w->b),&(x->b),s);
 }
 
 /* Set w=s*x, where s is int */
-void FP8_YYY_imul(FP8_YYY *w,FP8_YYY *x,int s)
+void FP8_YYY_imul(FP8_YYY *w,const FP8_YYY *x,int s)
 {
     FP4_YYY_imul(&(w->a),&(x->a),s);
     FP4_YYY_imul(&(w->b),&(x->b),s);

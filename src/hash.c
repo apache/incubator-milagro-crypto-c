@@ -20,8 +20,8 @@ under the License.
 /*
  * Implementation of the Secure Hashing Algorithm (SHA-256/384/512 and SHA3)
  *
- * Generates a message digest. It should be impossible to come
- * come up with two messages that hash to the same value ("collision free").
+ * Generates a message digest. It should be impossible to come up
+ * with two messages that hash to the same value ("collision free").
  *
  * For use with byte-oriented messages only. Could/Should be speeded
  * up by unwinding loops in HASH_transform(), and assembly patches.
@@ -77,7 +77,16 @@ static const unsign32 K_256[64]=
 static void HASH256_transform(hash256 *sh)
 {
     /* basic transformation step */
-    unsign32 a,b,c,d,e,f,g,h,t1,t2;
+    unsign32 a;
+    unsign32 b;
+    unsign32 c;
+    unsign32 d;
+    unsign32 e;
+    unsign32 f;
+    unsign32 g;
+    unsign32 h;
+    unsign32 t1;
+    unsign32 t2;
     int j;
     for (j=16; j<64; j++)
         sh->w[j]=theta1_256(sh->w[j-2])+sh->w[j-7]+theta0_256(sh->w[j-15])+sh->w[j-16];
@@ -120,8 +129,7 @@ static void HASH256_transform(hash256 *sh)
 void HASH256_init(hash256 *sh)
 {
     /* re-initialise */
-    int i;
-    for (i=0; i<64; i++) sh->w[i]=0L;
+    for (int i=0; i<64; i++) sh->w[i]=0L;
     sh->length[0]=sh->length[1]=0L;
     sh->h[0]=H0_256;
     sh->h[1]=H1_256;
@@ -159,8 +167,8 @@ void HASH256_process(hash256 *sh,int byt)
 void HASH256_hash(hash256 *sh,char *digest)
 {
     /* pad message and finish - supply digest */
-    int i;
-    unsign32 len0,len1;
+    unsign32 len0;
+    unsign32 len1;
     len0=sh->length[0];
     len1=sh->length[1];
     HASH256_process(sh,PAD);
@@ -168,12 +176,21 @@ void HASH256_hash(hash256 *sh,char *digest)
     sh->w[14]=len1;
     sh->w[15]=len0;
     HASH256_transform(sh);
-    for (i=0; i<sh->hlen; i++)
+    for (int i=0; i<sh->hlen; i++)
     {
         /* convert to bytes */
         digest[i]=(char)((sh->h[i/4]>>(8*(3-i%4))) & 0xffL);
     }
     HASH256_init(sh);
+}
+
+void HASH256_oneshot(char *digest, const char *in, int inlen)
+{
+    hash256 ctx;
+    HASH256_init(&ctx);
+    for(int i = 0; i < inlen; i++)
+        HASH256_process(&ctx, in[i]);
+    HASH256_hash(&ctx, digest);
 }
 
 
@@ -225,9 +242,17 @@ static const unsign64 K_512[80]=
 static void HASH512_transform(hash512 *sh)
 {
     /* basic transformation step */
-    unsign64 a,b,c,d,e,f,g,h,t1,t2;
-    int j;
-    for (j=16; j<80; j++)
+    unsign64 a;
+    unsign64 b;
+    unsign64 c;
+    unsign64 d;
+    unsign64 e;
+    unsign64 f;
+    unsign64 g;
+    unsign64 h;
+    unsign64 t1;
+    unsign64 t2;
+    for (int j=16; j<80; j++)
         sh->w[j]=theta1_512(sh->w[j-2])+sh->w[j-7]+theta0_512(sh->w[j-15])+sh->w[j-16];
 
     a=sh->h[0];
@@ -239,7 +264,7 @@ static void HASH512_transform(hash512 *sh)
     g=sh->h[6];
     h=sh->h[7];
 
-    for (j=0; j<80; j++)
+    for (int j=0; j<80; j++)
     {
         /* 80 times - mush it up */
         t1=h+Sig1_512(e)+Ch(e,f,g)+K_512[j]+sh->w[j];
@@ -266,8 +291,7 @@ static void HASH512_transform(hash512 *sh)
 void HASH384_init(hash384 *sh)
 {
     /* re-initialise */
-    int i;
-    for (i=0; i<80; i++) sh->w[i]=0;
+    for (int i=0; i<80; i++) sh->w[i]=0;
     sh->length[0]=sh->length[1]=0;
     sh->h[0]=H8_512;
     sh->h[1]=H9_512;
@@ -297,9 +321,7 @@ void HASH384_hash(hash384 *sh,char *hash)
 void HASH512_init(hash512 *sh)
 {
     /* re-initialise */
-    int i;
-
-    for (i=0; i<80; i++) sh->w[i]=0;
+    for (int i=0; i<80; i++) sh->w[i]=0;
     sh->length[0]=sh->length[1]=0;
     sh->h[0]=H0_512;
     sh->h[1]=H1_512;
@@ -335,8 +357,8 @@ void HASH512_process(hash512 *sh,int byt)
 void HASH512_hash(hash512 *sh,char *hash)
 {
     /* pad message and finish - supply digest */
-    int i;
-    unsign64 len0,len1;
+    unsign64 len0;
+    unsign64 len1;
     len0=sh->length[0];
     len1=sh->length[1];
     HASH512_process(sh,PAD);
@@ -344,7 +366,7 @@ void HASH512_hash(hash512 *sh,char *hash)
     sh->w[14]=len1;
     sh->w[15]=len0;
     HASH512_transform(sh);
-    for (i=0; i<sh->hlen; i++)
+    for (int i=0; i<sh->hlen; i++)
     {
         /* convert to bytes */
         hash[i]=(char)((sh->h[i/8]>>(8*(7-i%8))) & 0xffL);
@@ -375,10 +397,11 @@ static const unsign64 RC[24]=
 
 static void SHA3_transform(sha3 *sh)
 {
-    int i,j,k;
-    unsign64 C[5],D[5],B[5][5];
+    unsign64 C[5];
+    unsign64 D[5];
+    unsign64 B[5][5];
 
-    for (k=0; k<SHA3_ROUNDS; k++)
+    for (int k=0; k<SHA3_ROUNDS; k++)
     {
         C[0]=sh->S[0][0]^sh->S[0][1]^sh->S[0][2]^sh->S[0][3]^sh->S[0][4];
         C[1]=sh->S[1][0]^sh->S[1][1]^sh->S[1][2]^sh->S[1][3]^sh->S[1][4];
@@ -392,8 +415,8 @@ static void SHA3_transform(sha3 *sh)
         D[3]=C[2]^rotl(C[4],1);
         D[4]=C[3]^rotl(C[0],1);
 
-        for (i=0; i<5; i++)
-            for (j=0; j<5; j++)
+        for (int i=0; i<5; i++)
+            for (int j=0; j<5; j++)
                 sh->S[i][j]^=D[i];  /* let the compiler unroll it! */
 
         B[0][0]=sh->S[0][0];
@@ -426,8 +449,8 @@ static void SHA3_transform(sha3 *sh)
         B[3][2]=rotl(sh->S[4][3],8);
         B[4][0]=rotl(sh->S[4][4],14);
 
-        for (i=0; i<5; i++)
-            for (j=0; j<5; j++)
+        for (int i=0; i<5; i++)
+            for (int j=0; j<5; j++)
                 sh->S[i][j]=B[i][j]^(~B[(i+1)%5][j]&B[(i+2)%5][j]);
 
         sh->S[0][0]^=RC[k];
@@ -439,9 +462,8 @@ static void SHA3_transform(sha3 *sh)
 
 void SHA3_init(sha3 *sh,int olen)
 {
-    int i,j;
-    for (i=0; i<5; i++)
-        for (j=0; j<5; j++)
+    for (int i=0; i<5; i++)
+        for (int j=0; j<5; j++)
             sh->S[i][j]=0;    /* 5x5x8 bytes = 200 bytes of state */
     sh->length=0;
     sh->len=olen;
@@ -454,7 +476,9 @@ void SHA3_init(sha3 *sh,int olen)
 void SHA3_process(sha3 *sh,int byt)
 {
     int cnt=(int)(sh->length%sh->rate);
-    int i,j,b=cnt%8;
+    int i;
+    int j;
+    int b=cnt%8;
     cnt/=8;
     i=cnt%5;
     j=cnt/5;  /* process by columns! */
@@ -466,18 +490,19 @@ void SHA3_process(sha3 *sh,int byt)
 /* squeeze the sponge */
 void SHA3_squeeze(sha3 *sh,char *buff,int len)
 {
-    int done,i,j,k,m=0;
+    int done;
+    int m=0;
     unsign64 el;
     /* extract by columns */
     done=0;
     for (;;)
     {
-        for (j=0; j<5; j++)
+        for (int j=0; j<5; j++)
         {
-            for (i=0; i<5; i++)
+            for (int i=0; i<5; i++)
             {
                 el=sh->S[i][j];
-                for (k=0; k<8; k++)
+                for (int k=0; k<8; k++)
                 {
                     buff[m++]=(el&0xff);
                     if (m>=len || m%sh->rate==0)
@@ -524,83 +549,3 @@ void SHA3_shake(sha3 *sh,char *buff,int len)
     }
     SHA3_squeeze(sh,buff,len);
 }
-
-
-/* test program: should produce digest
-
-160 bit
-
-84983e44 1c3bd26e baae4aa1 f95129e5 e54670f1
-
-256 bit
-
-248d6a61 d20638b8 e5c02693 0c3e6039 a33ce459 64ff2167 f6ecedd4 19db06c1
-
-512 bit
-
-8e959b75dae313da 8cf4f72814fc143f 8f7779c6eb9f7fa1 7299aeadb6889018
-501d289e4900f7e4 331b99dec4b5433a c7d329eeb6dd2654 5e96e55b874be909
-
-384 bit
-
-09330c33f71147e8 3d192fc782cd1b47 53111b173b3b05d2 2fa08086e3b0f712
-fcc7c71a557e2db9 66c3e9fa91746039
-*/
-/*
-#include <stdio.h>
-
-char test160[]="abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
-char test256[]="abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
-char test512[]="abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu";
-
-int main()
-{
-    char digest[100];
-    int i;
-
-    hash256 sh256;
-	hash384 sh384;
-	hash512 sh512;
-	sha3 SHA3;
-
-    HASH256_init(&sh256);
-    for (i=0;test256[i]!=0;i++) HASH256_process(&sh256,test256[i]);
-    HASH256_hash(&sh256,digest);
-    for (i=0;i<32;i++) printf("%02x",(unsigned char)digest[i]);
-    printf("\n");
-
-    HASH384_init(&sh384);
-    for (i=0;test512[i]!=0;i++) HASH384_process(&sh384,test512[i]);
-    HASH384_hash(&sh384,digest);
-    for (i=0;i<48;i++) printf("%02x",(unsigned char)digest[i]);
-    printf("\n");
-
-    HASH512_init(&sh512);
-    for (i=0;test512[i]!=0;i++) HASH512_process(&sh512,test512[i]);
-    HASH512_hash(&sh512,digest);
-    for (i=0;i<64;i++) printf("%02x",(unsigned char)digest[i]);
-    printf("\n");
-
-	SHA3_init(&SHA3,SHA3_HASH256);
-    for (i=0;test512[i]!=0;i++) SHA3_process(&SHA3,test512[i]);
-    SHA3_hash(&SHA3,digest);
-    for (i=0;i<32;i++) printf("%02x",(unsigned char)digest[i]);
-    printf("\n");
-
-	SHA3_init(&SHA3,SHA3_HASH512);
-    for (i=0;test512[i]!=0;i++) SHA3_process(&SHA3,test512[i]);
-    SHA3_hash(&SHA3,digest);
-    for (i=0;i<64;i++) printf("%02x",(unsigned char)digest[i]);
-    printf("\n");
-
-	SHA3_init(&SHA3,SHAKE256);
-    for (i=0;test512[i]!=0;i++) SHA3_process(&SHA3,test512[i]);
-    SHA3_shake(&SHA3,digest,72);
-    for (i=0;i<72;i++) printf("%02x",(unsigned char)digest[i]);
-    printf("\n");
-
-
-    return 0;
-}
-
-*/

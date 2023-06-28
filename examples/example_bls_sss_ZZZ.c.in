@@ -21,7 +21,7 @@ under the License.
 
   Build executable after installation:
 
-  1. Change headers;
+  1. Change headers
 
     #include "bls_ZZZ.h" -> #include <amcl/bls_ZZZ.h>
 
@@ -221,7 +221,7 @@ int main()
     printf("%d bit build\n",CHUNK);
 #endif
 
-    char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
+    const char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
     char seed[16] = {0};
     octet SEED = {sizeof(seed),sizeof(seed),seed};
 

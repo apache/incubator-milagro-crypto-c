@@ -29,13 +29,22 @@ under the License.
 
 int ecdh(csprng *RNG)
 {
-    int i,res;
+    int i;
+    int res;
     char *pp="M0ng00se";
     /* These octets are automatically protected against buffer overflow attacks */
     /* Note salt must be big enough to include an appended word */
     /* Note ECIES ciphertext C must be big enough to include at least 1 appended block */
     /* Recall EFS_ZZZ is field size in bytes. So EFS_ZZZ=32 for 256-bit curve */
-    char s0[2*EGS_ZZZ],s1[EGS_ZZZ],w0[2*EFS_ZZZ+1],w1[2*EFS_ZZZ+1],z0[EFS_ZZZ],z1[EFS_ZZZ],key[AESKEY_ZZZ],salt[40],pw[40];
+    char s0[2*EGS_ZZZ];
+    char s1[EGS_ZZZ];
+    char w0[2*EFS_ZZZ+1];
+    char w1[2*EFS_ZZZ+1];
+    char z0[EFS_ZZZ];
+    char z1[EFS_ZZZ];
+    char key[AESKEY_ZZZ];
+    char salt[40];
+    char pw[40];
     octet S0= {0,sizeof(s0),s0};
     octet S1= {0,sizeof(s1),s1};
     octet W0= {0,sizeof(w0),w0};
@@ -47,7 +56,7 @@ int ecdh(csprng *RNG)
     octet PW= {0,sizeof(pw),pw};
 
     SALT.len=8;
-    for (i=0; i<8; i++) SALT.val[i]=i+1; // set Salt
+    for (i=0; i<8; i++) SALT.val[i]=(char)(i+1); // set Salt
 
     printf("Alice's Passphrase= %s\n",pp);
 
@@ -107,7 +116,14 @@ int ecdh(csprng *RNG)
 
 #if CURVETYPE_ZZZ != MONTGOMERY
 
-    char ds[EGS_ZZZ],p1[30],p2[30],v[2*EFS_ZZZ+1],m[32],c[64],t[32],cs[EGS_ZZZ];
+    char ds[EGS_ZZZ];
+    char p1[30];
+    char p2[30];
+    char v[2*EFS_ZZZ+1];
+    char m[32];
+    char c[64];
+    char t[32];
+    char cs[EGS_ZZZ];
     octet DS= {0,sizeof(ds),ds};
     octet CS= {0,sizeof(cs),cs};
     octet P1= {0,sizeof(p1),p1};
@@ -130,7 +146,7 @@ int ecdh(csprng *RNG)
     P2.val[3]=0x3;
 
     M.len=17;
-    for (i=0; i<=16; i++) M.val[i]=i;
+    for (i=0; i<=16; i++) M.val[i]=(char)i;
 
     ECP_ZZZ_ECIES_ENCRYPT(HASH_TYPE_ZZZ,&P1,&P2,RNG,&W1,&M,12,&V,&C,&T);
 
@@ -203,7 +219,6 @@ int ecdh(csprng *RNG)
 
 int main()
 {
-    int i;
     unsigned long ran;
 
     char raw[100];
@@ -215,11 +230,11 @@ int main()
 
     /* fake random seed source */
     RAW.len=100;
-    RAW.val[0]=ran;
-    RAW.val[1]=ran>>8;
-    RAW.val[2]=ran>>16;
-    RAW.val[3]=ran>>24;
-    for (i=0; i<100; i++) RAW.val[i]=i+1;
+    RAW.val[0]=(char)ran;
+    RAW.val[1]=(char)(ran>>8);
+    RAW.val[2]=(char)(ran>>16);
+    RAW.val[3]=(char)(ran>>24);
+    for (int i=0; i<100; i++) RAW.val[i]=(char)(i+1);
 
     /* initialise strong RNG */
     CREATE_CSPRNG(&RNG,&RAW);

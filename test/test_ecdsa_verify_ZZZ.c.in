@@ -215,7 +215,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(ResultStr);
             char r1[1];
             char r2[1] = {"P"};
-            strncpy(r1,linePtr,1);
+            memcpy(r1,linePtr,1);
             if (r1[0] == r2[0])
             {
                 pass = true;

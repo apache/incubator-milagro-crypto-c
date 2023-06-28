@@ -24,16 +24,15 @@
 
 /* test a=0? */
 /* libsodium constant time implementation */
-int BIG_XXX_iszilch(BIG_XXX a)
+int BIG_XXX_iszilch(const BIG_XXX a)
 {
-    int i;
     chunk d = 0;
 
 #ifdef DEBUG_NORM
     if ((a[MPV_XXX]!=1 && a[MPV_XXX]!=0) || a[MNV_XXX]!=0) printf("Input to iszilch not normed\n");
 #endif
 
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
         d |= a[i];
 
     return (1 & ((d-1)>>BASEBITS_XXX));
@@ -44,16 +43,15 @@ int BIG_XXX_iszilch(BIG_XXX a)
    comparison to zero of a[1],..,a[NLEN_XXX-1]
    then checking if a[0] == 1
  */
-int BIG_XXX_isunity(BIG_XXX a)
+int BIG_XXX_isunity(const BIG_XXX a)
 {
-    int i;
     chunk d = 0;
 
 #ifdef DEBUG_NORM
     if ((a[MPV_XXX]!=1 && a[MPV_XXX]!=0) || a[MNV_XXX]!=0) printf("Input to isunity not normed\n");
 #endif
 
-    for(i=1; i<NLEN_XXX; i++)
+    for(int i=1; i<NLEN_XXX; i++)
         d |= a[i];
 
     return (1 & ((d-1)>>BASEBITS_XXX) & ((a[0]^1)-1)>>BASEBITS_XXX);
@@ -61,16 +59,15 @@ int BIG_XXX_isunity(BIG_XXX a)
 
 /* test a=0? */
 /* libsodium constant time implementation */
-int BIG_XXX_diszilch(DBIG_XXX a)
+int BIG_XXX_diszilch(const DBIG_XXX a)
 {
-    int i;
     chunk d = 0;
 
 #ifdef DEBUG_NORM
     if ((a[DMPV_XXX]!=1 && a[DMPV_XXX]!=0) || a[DMNV_XXX]!=0) printf("Input to diszilch not normed\n");
 #endif
 
-    for (i=0; i<DNLEN_XXX; i++)
+    for (int i=0; i<DNLEN_XXX; i++)
         d |= a[i];
 
     return (1 & ((d-1)>>BASEBITS_XXX));
@@ -78,10 +75,10 @@ int BIG_XXX_diszilch(DBIG_XXX a)
 
 /* SU= 56 */
 /* output a */
-void BIG_XXX_output(BIG_XXX a)
+void BIG_XXX_output(const BIG_XXX a)
 {
     BIG_XXX b;
-    int i,len;
+    int len;
     len=BIG_XXX_nbits(a);
     if (len%4==0) len/=4;
     else
@@ -91,7 +88,7 @@ void BIG_XXX_output(BIG_XXX a)
     }
     if (len<MODBYTES_XXX*2) len=MODBYTES_XXX*2;
 
-    for (i=len-1; i>=0; i--)
+    for (int i=len-1; i>=0; i--)
     {
         BIG_XXX_copy(b,a);
         BIG_XXX_shr(b,i*4);
@@ -100,11 +97,10 @@ void BIG_XXX_output(BIG_XXX a)
 }
 
 /* SU= 16 */
-void BIG_XXX_rawoutput(BIG_XXX a)
+void BIG_XXX_rawoutput(const BIG_XXX a)
 {
-    int i;
     printf("(");
-    for (i=0; i<NLEN_XXX-1; i++)
+    for (int i=0; i<NLEN_XXX-1; i++)
 #if CHUNK==64
         printf("%"PRIxMAX",",(uintmax_t) a[i]);
     printf("%"PRIxMAX")",(uintmax_t) a[NLEN_XXX-1]);
@@ -117,13 +113,13 @@ void BIG_XXX_rawoutput(BIG_XXX a)
 /* Swap a and b if d=1 */
 void BIG_XXX_cswap(BIG_XXX a,BIG_XXX b,int d)
 {
-    int i;
-    chunk t,c=d;
+    chunk t;
+    chunk c=d;
     c=~(c-1);
 #ifdef DEBUG_NORM
     for (i=0; i<NLEN_XXX+2; i++)
 #else
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
 #endif
     {
         t=c&(a[i]^b[i]);
@@ -133,14 +129,13 @@ void BIG_XXX_cswap(BIG_XXX a,BIG_XXX b,int d)
 }
 
 /* Move b to a if d=1 */
-void BIG_XXX_cmove(BIG_XXX f,BIG_XXX g,int d)
+void BIG_XXX_cmove(BIG_XXX f,const BIG_XXX g,int d)
 {
-    int i;
     chunk b=(chunk)-d;
 #ifdef DEBUG_NORM
     for (i=0; i<NLEN_XXX+2; i++)
 #else
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
 #endif
     {
         f[i]^=(f[i]^g[i])&b;
@@ -148,14 +143,13 @@ void BIG_XXX_cmove(BIG_XXX f,BIG_XXX g,int d)
 }
 
 /* Move g to f if d=1 */
-void BIG_XXX_dcmove(DBIG_XXX f,DBIG_XXX g,int d)
+void BIG_XXX_dcmove(DBIG_XXX f,const DBIG_XXX g,int d)
 {
-    int i;
     chunk b=(chunk)-d;
 #ifdef DEBUG_NORM
     for (i=0; i<DNLEN_XXX+2; i++)
 #else
-    for (i=0; i<DNLEN_XXX; i++)
+    for (int i=0; i<DNLEN_XXX; i++)
 #endif
     {
         f[i]^=(f[i]^g[i])&b;
@@ -164,13 +158,12 @@ void BIG_XXX_dcmove(DBIG_XXX f,DBIG_XXX g,int d)
 
 /* convert BIG to/from bytes */
 /* SU= 64 */
-void BIG_XXX_toBytes(char *b,BIG_XXX a)
+void BIG_XXX_toBytes(char *b,const BIG_XXX a)
 {
-    int i;
     BIG_XXX c;
     BIG_XXX_copy(c,a);
     BIG_XXX_norm(c);
-    for (i=MODBYTES_XXX-1; i>=0; i--)
+    for (int i=MODBYTES_XXX-1; i>=0; i--)
     {
         b[i]=c[0]&0xff;
         BIG_XXX_fshr(c,8);
@@ -178,11 +171,10 @@ void BIG_XXX_toBytes(char *b,BIG_XXX a)
 }
 
 /* SU= 16 */
-void BIG_XXX_fromBytes(BIG_XXX a,char *b)
+void BIG_XXX_fromBytes(BIG_XXX a,const char *b)
 {
-    int i;
     BIG_XXX_zero(a);
-    for (i=0; i<MODBYTES_XXX; i++)
+    for (int i=0; i<MODBYTES_XXX; i++)
     {
         BIG_XXX_fshl(a,8);
         a[0]+=(int)(unsigned char)b[i];
@@ -193,13 +185,13 @@ void BIG_XXX_fromBytes(BIG_XXX a,char *b)
 #endif
 }
 
-void BIG_XXX_fromBytesLen(BIG_XXX a,char *b,int s)
+void BIG_XXX_fromBytesLen(BIG_XXX a,const char *b,int s)
 {
-    int i,len=s;
+    int len=s;
     BIG_XXX_zero(a);
 
     if (len>MODBYTES_XXX) len=MODBYTES_XXX;
-    for (i=0; i<len; i++)
+    for (int i=0; i<len; i++)
     {
         BIG_XXX_fshl(a,8);
         a[0]+=(int)(unsigned char)b[i];
@@ -216,7 +208,7 @@ void BIG_XXX_fromBytesLen(BIG_XXX a,char *b,int s)
 void BIG_XXX_doutput(DBIG_XXX a)
 {
     DBIG_XXX b;
-    int i,len;
+    int len;
     BIG_XXX_dnorm(a);
     len=BIG_XXX_dnbits(a);
     if (len%4==0) len/=4;
@@ -226,7 +218,7 @@ void BIG_XXX_doutput(DBIG_XXX a)
         len++;
     }
 
-    for (i=len-1; i>=0; i--)
+    for (int i=len-1; i>=0; i--)
     {
         BIG_XXX_dcopy(b,a);
         BIG_XXX_dshr(b,i*4);
@@ -235,11 +227,10 @@ void BIG_XXX_doutput(DBIG_XXX a)
 }
 
 
-void BIG_XXX_drawoutput(DBIG_XXX a)
+void BIG_XXX_drawoutput(const DBIG_XXX a)
 {
-    int i;
     printf("(");
-    for (i=0; i<DNLEN_XXX-1; i++)
+    for (int i=0; i<DNLEN_XXX-1; i++)
 #if CHUNK==64
         printf("%"PRIxMAX",",(uintmax_t) a[i]);
     printf("%"PRIxMAX")",(uintmax_t) a[DNLEN_XXX-1]);
@@ -250,10 +241,9 @@ void BIG_XXX_drawoutput(DBIG_XXX a)
 }
 
 /* Copy b=a */
-void BIG_XXX_copy(BIG_XXX b,BIG_XXX a)
+void BIG_XXX_copy(BIG_XXX b,const BIG_XXX a)
 {
-    int i;
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
         b[i]=a[i];
 #ifdef DEBUG_NORM
     b[MPV_XXX]=a[MPV_XXX];
@@ -264,8 +254,7 @@ void BIG_XXX_copy(BIG_XXX b,BIG_XXX a)
 /* Copy from ROM b=a */
 void BIG_XXX_rcopy(BIG_XXX b,const BIG_XXX a)
 {
-    int i;
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
         b[i]=a[i];
 #ifdef DEBUG_NORM
     b[MPV_XXX]=1;
@@ -274,10 +263,9 @@ void BIG_XXX_rcopy(BIG_XXX b,const BIG_XXX a)
 }
 
 /* double length DBIG copy b=a */
-void BIG_XXX_dcopy(DBIG_XXX b,DBIG_XXX a)
+void BIG_XXX_dcopy(DBIG_XXX b,const DBIG_XXX a)
 {
-    int i;
-    for (i=0; i<DNLEN_XXX; i++)
+    for (int i=0; i<DNLEN_XXX; i++)
         b[i]=a[i];
 #ifdef DEBUG_NORM
     b[DMPV_XXX]=a[DMPV_XXX];
@@ -286,7 +274,7 @@ void BIG_XXX_dcopy(DBIG_XXX b,DBIG_XXX a)
 }
 
 /* Copy BIG to bottom half of DBIG */
-void BIG_XXX_dscopy(DBIG_XXX b,BIG_XXX a)
+void BIG_XXX_dscopy(DBIG_XXX b,const BIG_XXX a)
 {
     int i;
     for (i=0; i<NLEN_XXX-1; i++)
@@ -303,7 +291,7 @@ void BIG_XXX_dscopy(DBIG_XXX b,BIG_XXX a)
 }
 
 /* Copy BIG to top half of DBIG */
-void BIG_XXX_dsucopy(DBIG_XXX b,BIG_XXX a)
+void BIG_XXX_dsucopy(DBIG_XXX b,const BIG_XXX a)
 {
     int i;
     for (i=0; i<NLEN_XXX; i++)
@@ -317,22 +305,20 @@ void BIG_XXX_dsucopy(DBIG_XXX b,BIG_XXX a)
 }
 
 /* Copy bottom half of DBIG to BIG */
-void BIG_XXX_sdcopy(BIG_XXX b,DBIG_XXX a)
+void BIG_XXX_sdcopy(BIG_XXX a,const DBIG_XXX b)
 {
-    int i;
-    for (i=0; i<NLEN_XXX; i++)
-        b[i]=a[i];
+    for (int i=0; i<NLEN_XXX; i++)
+        a[i]=b[i];
 #ifdef DEBUG_NORM
-    b[MPV_XXX]=a[DMPV_XXX];
-    b[MNV_XXX]=a[DMNV_XXX];
+    a[MPV_XXX]=b[DMPV_XXX];
+    a[MNV_XXX]=b[DMNV_XXX];
 #endif
 }
 
 /* Copy top half of DBIG to BIG */
-void BIG_XXX_sducopy(BIG_XXX b,DBIG_XXX a)
+void BIG_XXX_sducopy(BIG_XXX b,const DBIG_XXX a)
 {
-    int i;
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
         b[i]=a[i+NLEN_XXX];
 #ifdef DEBUG_NORM
     b[MPV_XXX]=a[DMPV_XXX];
@@ -344,8 +330,7 @@ void BIG_XXX_sducopy(BIG_XXX b,DBIG_XXX a)
 /* Set a=0 */
 void BIG_XXX_zero(BIG_XXX a)
 {
-    int i;
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
         a[i]=0;
 #ifdef DEBUG_NORM
     a[MPV_XXX]=a[MNV_XXX]=0;
@@ -354,8 +339,7 @@ void BIG_XXX_zero(BIG_XXX a)
 
 void BIG_XXX_dzero(DBIG_XXX a)
 {
-    int i;
-    for (i=0; i<DNLEN_XXX; i++)
+    for (int i=0; i<DNLEN_XXX; i++)
         a[i]=0;
 #ifdef DEBUG_NORM
     a[DMPV_XXX]=a[DMNV_XXX]=0;
@@ -365,9 +349,8 @@ void BIG_XXX_dzero(DBIG_XXX a)
 /* set a=1 */
 void BIG_XXX_one(BIG_XXX a)
 {
-    int i;
     a[0]=1;
-    for (i=1; i<NLEN_XXX; i++)
+    for (int i=1; i<NLEN_XXX; i++)
         a[i]=0;
 #ifdef DEBUG_NORM
     a[MPV_XXX]=1;
@@ -379,10 +362,9 @@ void BIG_XXX_one(BIG_XXX a)
 
 /* Set c=a+b */
 /* SU= 8 */
-void BIG_XXX_add(BIG_XXX c,BIG_XXX a,BIG_XXX b)
+void BIG_XXX_add(BIG_XXX c,const BIG_XXX a,const BIG_XXX b)
 {
-    int i;
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
         c[i]=a[i]+b[i];
 #ifdef DEBUG_NORM
     c[MPV_XXX]=a[MPV_XXX]+b[MPV_XXX];
@@ -396,10 +378,9 @@ void BIG_XXX_add(BIG_XXX c,BIG_XXX a,BIG_XXX b)
 /* Set c=a or b */
 void BIG_XXX_or(BIG_XXX c,BIG_XXX a,BIG_XXX b)
 {
-    int i;
     BIG_XXX_norm(a);
     BIG_XXX_norm(b);
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
         c[i]=a[i]|b[i];
 #ifdef DEBUG_NORM
     c[MPV_XXX]=1;
@@ -420,10 +401,9 @@ void BIG_XXX_inc(BIG_XXX c,int d)
 
 /* Set c=a-b */
 /* SU= 8 */
-void BIG_XXX_sub(BIG_XXX c,BIG_XXX a,BIG_XXX b)
+void BIG_XXX_sub(BIG_XXX c,const BIG_XXX a,const BIG_XXX b)
 {
-    int i;
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
         c[i]=a[i]-b[i];
 #ifdef DEBUG_NORM
     c[MPV_XXX]=a[MPV_XXX]+b[MNV_XXX];
@@ -436,10 +416,9 @@ void BIG_XXX_sub(BIG_XXX c,BIG_XXX a,BIG_XXX b)
 
 /* SU= 8 */
 
-void BIG_XXX_dsub(DBIG_XXX c,DBIG_XXX a,DBIG_XXX b)
+void BIG_XXX_dsub(DBIG_XXX c,const DBIG_XXX a,const DBIG_XXX b)
 {
-    int i;
-    for (i=0; i<DNLEN_XXX; i++)
+    for (int i=0; i<DNLEN_XXX; i++)
         c[i]=a[i]-b[i];
 #ifdef DEBUG_NORM
     c[DMPV_XXX]=a[DMPV_XXX]+b[DMNV_XXX];
@@ -449,10 +428,9 @@ void BIG_XXX_dsub(DBIG_XXX c,DBIG_XXX a,DBIG_XXX b)
 #endif
 }
 
-void BIG_XXX_dadd(DBIG_XXX c,DBIG_XXX a,DBIG_XXX b)
+void BIG_XXX_dadd(DBIG_XXX c,const DBIG_XXX a,const DBIG_XXX b)
 {
-    int i;
-    for (i=0; i<DNLEN_XXX; i++)
+    for (int i=0; i<DNLEN_XXX; i++)
         c[i]=a[i]+b[i];
 #ifdef DEBUG_NORM
     c[DMPV_XXX]=a[DMPV_XXX]+b[DMNV_XXX];
@@ -473,10 +451,9 @@ void BIG_XXX_dec(BIG_XXX c,int d)
 }
 
 /* multiplication r=a*c by c<=NEXCESS_XXX */
-void BIG_XXX_imul(BIG_XXX r,BIG_XXX a,int c)
+void BIG_XXX_imul(BIG_XXX r,const BIG_XXX a,int c)
 {
-    int i;
-    for (i=0; i<NLEN_XXX; i++) r[i]=a[i]*c;
+    for (int i=0; i<NLEN_XXX; i++) r[i]=a[i]*c;
 #ifdef DEBUG_NORM
     r[MPV_XXX]=a[MPV_XXX]*c;
     r[MNV_XXX]=a[MNV_XXX]*c;
@@ -488,11 +465,11 @@ void BIG_XXX_imul(BIG_XXX r,BIG_XXX a,int c)
 
 /* multiplication r=a*c by larger integer - c<=FEXCESS */
 /* SU= 24 */
-chunk BIG_XXX_pmul(BIG_XXX r,BIG_XXX a,int c)
+chunk BIG_XXX_pmul(BIG_XXX r,const BIG_XXX a,int c)
 {
-    int i;
-    chunk ak,carry=0;
-    for (i=0; i<NLEN_XXX; i++)
+    chunk ak;
+    chunk carry=0;
+    for (int i=0; i<NLEN_XXX; i++)
     {
         ak=a[i];
         r[i]=0;
@@ -509,11 +486,12 @@ chunk BIG_XXX_pmul(BIG_XXX r,BIG_XXX a,int c)
 /* SU= 16 */
 int BIG_XXX_div3(BIG_XXX r)
 {
-    int i;
-    chunk ak,base,carry=0;
+    chunk ak;
+    chunk base;
+    chunk carry=0;
     BIG_XXX_norm(r);
     base=((chunk)1<<BASEBITS_XXX);
-    for (i=NLEN_XXX-1; i>=0; i--)
+    for (int i=NLEN_XXX-1; i>=0; i--)
     {
         ak=(carry*base+r[i]);
         r[i]=ak/3;
@@ -524,13 +502,12 @@ int BIG_XXX_div3(BIG_XXX r)
 
 /* multiplication c=a*b by even larger integer b>FEXCESS, resulting in DBIG */
 /* SU= 24 */
-void BIG_XXX_pxmul(DBIG_XXX c,BIG_XXX a,int b)
+void BIG_XXX_pxmul(DBIG_XXX c,const BIG_XXX a,int b)
 {
-    int j;
     chunk carry;
     BIG_XXX_dzero(c);
     carry=0;
-    for (j=0; j<NLEN_XXX; j++)
+    for (int j=0; j<NLEN_XXX; j++)
         carry=muladd_XXX(a[j],(chunk)b,carry,&c[j]);
     c[NLEN_XXX]=carry;
 #ifdef DEBUG_NORM
@@ -541,16 +518,15 @@ void BIG_XXX_pxmul(DBIG_XXX c,BIG_XXX a,int b)
 
 /* .. if you know the result will fit in a BIG, c must be distinct from a and b */
 /* SU= 40 */
-void BIG_XXX_smul(BIG_XXX c,BIG_XXX a,BIG_XXX b)
+void BIG_XXX_smul(BIG_XXX c,const BIG_XXX a,const BIG_XXX b)
 {
-    int i,j;
     chunk carry;
 
     BIG_XXX_zero(c);
-    for (i=0; i<NLEN_XXX; i++)
+    for (int i=0; i<NLEN_XXX; i++)
     {
         carry=0;
-        for (j=0; j<NLEN_XXX; j++)
+        for (int j=0; j<NLEN_XXX; j++)
         {
             if (i+j<NLEN_XXX)
                 carry=muladd_XXX(a[i],b[j],carry,&c[i+j]);
@@ -565,11 +541,12 @@ void BIG_XXX_smul(BIG_XXX c,BIG_XXX a,BIG_XXX b)
 
 /* Set c=a*b */
 /* SU= 72 */
-void BIG_XXX_mul(DBIG_XXX c,BIG_XXX a,BIG_XXX b)
+void BIG_XXX_mul(DBIG_XXX c,const BIG_XXX a,const BIG_XXX b)
 {
     int i;
 #ifdef dchunk
-    dchunk t,co;
+    dchunk t;
+    dchunk co;
     dchunk s;
     dchunk d[NLEN_XXX];
     int k;
@@ -619,13 +596,12 @@ void BIG_XXX_mul(DBIG_XXX c,BIG_XXX a,BIG_XXX b)
 #endif
 
 #else
-    int j;
     chunk carry;
     BIG_XXX_dzero(c);
     for (i=0; i<NLEN_XXX; i++)
     {
         carry=0;
-        for (j=0; j<NLEN_XXX; j++)
+        for (int j=0; j<NLEN_XXX; j++)
             carry=muladd_XXX(a[i],b[j],carry,&c[i+j]);
 
         c[NLEN_XXX+i]=carry;
@@ -641,11 +617,13 @@ void BIG_XXX_mul(DBIG_XXX c,BIG_XXX a,BIG_XXX b)
 
 /* Set c=a*a */
 /* SU= 80 */
-void BIG_XXX_sqr(DBIG_XXX c,BIG_XXX a)
+void BIG_XXX_sqr(DBIG_XXX c,const BIG_XXX a)
 {
-    int i,j;
+    int i;
+    int j;
 #ifdef dchunk
-    dchunk t,co;
+    dchunk t;
+    dchunk co;
 #endif
 
 #ifdef DEBUG_NORM
@@ -758,12 +736,15 @@ void BIG_XXX_sqr(DBIG_XXX c,BIG_XXX a)
 }
 
 /* Montgomery reduction */
-void BIG_XXX_monty(BIG_XXX a,BIG_XXX md,chunk MC,DBIG_XXX d)
+void BIG_XXX_monty(BIG_XXX a,const BIG_XXX md,chunk MC,const DBIG_XXX d)
 {
-    int i,k;
+    int i;
+    int k;
 
 #ifdef dchunk
-    dchunk t,c,s;
+    dchunk t;
+    dchunk c;
+    dchunk s;
     dchunk dd[NLEN_XXX];
     chunk v[NLEN_XXX];
 #endif
@@ -807,13 +788,13 @@ void BIG_XXX_monty(BIG_XXX a,BIG_XXX md,chunk MC,DBIG_XXX d)
 
 
 #else
-    int j;
-    chunk m,carry;
+    chunk m;
+    chunk carry;
     for (i=0; i<NLEN_XXX; i++)
     {
         m = (MC*d[i])&BMASK_XXX;
         carry=0;
-        for (j=0; j<NLEN_XXX; j++)
+        for (int j=0; j<NLEN_XXX; j++)
             carry=muladd_XXX(m,md[j],carry,&d[i+j]);
         d[NLEN_XXX+i]+=carry;
     }
@@ -837,7 +818,7 @@ void BIG_XXX_shl(BIG_XXX a,int k)
     int n=k%BASEBITS_XXX;
     int m=k/BASEBITS_XXX;
 
-    a[NLEN_XXX-1]=((a[NLEN_XXX-1-m]<<n));
+    a[NLEN_XXX-1]=(a[NLEN_XXX-1-m]<<n);
     if (NLEN_XXX>=m+2) a[NLEN_XXX-1]|=(a[NLEN_XXX-m-2]>>(BASEBITS_XXX-n));
 
     for (i=NLEN_XXX-2; i>m; i--)
@@ -852,10 +833,8 @@ void BIG_XXX_shl(BIG_XXX a,int k)
 /* SU= 16 */
 int BIG_XXX_fshl(BIG_XXX a,int n)
 {
-    int i;
-
-    a[NLEN_XXX-1]=((a[NLEN_XXX-1]<<n))|(a[NLEN_XXX-2]>>(BASEBITS_XXX-n)); /* top word not masked */
-    for (i=NLEN_XXX-2; i>0; i--)
+    a[NLEN_XXX-1]=(a[NLEN_XXX-1]<<n)|(a[NLEN_XXX-2]>>(BASEBITS_XXX-n)); /* top word not masked */
+    for (int i=NLEN_XXX-2; i>0; i--)
         a[i]=((a[i]<<n)&BMASK_XXX)|(a[i-1]>>(BASEBITS_XXX-n));
     a[0]=(a[0]<<n)&BMASK_XXX;
 
@@ -870,7 +849,7 @@ void BIG_XXX_dshl(DBIG_XXX a,int k)
     int n=k%BASEBITS_XXX;
     int m=k/BASEBITS_XXX;
 
-    a[DNLEN_XXX-1]=((a[DNLEN_XXX-1-m]<<n))|(a[DNLEN_XXX-m-2]>>(BASEBITS_XXX-n));
+    a[DNLEN_XXX-1]=(a[DNLEN_XXX-1-m]<<n)|(a[DNLEN_XXX-m-2]>>(BASEBITS_XXX-n));
 
     for (i=DNLEN_XXX-2; i>m; i--)
         a[i]=((a[i-m]<<n)&BMASK_XXX)|(a[i-m-1]>>(BASEBITS_XXX-n));
@@ -895,16 +874,16 @@ void BIG_XXX_shr(BIG_XXX a,int k)
 }
 
 /* Fast combined shift, subtract and norm. Return sign of result */
-int BIG_XXX_ssn(BIG_XXX r,BIG_XXX a,BIG_XXX m)
+int BIG_XXX_ssn(BIG_XXX r,const BIG_XXX a,BIG_XXX m)
 {
-    int i,n=NLEN_XXX-1;
+    int n=NLEN_XXX-1;
     chunk carry;
     m[0]=(m[0]>>1)|((m[1]<<(BASEBITS_XXX-1))&BMASK_XXX);
     r[0]=a[0]-m[0];
     carry=r[0]>>BASEBITS_XXX;
     r[0]&=BMASK_XXX;
 
-    for (i=1; i<n; i++)
+    for (int i=1; i<n; i++)
     {
         m[i]=(m[i]>>1)|((m[i+1]<<(BASEBITS_XXX-1))&BMASK_XXX);
         r[i]=a[i]-m[i]+carry;
@@ -926,9 +905,8 @@ int BIG_XXX_ssn(BIG_XXX r,BIG_XXX a,BIG_XXX m)
 /* SU= 16 */
 int BIG_XXX_fshr(BIG_XXX a,int k)
 {
-    int i;
     chunk r=a[0]&(((chunk)1<<k)-1); /* shifted out part */
-    for (i=0; i<NLEN_XXX-1; i++)
+    for (int i=0; i<NLEN_XXX-1; i++)
         a[i]=(a[i]>>k)|((a[i+1]<<(BASEBITS_XXX-k))&BMASK_XXX);
     a[NLEN_XXX-1]=a[NLEN_XXX-1]>>k;
     return (int)r;
@@ -950,10 +928,11 @@ void BIG_XXX_dshr(DBIG_XXX a,int k)
 /* Split DBIG d into two BIGs t|b. Split happens at n bits, where n falls into NLEN word */
 /* d MUST be normalised */
 /* SU= 24 */
-chunk BIG_XXX_split(BIG_XXX t,BIG_XXX b,DBIG_XXX d,int n)
+chunk BIG_XXX_split(BIG_XXX t,BIG_XXX b,const DBIG_XXX d,int n)
 {
     int i;
-    chunk nw,carry=0;
+    chunk nw;
+    chunk carry=0;
     int m=n%BASEBITS_XXX;
 
     if (m==0)
@@ -996,9 +975,9 @@ chunk BIG_XXX_split(BIG_XXX t,BIG_XXX b,DBIG_XXX d,int n)
 /* normalise BIG - force all digits < 2^BASEBITS */
 chunk BIG_XXX_norm(BIG_XXX a)
 {
-    int i;
-    chunk d,carry=0;
-    for (i=0; i<NLEN_XXX-1; i++)
+    chunk d;
+    chunk carry=0;
+    for (int i=0; i<NLEN_XXX-1; i++)
     {
         d=a[i]+carry;
         a[i]=d&BMASK_XXX;
@@ -1015,9 +994,9 @@ chunk BIG_XXX_norm(BIG_XXX a)
 
 void BIG_XXX_dnorm(DBIG_XXX a)
 {
-    int i;
-    chunk d,carry=0;
-    for (i=0; i<DNLEN_XXX-1; i++)
+    chunk d;
+    chunk carry=0;
+    for (int i=0; i<DNLEN_XXX-1; i++)
     {
         d=a[i]+carry;
         a[i]=d&BMASK_XXX;
@@ -1033,9 +1012,8 @@ void BIG_XXX_dnorm(DBIG_XXX a)
 /* Compare a and b. Return 1 for a>b, -1 for a<b, 0 for a==b */
 /* a and b MUST be normalised before call */
 /* libsodium constant time implementation */
-int BIG_XXX_comp(BIG_XXX b1,BIG_XXX b2)
+int BIG_XXX_comp(const BIG_XXX b1,const BIG_XXX b2)
 {
-    int i;
     chunk gt = 0;
     chunk eq = 1;
 
@@ -1044,7 +1022,7 @@ int BIG_XXX_comp(BIG_XXX b1,BIG_XXX b2)
     if ((b2[MPV_XXX]!=1 && b2[MPV_XXX]!=0) || b2[MNV_XXX]!=0) printf("Second input to comp not normed\n");
 #endif
 
-    for (i = NLEN_XXX-1; i>=0; i--)
+    for (int i = NLEN_XXX-1; i>=0; i--)
     {
         gt |= ((b2[i]-b1[i]) >> BASEBITS_XXX) & eq;
         eq &= ((b2[i]^b1[i])-1) >> BASEBITS_XXX;
@@ -1056,9 +1034,8 @@ int BIG_XXX_comp(BIG_XXX b1,BIG_XXX b2)
 /* Compare b1 and b2. Return 1 for b1>b2, -1 for a<b, 0 for a==b */
 /* a and b MUST be normalised before call */
 /* libsodium constant time implementation */
-int BIG_XXX_dcomp(DBIG_XXX b1,DBIG_XXX b2)
+int BIG_XXX_dcomp(const DBIG_XXX b1,const DBIG_XXX b2)
 {
-    int i;
     chunk gt = 0;
     chunk eq = 1;
 
@@ -1067,7 +1044,7 @@ int BIG_XXX_dcomp(DBIG_XXX b1,DBIG_XXX b2)
     if ((b2[DMPV_XXX]!=1 && b2[DMPV_XXX]!=0) || b2[DMNV_XXX]!=0) printf("Second input to dcomp not normed\n");
 #endif
 
-    for (i=DNLEN_XXX-1; i>=0; i--)
+    for (int i=DNLEN_XXX-1; i>=0; i--)
     {
         gt |= ((b2[i]-b1[i]) >> BASEBITS_XXX) & eq;
         eq &= ((b2[i]^b1[i])-1) >> BASEBITS_XXX;
@@ -1078,9 +1055,10 @@ int BIG_XXX_dcomp(DBIG_XXX b1,DBIG_XXX b2)
 
 /* return number of bits in a */
 /* SU= 8 */
-int BIG_XXX_nbits(BIG_XXX a)
+int BIG_XXX_nbits(const BIG_XXX a)
 {
-    int bts,k=NLEN_XXX-1;
+    int bts;
+    int k=NLEN_XXX-1;
     BIG_XXX t;
     chunk c;
     BIG_XXX_copy(t,a);
@@ -1098,9 +1076,10 @@ int BIG_XXX_nbits(BIG_XXX a)
 }
 
 /* SU= 8, Calculate number of bits in a DBIG - output normalised */
-int BIG_XXX_dnbits(DBIG_XXX a)
+int BIG_XXX_dnbits(const DBIG_XXX a)
 {
-    int bts,k=DNLEN_XXX-1;
+    int bts;
+    int k=DNLEN_XXX-1;
     DBIG_XXX t;
     chunk c;
     BIG_XXX_dcopy(t,a);
@@ -1120,7 +1099,7 @@ int BIG_XXX_dnbits(DBIG_XXX a)
 
 /* Set b=b mod c */
 /* SU= 16 */
-void BIG_XXX_mod(BIG_XXX b,BIG_XXX c1)
+void BIG_XXX_mod(BIG_XXX b,const BIG_XXX c1)
 {
     int k=0;
     BIG_XXX r; /**/
@@ -1151,10 +1130,11 @@ void BIG_XXX_mod(BIG_XXX b,BIG_XXX c1)
 
 /* Set a=b mod c, b is destroyed. Slow but rarely used. */
 /* SU= 96 */
-void BIG_XXX_dmod(BIG_XXX a,DBIG_XXX b,BIG_XXX c)
+void BIG_XXX_dmod(BIG_XXX a,DBIG_XXX b,const BIG_XXX c)
 {
     int k=0;
-    DBIG_XXX m,r;
+    DBIG_XXX m;
+    DBIG_XXX r;
     BIG_XXX_dnorm(b);
     BIG_XXX_dscopy(m,c);
 
@@ -1187,11 +1167,14 @@ void BIG_XXX_dmod(BIG_XXX a,DBIG_XXX b,BIG_XXX c)
 /* Set a=b/c,  b is destroyed. Slow but rarely used. */
 /* SU= 136 */
 
-void BIG_XXX_ddiv(BIG_XXX a,DBIG_XXX b,BIG_XXX c)
+void BIG_XXX_ddiv(BIG_XXX a,DBIG_XXX b,const BIG_XXX c)
 {
-    int d,k=0;
-    DBIG_XXX m,dr;
-    BIG_XXX e,r;
+    int d;
+    int k=0;
+    DBIG_XXX m;
+    DBIG_XXX dr;
+    BIG_XXX e;
+    BIG_XXX r;
     BIG_XXX_dnorm(b);
     BIG_XXX_dscopy(m,c);
 
@@ -1226,10 +1209,14 @@ void BIG_XXX_ddiv(BIG_XXX a,DBIG_XXX b,BIG_XXX c)
 
 /* SU= 136 */
 
-void BIG_XXX_sdiv(BIG_XXX a,BIG_XXX c)
+void BIG_XXX_sdiv(BIG_XXX a,const BIG_XXX c)
 {
-    int d,k=0;
-    BIG_XXX m,e,b,r;
+    int d;
+    int k=0;
+    BIG_XXX m;
+    BIG_XXX e;
+    BIG_XXX b;
+    BIG_XXX r;
     BIG_XXX_norm(a);
     BIG_XXX_copy(b,a);
     BIG_XXX_copy(m,c);
@@ -1263,24 +1250,24 @@ void BIG_XXX_sdiv(BIG_XXX a,BIG_XXX c)
 }
 
 /* return LSB of a */
-int BIG_XXX_parity(BIG_XXX a)
+int BIG_XXX_parity(const BIG_XXX a)
 {
     return a[0]%2;
 }
 
 /* return n-th bit of a */
 /* SU= 16 */
-int BIG_XXX_bit(BIG_XXX a,int n)
+int BIG_XXX_bit(const BIG_XXX a,int n)
 {
     return ((int)(a[n/BASEBITS_XXX]>>(n%BASEBITS_XXX))) & 1;
 }
 
 /* return w bits of a starting from the n-th */
-int BIG_XXX_bits(BIG_XXX a, int n, int w)
+int BIG_XXX_bits(const BIG_XXX a, int n, int w)
 {
-    int i, b = 0;
+    int b = 0;
 
-    for (i=n+w-1; i>=n; i--)
+    for (int i=n+w-1; i>=n; i--)
     {
         b <<=1;
         b |= ((int)(a[i/BASEBITS_XXX]>>(i%BASEBITS_XXX))) & 1;
@@ -1301,12 +1288,14 @@ int BIG_XXX_lastbits(BIG_XXX a,int n)
 /* get 8*MODBYTES size random number */
 void BIG_XXX_random(BIG_XXX m,csprng *rng)
 {
-    int i,b,j=0,r=0;
+    int b;
+    int j=0;
+    int r=0;
     int len=8*MODBYTES_XXX;
 
     BIG_XXX_zero(m);
     /* generate random BIG */
-    for (i=0; i<len; i++)
+    for (int i=0; i<len; i++)
     {
         if (j==0) r=RAND_byte(rng);
         else r>>=1;
@@ -1325,13 +1314,15 @@ void BIG_XXX_random(BIG_XXX m,csprng *rng)
 
 /* get random BIG from rng, modulo q. Done one bit at a time, so its portable */
 
-void BIG_XXX_randomnum(BIG_XXX m,BIG_XXX q,csprng *rng)
+void BIG_XXX_randomnum(BIG_XXX m,const BIG_XXX q,csprng *rng)
 {
-    int i,b,j=0,r=0;
+    int b;
+    int j=0;
+    int r=0;
     DBIG_XXX d;
     BIG_XXX_dzero(d);
     /* generate random DBIG */
-    for (i=0; i<2*BIG_XXX_nbits(q); i++)
+    for (int i=0; i<2*BIG_XXX_nbits(q); i++)
     {
         if (j==0) r=RAND_byte(rng);
         else r>>=1;
@@ -1351,10 +1342,11 @@ void BIG_XXX_randomnum(BIG_XXX m,BIG_XXX q,csprng *rng)
 
 /* Set r=a*b mod m */
 /* SU= 96 */
-void BIG_XXX_modmul(BIG_XXX r,BIG_XXX a1,BIG_XXX b1,BIG_XXX m)
+void BIG_XXX_modmul(BIG_XXX r,const BIG_XXX a1,const BIG_XXX b1,const BIG_XXX m)
 {
     DBIG_XXX d;
-    BIG_XXX a,b;
+    BIG_XXX a;
+    BIG_XXX b;
     BIG_XXX_copy(a,a1);
     BIG_XXX_copy(b,b1);
     BIG_XXX_mod(a,m);
@@ -1366,7 +1358,7 @@ void BIG_XXX_modmul(BIG_XXX r,BIG_XXX a1,BIG_XXX b1,BIG_XXX m)
 
 /* Set a=a*a mod m */
 /* SU= 88 */
-void BIG_XXX_modsqr(BIG_XXX r,BIG_XXX a1,BIG_XXX m)
+void BIG_XXX_modsqr(BIG_XXX r,const BIG_XXX a1,const BIG_XXX m)
 {
     DBIG_XXX d;
     BIG_XXX a;
@@ -1378,7 +1370,7 @@ void BIG_XXX_modsqr(BIG_XXX r,BIG_XXX a1,BIG_XXX m)
 
 /* Set r=-a mod m */
 /* SU= 16 */
-void BIG_XXX_modneg(BIG_XXX r,BIG_XXX a1,BIG_XXX m)
+void BIG_XXX_modneg(BIG_XXX r,const BIG_XXX a1,const BIG_XXX m)
 {
     BIG_XXX a;
     BIG_XXX_copy(a,a1);
@@ -1388,11 +1380,12 @@ void BIG_XXX_modneg(BIG_XXX r,BIG_XXX a1,BIG_XXX m)
 
 /* Set a=a/b mod m */
 /* SU= 136 */
-void BIG_XXX_moddiv(BIG_XXX r,BIG_XXX a1,BIG_XXX b1,BIG_XXX m)
+void BIG_XXX_moddiv(BIG_XXX r,const BIG_XXX a1,const BIG_XXX b1,const BIG_XXX m)
 {
     DBIG_XXX d;
     BIG_XXX z;
-    BIG_XXX a,b;
+    BIG_XXX a;
+    BIG_XXX b;
     BIG_XXX_copy(a,a1);
     BIG_XXX_copy(b,b1);
 
@@ -1406,10 +1399,16 @@ void BIG_XXX_moddiv(BIG_XXX r,BIG_XXX a1,BIG_XXX b1,BIG_XXX m)
 
 /* Get jacobi Symbol (a/p). Returns 0, 1 or -1 */
 /* SU= 216 */
-int BIG_XXX_jacobi(BIG_XXX a,BIG_XXX p)
+int BIG_XXX_jacobi(BIG_XXX a,const BIG_XXX p)
 {
-    int n8,k,m=0;
-    BIG_XXX t,x,n,zilch,one;
+    int n8;
+    int k;
+    int m=0;
+    BIG_XXX t;
+    BIG_XXX x;
+    BIG_XXX n;
+    BIG_XXX zilch;
+    BIG_XXX one;
     BIG_XXX_one(one);
     BIG_XXX_zero(zilch);
     if (BIG_XXX_parity(p)==0 || BIG_XXX_comp(a,zilch)==0 || BIG_XXX_comp(p,one)<=0) return 0;
@@ -1445,7 +1444,11 @@ int BIG_XXX_jacobi(BIG_XXX a,BIG_XXX p)
 /* Arazi and Qi inversion mod 256 */
 static int invmod256(int a)
 {
-    int U,t1,t2,b,c;
+    int U;
+    int t1;
+    int t2;
+    int b;
+    int c;
     t1=0;
     c=(a>>1)&1;
     t1+=c;
@@ -1486,11 +1489,13 @@ static int invmod256(int a)
 /* a=1/a mod 2^BIGBITS. This is very fast! */
 void BIG_XXX_invmod2m(BIG_XXX a)
 {
-    int i;
-    BIG_XXX U,t1,b,c;
+    BIG_XXX U;
+    BIG_XXX t1;
+    BIG_XXX b;
+    BIG_XXX c;
     BIG_XXX_zero(U);
     BIG_XXX_inc(U,invmod256(BIG_XXX_lastbits(a,8)));
-    for (i=8; i<BIGBITS_XXX; i<<=1)
+    for (int i=8; i<BIGBITS_XXX; i<<=1)
     {
         BIG_XXX_norm(U);
         BIG_XXX_copy(b,a);
@@ -1527,10 +1532,18 @@ void BIG_XXX_invmod2m(BIG_XXX a)
 }
 
 /* Set r=1/a mod p. Kaliski method - on entry a < p*/
-void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
+void BIG_XXX_invmodp(BIG_XXX r,const BIG_XXX a,const BIG_XXX p)
 {
-    int k, p1, pu, pv, psw, pmv;
-    BIG_XXX u, v, s, w;
+    int k;
+    int p1;
+    int pu;
+    int pv;
+    int psw;
+    int pmv;
+    BIG_XXX u;
+    BIG_XXX v;
+    BIG_XXX s;
+    BIG_XXX w;
 
     BIG_XXX_copy(u, p);
     BIG_XXX_copy(v, a);
@@ -1609,7 +1622,8 @@ void BIG_XXX_invmodp(BIG_XXX r,BIG_XXX a,BIG_XXX p)
 /* set x = x mod 2^m */
 void BIG_XXX_mod2m(BIG_XXX x,int m)
 {
-    int i,wd,bt;
+    int wd;
+    int bt;
     chunk msk;
     BIG_XXX_norm(x);
 
@@ -1617,13 +1631,14 @@ void BIG_XXX_mod2m(BIG_XXX x,int m)
     bt=m%BASEBITS_XXX;
     msk=((chunk)1<<bt)-1;
     x[wd]&=msk;
-    for (i=wd+1; i<NLEN_XXX; i++) x[i]=0;
+    for (int i=wd+1; i<NLEN_XXX; i++) x[i]=0;
 }
 
 /* set x = x mod 2^m */
 void BIG_XXX_dmod2m(DBIG_XXX x,int m)
 {
-    int i,wd,bt;
+    int wd;
+    int bt;
     chunk msk;
     BIG_XXX_norm(x);
 
@@ -1631,17 +1646,17 @@ void BIG_XXX_dmod2m(DBIG_XXX x,int m)
     bt=m%BASEBITS_XXX;
     msk=((chunk)1<<bt)-1;
     x[wd]&=msk;
-    for (i=wd+1; i<DNLEN_XXX; i++) x[i]=0;
+    for (int i=wd+1; i<DNLEN_XXX; i++) x[i]=0;
 }
 
 // new
 /* Convert to DBIG number from byte array of given length */
-void BIG_XXX_dfromBytesLen(DBIG_XXX a,char *b,int s)
+void BIG_XXX_dfromBytesLen(DBIG_XXX a,const char *b,int s)
 {
-    int i,len=s;
+    int len=s;
     BIG_XXX_dzero(a);
 
-    for (i=0; i<len; i++)
+    for (int i=0; i<len; i++)
     {
         BIG_XXX_dshl(a,8);
         a[0]+=(int)(unsigned char)b[i];

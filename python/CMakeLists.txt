@@ -19,6 +19,8 @@ cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
 include(PythonSiteDirs)
 
+add_subdirectory(benchmark)
+
 foreach(curve ${AMCL_CURVE})
   amcl_curve_field(PF "${curve}")
   amcl_curve_field(TC "${curve}")
@@ -29,7 +31,7 @@ foreach(curve ${AMCL_CURVE})
     amcl_configure_file_curve(TestMPINInstall_ZZZ.py.in TestMPINInstall_${TC}.py ${curve} __no_install)
 
     install(FILES "${amcl_mpin_${TC}_GEN_PYS}" DESTINATION ${PYTHON3_SITE_PACKAGES})
-  
+
     add_test(test_python_mpin_install_${TC} python3 TestMPINInstall_${TC}.py)
 
     # Set the LD_LIBRARY_PATH or equivalent to the libraries can be
@@ -53,8 +55,8 @@ foreach(curve ${AMCL_CURVE})
 
   if(TARGET amcl_bls_${TC})
     amcl_configure_file_curve(bls_ZZZ.py.in bls_${TC}.py ${curve} amcl_bls_${TC}_GEN_PYS)
-    amcl_configure_file_curve(run_bls_ZZZ.py.in run_bls_${TC}.py ${curve} __no_install)    
+    amcl_configure_file_curve(run_bls_ZZZ.py.in run_bls_${TC}.py ${curve} __no_install)
     install(FILES "${amcl_bls_${TC}_GEN_PYS}" DESTINATION ${PYTHON3_SITE_PACKAGES})
   endif()
-  
+
 endforeach()

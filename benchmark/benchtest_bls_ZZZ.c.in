@@ -1,0 +1,133 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+*/
+
+/* Time BLS Protocol */
+
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "config_curve_ZZZ.h"
+#include "randapi.h"
+#include "bench.h"
+
+#if CURVE_SECURITY_ZZZ == 128
+#include "bls_ZZZ.h"
+#elif CURVE_SECURITY_ZZZ == 192
+#include "bls192_ZZZ.h"
+#elif CURVE_SECURITY_ZZZ == 256
+#include "bls256_ZZZ.h"
+#endif
+
+// Support multiple security levels
+#if CURVE_SECURITY_ZZZ == 128
+#define G2LEN 4*BFS_ZZZ
+#elif CURVE_SECURITY_ZZZ == 192
+#define G2LEN 8*BFS_ZZZ
+#elif CURVE_SECURITY_ZZZ == 256
+#define G2LEN 16*BFS_ZZZ
+#endif
+
+#define MIN_TIME 10.0
+#define MIN_ITERS 10
+
+int bls(csprng *RNG)
+{
+    int rc;
+
+    char m[2000];
+    octet M = {0,sizeof(m),m};
+
+    char sk1[BGS_ZZZ];
+    octet SK1 = {0,sizeof(sk1),sk1};
+    char pk1[G2LEN];
+    octet PK1 = {0,sizeof(pk1),pk1};
+    char sig1[BFS_ZZZ+1];
+    octet SIG1 = {0,sizeof(sig1),sig1};
+
+    int iterations;
+    clock_t start;
+    double elapsed;
+
+    printf("\nBenchmark test BLS - ");
+
+    printf("ZZZ Curve\n");
+
+    print_system_info();
+
+    // Generate key pairs
+    BLS_ZZZ_KEY_PAIR_GENERATE(RNG,&SK1,&PK1);
+
+    OCT_jstring(&M,"test message");
+
+    // Sign the message
+    iterations=0;
+    start=clock();
+    do
+    {
+      BLS_ZZZ_SIGN(&SIG1,&M,&SK1);
+      iterations++;
+      elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("BLS_ZZZ_SIGN \t %8d iterations  ",iterations);
+    printf(" %8.2lf ms per iteration\n",elapsed);
+
+    // Verify signature
+    iterations=0;
+    start=clock();
+    do
+    {
+      rc=BLS_ZZZ_VERIFY(&SIG1,&M,&PK1);
+      if (rc!=BLS_OK)
+	{
+	  printf("Error: Invalid Signature\n");
+          return 1;
+	}
+      iterations++;
+      elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
+    }
+    while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+    elapsed=1000.0*elapsed/iterations;
+    printf("BLS_ZZZ_VERIFY \t %8d iterations  ",iterations);
+    printf(" %8.2lf ms per iteration\n",elapsed);
+
+    return 0;
+}
+
+int main()
+{
+    const char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
+    char seed[16] = {0};
+    octet SEED = {sizeof(seed),sizeof(seed),seed};
+
+    // CSPRNG
+    csprng RNG;
+
+    // fake random source
+    OCT_fromHex(&SEED,seedHex);
+
+    /* initialise strong RNG */
+    CREATE_CSPRNG(&RNG,&SEED);
+
+    bls(&RNG);
+
+    KILL_CSPRNG(&RNG);
+}
+

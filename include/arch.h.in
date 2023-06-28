@@ -67,16 +67,16 @@
 #define unsign64 unsigned long long  /**< 64-bit unsigned integer */
 #else
 #include <stdint.h>
-#define byte uint8_t			/**< 8-bit unsigned integer */
+typedef uint8_t byte;   		/**< 8-bit unsigned integer */
 #define sign8 int8_t			/**< 8-bit signed integer */
 #define sign16 int16_t			/**< 16-bit signed integer */
-#define sign32 int32_t			/**< 32-bit signed integer */
+typedef int32_t sign32;   		/**< 32-bit signed integer */
 #define sign64 int64_t			/**< 64-bit signed integer */
-#define unsign32 uint32_t		/**< 32-bit unsigned integer */
-#define unsign64 uint64_t		/**< 64-bit unsigned integer */
+typedef uint32_t unsign32; 		/**< 32-bit unsigned integer */
+typedef uint64_t unsign64;  	/**< 64-bit unsigned integer */
 #endif
 
-#define uchar unsigned char  /**<  Unsigned char */
+typedef unsigned char uchar;  /**<  Unsigned char */
 
 /* Don't mess with anything below this line unless you know what you are doing */
 /* This next is probably OK, but may need changing for non-C99-standard environments */
@@ -106,13 +106,13 @@
 #if CHUNK == 64
 
 #ifndef C99
-#define chunk __int64		/**< C type corresponding to word length */
+#define chunk __int64 		/**< C type corresponding to word length */
 /**< Note - no 128-bit type available    */
 #else
 #define chunk int64_t		/**< C type corresponding to word length */
 
 #if defined(__SIZEOF_INT128__) && __SIZEOF_INT128__ == 16
-#define dchunk __int128                /**< Always define double length chunk type if available (supported by GCC & Clang on 64-bit architectures) */
+#define dchunk __int128      /**< Always define double length chunk type if available (supported by GCC & Clang on 64-bit architectures) */
 #endif
 
 #endif

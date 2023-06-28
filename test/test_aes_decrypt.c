@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     bool readLine;
     FILE * fp = NULL;
     char line[LINE_LEN];
-    char * linePtr = NULL;
+    const char * linePtr = NULL;
     int l1=0;
     int blockSize;
 
@@ -76,11 +76,6 @@ int main(int argc, char** argv)
     if (!strcmp(argv[2], "ECB"))
     {
         mode = ECB;
-        blockSize=16;
-    }
-    else if (!strcmp(argv[2], "CBC"))
-    {
-        mode = CBC;
         blockSize=16;
     }
     else if (!strcmp(argv[2], "CTR"))
@@ -109,7 +104,7 @@ int main(int argc, char** argv)
 
     int lineNo=0;
     readLine = false;
-    while ( (fgets(line, LINE_LEN, fp) != NULL))
+    while (fgets(line, LINE_LEN, fp) != NULL)
     {
         if (!strncmp(line, DECRYPTStr,strlen(DECRYPTStr)))
         {
@@ -131,7 +126,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(KEYStr);
 
             // Allocate memory
-            l1 = strlen(linePtr)-1;
+            l1 = (int)strlen(linePtr)-1;
             KEYLen = l1/2;
             KEY = (char*) malloc (KEYLen);
             if (KEY==NULL)
@@ -150,7 +145,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(IVStr);
 
             // Allocate memory
-            l1 = strlen(linePtr)-1;
+            l1 = (int)strlen(linePtr)-1;
             IVLen = l1/2;
             IV = (char*) malloc (IVLen);
             if (IV==NULL)
@@ -171,7 +166,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(CIPHERTEXTStr);
 
             // Allocate memory
-            l1 = strlen(linePtr)-1;
+            l1 = (int)strlen(linePtr)-1;
             CIPHERTEXTLen = l1/2;
             CIPHERTEXT = (char*) malloc (CIPHERTEXTLen);
             if (CIPHERTEXT==NULL)
@@ -190,7 +185,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(PLAINTEXTStr);
 
             // Allocate memory
-            l1 = strlen(linePtr);
+            l1 = (int)strlen(linePtr);
             PLAINTEXT1 = (char*) malloc(CIPHERTEXTLen+1);
             if (PLAINTEXT1==NULL)
                 exit(EXIT_FAILURE);
@@ -211,9 +206,8 @@ int main(int argc, char** argv)
 #endif
 
             // Decrypt
-            int i=0;
             AES_init(&a,mode,KEYLen,KEY,IV);
-            for (i=0; i<(CIPHERTEXTLen/blockSize); i++)
+            for (int i=0; i<(CIPHERTEXTLen/blockSize); i++)
             {
                 AES_decrypt(&a,&CIPHERTEXT[i*blockSize]);
             }

@@ -52,7 +52,7 @@ void amcl_hex2bin(const char *src, char *dst, size_t src_len);
  * @param src_len length binary string
  * @param dst_len length hex encoded string
  */
-void amcl_bin2hex(char *src, char *dst, size_t src_len, size_t dst_len);
+void amcl_bin2hex(const char *src, char *dst, size_t src_len, size_t dst_len);
 
 /**
  * @brief Print encoded binary string in hex
@@ -62,7 +62,7 @@ void amcl_bin2hex(char *src, char *dst, size_t src_len, size_t dst_len);
  * @param src     Binary string
  * @param src_len length binary string
  */
-void amcl_print_hex(char *src, size_t src_len);
+void amcl_print_hex(const char *src, size_t src_len);
 
 /**
  * @brief Generate a random Octet

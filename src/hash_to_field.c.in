@@ -1,0 +1,138 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+*/
+
+/* Hashing to a finite field */
+
+#include "hash_to_field_ZZZ.h"
+
+/**
+ * @brief expand_message_xmd function as defined in draft-irtf-cfrg-hash-to-curve-16
+ * based on SHA-256.
+ * 
+ * @param bytes Output pseudo-random bytes
+ * @param byteslen Pseudo-random bytes length
+ * @param msg Input message
+ * @param msglen Input message length (in bytes)
+ * @param DST Domain separator tag
+ * @param DSTlen Domain separator tag length (in bytes), must be smaller than 256
+ * 
+ * @return 0 if successful, error code otherwise
+ */ 
+static int SHA256_expand_message_xmd(char *bytes, unsigned int byteslen,
+    const char *msg, unsigned int msglen,
+    const char *DST, unsigned int DSTlen)
+{
+    hash256 sha256_ctx;
+    unsigned int i;
+    unsigned int j;
+    unsigned int ell = (byteslen + SHA256_HASH_SIZE-1) / SHA256_HASH_SIZE; // ceil(byteslen / SHA256_HASH_SIZE)
+    char b_0[SHA256_HASH_SIZE];
+    char b_1[SHA256_HASH_SIZE];
+
+    if (bytes == NULL || msg == NULL || DST == NULL)
+        return ERR_NULLPOINTER_HASH2FIELD;
+
+    // ABORT if byteslen > 65535 or len(DST) > 255 or ell > 255 
+    if (byteslen > 65535 || DSTlen > 255 || ell > 255)
+        return ERR_BADARGLEN_HASH2FIELD;
+
+    HASH256_init(&sha256_ctx);
+    // process Z_pad = I2OSP(0, s_in_bytes)
+    for(i = 0; i < SHA256_BLOCK_SIZE; i++)
+        HASH256_process(&sha256_ctx, 0x00);
+    // process msg
+    for(i = 0; i < msglen; i++)
+        HASH256_process(&sha256_ctx, msg[i]);
+    // process l_i_b_str = I2OSP(len_in_bytes, 2)
+    HASH256_process(&sha256_ctx, (byteslen >> 8));
+    HASH256_process(&sha256_ctx, (byteslen & 0xff));
+    // process I2OSP(0, 1)
+    HASH256_process(&sha256_ctx, 0x00);
+    // process DST_prime = DST || I2OSP(len(DST), 1)
+    for(i = 0; i < DSTlen; i++)
+        HASH256_process(&sha256_ctx, DST[i]);
+    HASH256_process(&sha256_ctx, DSTlen);
+    // `b_0 = H(Z_pad || msg || l_i_b_str || I2OSP(0, 1) || DST_prime)`
+    HASH256_hash(&sha256_ctx, b_0);
+
+    // process b_0
+    for(i = 0; i < SHA256_HASH_SIZE; i++)
+        HASH256_process(&sha256_ctx, b_0[i]);
+    // process I2OSP(1, 1)
+    HASH256_process(&sha256_ctx, 0x01);
+    // process DST_prime = DST || I2OSP(len(DST), 1)
+    for(i = 0; i < DSTlen; i++)
+        HASH256_process(&sha256_ctx, DST[i]);
+    HASH256_process(&sha256_ctx, DSTlen);
+    // `b_1 = H(b_0 || I2OSP(1, 1) || DST_prime)`
+    HASH256_hash(&sha256_ctx, b_1);
+
+    // bytes = substr(b_1, 0, min(byteslen, SHA256_HASH_SIZE))
+    for(i = 0; i < SHA256_HASH_SIZE && byteslen > 0; i++, byteslen--)
+        bytes[i] = b_1[i];
+    bytes += i;
+
+    // i <= ell if and only if byteslen > 0
+    for(i = 2; i <= ell; i++) {
+        // process strxor(b_0, b_{i-1})
+        for(j = 0; j < SHA256_HASH_SIZE; j++)
+            HASH256_process(&sha256_ctx, (b_1[j] ^ b_0[j]));
+        // process I2OSP(i, 1)
+        HASH256_process(&sha256_ctx, i);
+        // process DST_prime = DST || I2OSP(len(DST), 1)
+        for(j = 0; j < DSTlen; j++)
+            HASH256_process(&sha256_ctx, DST[j]);
+        HASH256_process(&sha256_ctx, DSTlen);
+        // `b_i = H(strxor(b_0, b_{i-1}) || I2OSP(i, 1) || DST_prime)`
+        HASH256_hash(&sha256_ctx, b_1);
+        // bytes = bytes || substr(b_i, 0, min(byteslen, SHA256_HASH_SIZE))
+        for(j = 0; j < SHA256_HASH_SIZE && byteslen > 0; j++, byteslen--)
+            bytes[j] = b_1[j];
+        bytes += j;
+    }
+
+    return SUCCESS;
+}
+
+int hash_to_field_YYY(BIG_XXX elems[], unsigned int nelems, unsigned int m,
+    const char *msg, unsigned int msglen,
+    const char *DST, unsigned int DSTlen)
+{
+    if (elems == NULL || msg == NULL || DST == NULL)
+        return ERR_NULLPOINTER_HASH2FIELD;
+
+    DBIG_XXX dbig;
+    int ret = SUCCESS;
+    unsigned int L = (BIG_XXX_nbits(Modulus_YYY) + CURVE_SECURITY_ZZZ + 7) / 8; // ceil((ceil(log2(p)) + k) / 8)
+    unsigned int byteslen = L * nelems * m;
+    char bytes[byteslen];
+    const char *ptr_bytes = bytes;
+
+    ret |= SHA256_expand_message_xmd(bytes, byteslen, msg, msglen, DST, DSTlen);
+
+    while (byteslen) {
+        BIG_XXX_dfromBytesLen(dbig, ptr_bytes, L);
+        BIG_XXX_dmod(*elems, dbig, Modulus_YYY);
+        ptr_bytes += L;
+        byteslen  -= L;
+        elems += 1;
+    }
+
+    return ret;
+}

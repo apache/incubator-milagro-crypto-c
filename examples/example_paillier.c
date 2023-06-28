@@ -205,7 +205,7 @@ int paillier(csprng *RNG)
 
 int main()
 {
-    char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
+    const char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
     char seed[16] = {0};
     octet SEED = {sizeof(seed),sizeof(seed),seed};
 

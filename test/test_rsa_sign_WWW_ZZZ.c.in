@@ -154,7 +154,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(CERTStr);
             l1 = strlen(linePtr);
             char* ca_b64 = (char*) calloc (l1,sizeof(char));
-            strncpy(ca_b64,linePtr,l1-1);
+            memcpy(ca_b64,linePtr,l1-1);
             OCT_frombase64(&IO,ca_b64);
 
 #ifdef DEBUG

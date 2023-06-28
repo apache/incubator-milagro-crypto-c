@@ -27,16 +27,14 @@ under the License.
 /* x=y */
 void FF_WWW_copy(BIG_XXX x[],BIG_XXX y[],int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_copy(x[i],y[i]);
 }
 
 /* x=y<<n */
 static void FF_WWW_dsucopy(BIG_XXX x[],BIG_XXX y[],int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
     {
         BIG_XXX_copy(x[n+i],y[i]);
         BIG_XXX_zero(x[i]);
@@ -46,8 +44,7 @@ static void FF_WWW_dsucopy(BIG_XXX x[],BIG_XXX y[],int n)
 /* x=y */
 static void FF_WWW_dscopy(BIG_XXX x[],BIG_XXX y[],int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
     {
         BIG_XXX_copy(x[i],y[i]);
         BIG_XXX_zero(x[n+i]);
@@ -57,26 +54,23 @@ static void FF_WWW_dscopy(BIG_XXX x[],BIG_XXX y[],int n)
 /* x=y>>n */
 static void FF_WWW_sducopy(BIG_XXX x[],BIG_XXX y[],int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_copy(x[i],y[n+i]);
 }
 
 /* set to zero */
 void FF_WWW_zero(BIG_XXX x[],int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_zero(x[i]);
 }
 
 /* test equals 0 */
 int FF_WWW_iszilch(BIG_XXX x[],int n)
 {
-    int i;
     int rc = 1;
 
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         rc &= BIG_XXX_iszilch(x[i]);
 
     return rc;
@@ -85,12 +79,11 @@ int FF_WWW_iszilch(BIG_XXX x[],int n)
 /* test equals 1 */
 int FF_WWW_isunity(BIG_XXX x[], int n)
 {
-    int i;
     int rc;
 
     rc = BIG_XXX_isunity(x[0]);
 
-    for (i=1; i<n; i++)
+    for (int i=1; i<n; i++)
         rc &= BIG_XXX_iszilch(x[i]);
 
     return rc;
@@ -99,8 +92,7 @@ int FF_WWW_isunity(BIG_XXX x[], int n)
 /* shift right by BIGBITS-bit words */
 static void FF_WWW_shrw(BIG_XXX a[],int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
     {
         BIG_XXX_copy(a[i],a[i+n]);
         BIG_XXX_zero(a[i+n]);
@@ -110,8 +102,7 @@ static void FF_WWW_shrw(BIG_XXX a[],int n)
 /* shift left by BIGBITS-bit words */
 static void FF_WWW_shlw(BIG_XXX a[],int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
     {
         BIG_XXX_copy(a[i+n],a[i]);
         BIG_XXX_zero(a[i]);
@@ -133,16 +124,14 @@ int FF_WWW_lastbits(BIG_XXX x[],int m)
 /* x=1 */
 void FF_WWW_one(BIG_XXX x[],int n)
 {
-    int i;
     BIG_XXX_one(x[0]);
-    for (i=1; i<n; i++)
+    for (int i=1; i<n; i++)
         BIG_XXX_zero(x[i]);
 }
 
 /* x=m, where m is 32-bit int */
 void FF_WWW_init(BIG_XXX x[],sign32 m,int n)
 {
-    int i;
     BIG_XXX_zero(x[0]);
 #if CHUNK<64
     x[0][0]=(chunk)(m&BMASK_XXX);
@@ -150,19 +139,18 @@ void FF_WWW_init(BIG_XXX x[],sign32 m,int n)
 #else
     x[0][0]=(chunk)m;
 #endif
-    for (i=1; i<n; i++)
+    for (int i=1; i<n; i++)
         BIG_XXX_zero(x[i]);
 }
 
 /* compare x and y - must be normalised */
 int FF_WWW_comp(BIG_XXX x[],BIG_XXX y[],int n)
 {
-    int i;
     int c;
     int eq = 1;
     int gt = 0;
 
-    for (i=n-1; i>=0; i--)
+    for (int i=n-1; i>=0; i--)
     {
         c = BIG_XXX_comp(x[i],y[i]);
         gt += eq * (c * c + c);
@@ -175,40 +163,35 @@ int FF_WWW_comp(BIG_XXX x[],BIG_XXX y[],int n)
 /* recursive add */
 static void FF_WWW_radd(BIG_XXX z[],int zp,BIG_XXX x[],int xp,BIG_XXX y[],int yp,int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_add(z[zp+i],x[xp+i],y[yp+i]);
 }
 
 /* recursive inc */
 static void FF_WWW_rinc(BIG_XXX z[],int zp,BIG_XXX y[],int yp,int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_add(z[zp+i],z[zp+i],y[yp+i]);
 }
 
 /* recursive dec */
 static void FF_WWW_rdec(BIG_XXX z[],int zp,BIG_XXX y[],int yp,int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_sub(z[zp+i],z[zp+i],y[yp+i]);
 }
 
 /* simple add */
 void FF_WWW_add(BIG_XXX z[],BIG_XXX x[],BIG_XXX y[],int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_add(z[i],x[i],y[i]);
 }
 
 /* simple sub */
 void FF_WWW_sub(BIG_XXX z[],BIG_XXX x[],BIG_XXX y[],int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_sub(z[i],x[i],y[i]);
 }
 
@@ -228,7 +211,7 @@ void FF_WWW_dec(BIG_XXX x[],int m,int n)
 /* normalise - but hold any overflow in top part unless n<0 */
 static void FF_WWW_rnorm(BIG_XXX z[],int zp,int n)
 {
-    int i,trunc=0;
+    int trunc=0;
     chunk carry;
     if (n<0)
     {
@@ -236,7 +219,7 @@ static void FF_WWW_rnorm(BIG_XXX z[],int zp,int n)
         n=-n;
         trunc=1;
     }
-    for (i=0; i<n-1; i++)
+    for (int i=0; i<n-1; i++)
     {
         carry=BIG_XXX_norm(z[zp+i]);
 
@@ -255,9 +238,9 @@ void FF_WWW_norm(BIG_XXX z[],int n)
 /* shift left by one bit */
 void FF_WWW_shl(BIG_XXX x[],int n)
 {
-    int i;
-    int carry,delay_carry=0;
-    for (i=0; i<n-1; i++)
+    int carry;
+    int delay_carry=0;
+    for (int i=0; i<n-1; i++)
     {
         carry=BIG_XXX_fshl(x[i],1);
         x[i][0]|=delay_carry;
@@ -271,9 +254,8 @@ void FF_WWW_shl(BIG_XXX x[],int n)
 /* shift right by one bit */
 void FF_WWW_shr(BIG_XXX x[],int n)
 {
-    int i;
     int carry;
-    for (i=n-1; i>0; i--)
+    for (int i=n-1; i>0; i--)
     {
         carry=BIG_XXX_fshr(x[i],1);
         x[i-1][NLEN_XXX-1]|=(chunk)carry<<P_TBITS_WWW;
@@ -283,9 +265,8 @@ void FF_WWW_shr(BIG_XXX x[],int n)
 
 void FF_WWW_output(BIG_XXX x[],int n)
 {
-    int i;
     FF_WWW_norm(x,n);
-    for (i=n-1; i>=0; i--)
+    for (int i=n-1; i>=0; i--)
     {
         BIG_XXX_output(x[i]);
         printf(" ");
@@ -294,8 +275,7 @@ void FF_WWW_output(BIG_XXX x[],int n)
 
 void FF_WWW_rawoutput(BIG_XXX x[],int n)
 {
-    int i;
-    for (i=n-1; i>=0; i--)
+    for (int i=n-1; i>=0; i--)
     {
         BIG_XXX_rawoutput(x[i]);
         printf(" ");
@@ -305,18 +285,16 @@ void FF_WWW_rawoutput(BIG_XXX x[],int n)
 /* Convert FFs to/from octet strings */
 void FF_WWW_toOctet(octet *w,BIG_XXX x[],int n)
 {
-    int i;
     w->len=n*MODBYTES_XXX;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
     {
         BIG_XXX_toBytes(&(w->val[(n-i-1)*MODBYTES_XXX]),x[i]);
     }
 }
 
-void FF_WWW_fromOctet(BIG_XXX x[],octet *w,int n)
+void FF_WWW_fromOctet(BIG_XXX x[],const octet *w,int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
     {
         BIG_XXX_fromBytes(x[i],&(w->val[(n-i-1)*MODBYTES_XXX]));
     }
@@ -325,8 +303,7 @@ void FF_WWW_fromOctet(BIG_XXX x[],octet *w,int n)
 /* in-place swapping using xor - side channel resistant */
 static void FF_WWW_cswap(BIG_XXX a[],BIG_XXX b[],int d,int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_cswap(a[i],b[i],d);
     return;
 }
@@ -334,8 +311,7 @@ static void FF_WWW_cswap(BIG_XXX a[],BIG_XXX b[],int d,int n)
 /* copy b to a - side channel resistant */
 static void FF_WWW_cmove(BIG_XXX a[],BIG_XXX b[],int d,int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
         BIG_XXX_cmove(a[i],b[i],d);
     return;
 }
@@ -562,12 +538,23 @@ void FF_WWW_dmod(BIG_XXX r[],BIG_XXX a[],BIG_XXX b[],int n)
 void FF_WWW_invmodp(BIG_XXX r[],BIG_XXX a[],BIG_XXX p[],int n)
 {
 #ifndef C99
-    BIG_XXX u[FFLEN_WWW],v[FFLEN_WWW],s[FFLEN_WWW],w[FFLEN_WWW];
+    BIG_XXX u[FFLEN_WWW];
+    BIG_XXX v[FFLEN_WWW];
+    BIG_XXX s[FFLEN_WWW];
+    BIG_XXX w[FFLEN_WWW];
 #else
-    BIG_XXX u[n],v[n],s[n],w[n];
+    BIG_XXX u[n];
+    BIG_XXX v[n];
+    BIG_XXX s[n];
+    BIG_XXX w[n];
 #endif
 
-    int k, p1, pu, pv, psw, pmv;
+    int k;
+    int p1;
+    int pu;
+    int pv;
+    int psw;
+    int pmv;
 
     FF_WWW_copy(u, p, n);
     FF_WWW_copy(v, a, n);
@@ -646,19 +633,20 @@ void FF_WWW_invmodp(BIG_XXX r[],BIG_XXX a[],BIG_XXX p[],int n)
 /* nesidue mod m */
 static void FF_WWW_nres(BIG_XXX a[],BIG_XXX m[],int n)
 {
-#ifndef C99
-    BIG_XXX d[2*FFLEN_WWW];
-#else
-    BIG_XXX d[2*n];
-#endif
     if (n==1)
     {
-        BIG_XXX_dscopy(d[0],a[0]);
-        BIG_XXX_dshl(d[0],NLEN_XXX*BASEBITS_XXX);
-        BIG_XXX_dmod(a[0],d[0],m[0]);
+        DBIG_XXX d;
+        BIG_XXX_dscopy(d,a[0]);
+        BIG_XXX_dshl(d,NLEN_XXX*BASEBITS_XXX);
+        BIG_XXX_dmod(a[0],d,m[0]);
     }
     else
     {
+#ifndef C99
+        BIG_XXX d[2*FFLEN_WWW];
+#else
+        BIG_XXX d[2*n];
+#endif
         FF_WWW_dsucopy(d,a,n);
         FF_WWW_dmod(a,d,m,n);
     }
@@ -666,19 +654,20 @@ static void FF_WWW_nres(BIG_XXX a[],BIG_XXX m[],int n)
 
 static void FF_WWW_redc(BIG_XXX a[],BIG_XXX m[],BIG_XXX ND[],int n)
 {
-#ifndef C99
-    BIG_XXX d[2*FFLEN_WWW];
-#else
-    BIG_XXX d[2*n];
-#endif
     if (n==1)
     {
-        BIG_XXX_dzero(d[0]);
-        BIG_XXX_dscopy(d[0],a[0]);
-        BIG_XXX_monty(a[0],m[0],((chunk)1<<BASEBITS_XXX)-ND[0][0],d[0]);
+        DBIG_XXX d;
+        BIG_XXX_dzero(d);
+        BIG_XXX_dscopy(d,a[0]);
+        BIG_XXX_monty(a[0],m[0],((chunk)1<<BASEBITS_XXX)-ND[0][0],d);
     }
     else
     {
+#ifndef C99
+        BIG_XXX d[2*FFLEN_WWW];
+#else
+        BIG_XXX d[2*n];
+#endif
         FF_WWW_mod(a,m,n);
         FF_WWW_dscopy(d,a,n);
         FF_WWW_reduce(a,d,m,ND,n);
@@ -689,11 +678,14 @@ static void FF_WWW_redc(BIG_XXX a[],BIG_XXX m[],BIG_XXX ND[],int n)
 /* U=1/a mod 2^m - Arazi & Qi */
 void FF_WWW_invmod2m(BIG_XXX U[],BIG_XXX a[],int n)
 {
-    int i;
 #ifndef C99
-    BIG_XXX t1[FFLEN_WWW],b[FFLEN_WWW],c[FFLEN_WWW];
+    BIG_XXX t1[FFLEN_WWW];
+    BIG_XXX b[FFLEN_WWW];
+    BIG_XXX c[FFLEN_WWW];
 #else
-    BIG_XXX t1[2*n],b[n],c[n];
+    BIG_XXX t1[2*n];
+    BIG_XXX b[n];
+    BIG_XXX c[n];
 #endif
 
     FF_WWW_zero(U,n);
@@ -703,7 +695,7 @@ void FF_WWW_invmod2m(BIG_XXX U[],BIG_XXX a[],int n)
 
     BIG_XXX_copy(U[0],a[0]);
     BIG_XXX_invmod2m(U[0]);
-    for (i=1; i<n; i<<=1)
+    for (int i=1; i<n; i<<=1)
     {
         FF_WWW_copy(b,a,i);
         FF_WWW_mul(t1,U,b,i);
@@ -729,8 +721,7 @@ void FF_WWW_invmod2m(BIG_XXX U[],BIG_XXX a[],int n)
 
 void FF_WWW_random(BIG_XXX x[],csprng *rng,int n)
 {
-    int i;
-    for (i=0; i<n; i++)
+    for (int i=0; i<n; i++)
     {
         BIG_XXX_random(x[i],rng);
     }
@@ -741,13 +732,12 @@ void FF_WWW_random(BIG_XXX x[],csprng *rng,int n)
 /* generate random x mod p */
 void FF_WWW_randomnum(BIG_XXX x[],BIG_XXX p[],csprng *rng,int n)
 {
-    int i;
 #ifndef C99
     BIG_XXX d[2*FFLEN_WWW];
 #else
     BIG_XXX d[2*n];
 #endif
-    for (i=0; i<2*n; i++)
+    for (int i=0; i<2*n; i++)
     {
         BIG_XXX_random(d[i],rng);
     }
@@ -756,11 +746,6 @@ void FF_WWW_randomnum(BIG_XXX x[],BIG_XXX p[],csprng *rng,int n)
 
 static void FF_WWW_modmul(BIG_XXX z[],BIG_XXX x[],BIG_XXX y[],BIG_XXX p[],BIG_XXX ND[],int n)
 {
-#ifndef C99
-    BIG_XXX d[2*FFLEN_WWW];
-#else
-    BIG_XXX d[2*n];
-#endif
     chunk ex=P_EXCESS_WWW(x[n-1]);
     chunk ey=P_EXCESS_WWW(y[n-1]);
 #ifdef dchunk
@@ -777,11 +762,17 @@ static void FF_WWW_modmul(BIG_XXX z[],BIG_XXX x[],BIG_XXX y[],BIG_XXX p[],BIG_XX
 
     if (n==1)
     {
-        BIG_XXX_mul(d[0],x[0],y[0]);
-        BIG_XXX_monty(z[0],p[0],((chunk)1<<BASEBITS_XXX)-ND[0][0],d[0]);
+        DBIG_XXX d;
+        BIG_XXX_mul(d,x[0],y[0]);
+        BIG_XXX_monty(z[0],p[0],((chunk)1<<BASEBITS_XXX)-ND[0][0],d);
     }
     else
     {
+#ifndef C99
+        BIG_XXX d[2*FFLEN_WWW];
+#else
+        BIG_XXX d[2*n];
+#endif
         FF_WWW_mul(d,x,y,n);
         FF_WWW_reduce(z,d,p,ND,n);
     }
@@ -789,11 +780,6 @@ static void FF_WWW_modmul(BIG_XXX z[],BIG_XXX x[],BIG_XXX y[],BIG_XXX p[],BIG_XX
 
 static void FF_WWW_modsqr(BIG_XXX z[],BIG_XXX x[],BIG_XXX p[],BIG_XXX ND[],int n)
 {
-#ifndef C99
-    BIG_XXX d[2*FFLEN_WWW];
-#else
-    BIG_XXX d[2*n];
-#endif
     chunk ex=P_EXCESS_WWW(x[n-1]);
 #ifdef dchunk
     if ((dchunk)(ex+1)*(ex+1)>(dchunk)P_FEXCESS_WWW)
@@ -808,11 +794,17 @@ static void FF_WWW_modsqr(BIG_XXX z[],BIG_XXX x[],BIG_XXX p[],BIG_XXX ND[],int n
     }
     if (n==1)
     {
-        BIG_XXX_sqr(d[0],x[0]);
-        BIG_XXX_monty(z[0],p[0],((chunk)1<<BASEBITS_XXX)-ND[0][0],d[0]);
+        DBIG_XXX d;
+        BIG_XXX_sqr(d,x[0]);
+        BIG_XXX_monty(z[0],p[0],((chunk)1<<BASEBITS_XXX)-ND[0][0],d);
     }
     else
     {
+#ifndef C99
+        BIG_XXX d[2*FFLEN_WWW];
+#else
+        BIG_XXX d[2*n];
+#endif
         FF_WWW_sqr(d,x,n);
         FF_WWW_reduce(z,d,p,ND,n);
     }
@@ -820,12 +812,14 @@ static void FF_WWW_modsqr(BIG_XXX z[],BIG_XXX x[],BIG_XXX p[],BIG_XXX ND[],int n
 
 void FF_WWW_2w_precompute(BIG_XXX *X[], BIG_XXX *T[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen)
 {
-    int i, j, z, b;
+    int j;
+    int z;
+    int b;
 
     FF_WWW_one(T[0], plen);
     FF_WWW_nres(T[0], p, plen);
 
-    for (i = 0; i < k; i++)
+    for (int i = 0; i < k; i++)
     {
         j = 1<<(i*w);
 
@@ -855,8 +849,8 @@ void FF_WWW_2w_precompute(BIG_XXX *X[], BIG_XXX *T[], int k, int w, BIG_XXX p[],
 
 void FF_WWW_ct_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen, int elen)
 {
-    int i, j;
-    sign32 index, e;
+    int j;
+    sign32 e;
 
 #ifndef C99
     BIG_XXX ws[FFLEN_WWW];
@@ -867,7 +861,7 @@ void FF_WWW_ct_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG
     FF_WWW_one(r, plen);
     FF_WWW_nres(r, p, plen);
 
-    for (i=8*MODBYTES_XXX*elen-w; i>=0; i-=w)
+    for (int i=8*MODBYTES_XXX*elen-w; i>=0; i-=w)
     {
         // Square
         for (j=0; j<w; j++)
@@ -884,7 +878,7 @@ void FF_WWW_ct_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG
             e |= BIG_XXX_bits(E[j][i/BIGBITS_XXX],i%BIGBITS_XXX,w);
         }
 
-        for (index = 0; index < 1<<(w*k); index++)
+        for (sign32 index = 0; index < 1<<(w*k); index++)
         {
             FF_WWW_cmove(ws, T[index], ct_equals(index,e), plen);
         }
@@ -897,12 +891,13 @@ void FF_WWW_ct_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG
 
 void FF_WWW_nt_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen, int elen)
 {
-    int i, j, e;
+    int j;
+    int e;
 
     FF_WWW_one(r, plen);
     FF_WWW_nres(r, p, plen);
 
-    for (i=8*MODBYTES_XXX*elen-w; i>=0; i-=w)
+    for (int i=8*MODBYTES_XXX*elen-w; i>=0; i-=w)
     {
         // Square
         for (j=0; j<w; j++)
@@ -931,7 +926,8 @@ void FF_WWW_nt_2w_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG
 
 void FF_WWW_bi_precompute(BIG_XXX *X[], BIG_XXX *T[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen)
 {
-    int i, j, window;
+    int j;
+    int window;
 
 #ifndef C99
     BIG_XXX gsqr[FFLEN_WWW];
@@ -942,7 +938,7 @@ void FF_WWW_bi_precompute(BIG_XXX *X[], BIG_XXX *T[], int k, int w, BIG_XXX p[],
     window = 1<<(w-1);
     j = 0;
 
-    for (i=0; i<k; i++)
+    for (int i=0; i<k; i++)
     {
         FF_WWW_copy(T[j], X[i], plen);
         FF_WWW_nres(T[j], p, plen);
@@ -958,7 +954,8 @@ void FF_WWW_bi_precompute(BIG_XXX *X[], BIG_XXX *T[], int k, int w, BIG_XXX p[],
 
 void FF_WWW_bi_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XXX p[], BIG_XXX ND[], int plen, int elen)
 {
-    int i, j, l, pos;
+    int i;
+    int pos;
 
 #ifndef C99
     int w_handle[4];
@@ -980,18 +977,24 @@ void FF_WWW_bi_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XX
     {
         FF_WWW_modsqr(r,r,p,ND,plen);
 
-        for (j=0; j<k; j++)
+        for (int j=0; j<k; j++)
         {
             // Prepare table entry and position for multiplication if none
             // is selected
             if (w_handle[j] < 0 && (BIG_XXX_bit(E[j][i/BIGBITS_XXX], i%BIGBITS_XXX) == 1))
             {
+				// Ensure that the starting position in the following loop is non-negative
+				int tpos;
+				tpos = i - w + 1;
+				if ( tpos < 0 )
+					tpos = 0;
+
                 // Skip position until the exponent is odd
-                for(pos = i - w + 1; BIG_XXX_bit(E[j][pos/BIGBITS_XXX], pos%BIGBITS_XXX) == 0; pos++);
+                for(pos = tpos; BIG_XXX_bit(E[j][pos/BIGBITS_XXX], pos%BIGBITS_XXX) == 0; pos++);
 
                 // Save exponent for multiplication step
                 e[j] = 0;
-                for(l=i; l>pos; l--)
+                for(int l=i; l>pos; l--)
                 {
                     e[j] <<= 1;
                     e[j] |= BIG_XXX_bit(E[j][l/BIGBITS_XXX], l%BIGBITS_XXX);
@@ -1017,20 +1020,24 @@ void FF_WWW_bi_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XX
 }
 
 /* r=x^e mod p using side-channel resistant Montgomery Ladder, for short e */
-void FF_WWW_ct_pow_big(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX p[],int n)
+void FF_WWW_ct_pow_big(BIG_XXX r[],BIG_XXX x[],const BIG_XXX e,BIG_XXX p[],int n)
 {
-    int i,b;
+    int b;
 #ifndef C99
-    BIG_XXX R0[FFLEN_WWW],R1[FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX R0[FFLEN_WWW];
+    BIG_XXX R1[FFLEN_WWW];
+    BIG_XXX ND[FFLEN_WWW];
 #else
-    BIG_XXX R0[n],R1[n],ND[n];
+    BIG_XXX R0[n];
+    BIG_XXX R1[n];
+    BIG_XXX ND[n];
 #endif
     FF_WWW_invmod2m(ND,p,n);
     FF_WWW_one(R0,n);
     FF_WWW_copy(R1,x,n);
     FF_WWW_nres(R0,p,n);
     FF_WWW_nres(R1,p,n);
-    for (i=8*MODBYTES_XXX-1; i>=0; i--)
+    for (int i=8*MODBYTES_XXX-1; i>=0; i--)
     {
         b=BIG_XXX_bit(e,i);
         FF_WWW_modmul(r,R0,R1,p,ND,n);
@@ -1047,9 +1054,11 @@ void FF_WWW_ct_pow_big(BIG_XXX r[],BIG_XXX x[],BIG_XXX e,BIG_XXX p[],int n)
 void FF_WWW_ct_pow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX p[],int n, int en)
 {
 #ifndef C99
-    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[16][FFLEN_WWW];
+    BIG_XXX ND[FFLEN_WWW];
 #else
-    BIG_XXX T_mem[16][n],ND[n];
+    BIG_XXX T_mem[16][n];
+    BIG_XXX ND[n];
 #endif
 
     BIG_XXX *T[] =
@@ -1073,9 +1082,11 @@ void FF_WWW_ct_pow(BIG_XXX r[],BIG_XXX x[],BIG_XXX e[],BIG_XXX p[],int n, int en
 void FF_WWW_ct_pow_2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX p[], int n, int en)
 {
 #ifndef C99
-    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[16][FFLEN_WWW];
+    BIG_XXX ND[FFLEN_WWW];
 #else
-    BIG_XXX T_mem[16][n],ND[n];
+    BIG_XXX T_mem[16][n];
+    BIG_XXX ND[n];
 #endif
 
     BIG_XXX *T[] =
@@ -1099,9 +1110,11 @@ void FF_WWW_ct_pow_2(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX 
 void FF_WWW_ct_pow_3(BIG_XXX r[],BIG_XXX x[], BIG_XXX e[], BIG_XXX y[], BIG_XXX f[], BIG_XXX z[], BIG_XXX g[], BIG_XXX p[], int n, int en)
 {
 #ifndef C99
-    BIG_XXX T_mem[8][FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[8][FFLEN_WWW];
+    BIG_XXX ND[FFLEN_WWW];
 #else
-    BIG_XXX T_mem[8][n],ND[n];
+    BIG_XXX T_mem[8][n];
+    BIG_XXX ND[n];
 #endif
 
     BIG_XXX *T[] =
@@ -1124,9 +1137,11 @@ void FF_WWW_nt_pow_int(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
 {
     int f=1;
 #ifndef C99
-    BIG_XXX w[FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX w[FFLEN_WWW];
+    BIG_XXX ND[FFLEN_WWW];
 #else
-    BIG_XXX w[n],ND[n];
+    BIG_XXX w[n];
+    BIG_XXX ND[n];
 #endif
     FF_WWW_invmod2m(ND,p,n);
 
@@ -1157,9 +1172,11 @@ void FF_WWW_nt_pow_int(BIG_XXX r[],BIG_XXX x[],int e,BIG_XXX p[],int n)
 void FF_WWW_nt_pow(BIG_XXX r[], BIG_XXX x[], BIG_XXX e[], BIG_XXX p[], int n, int en)
 {
 #ifndef C99
-    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[16][FFLEN_WWW];
+    BIG_XXX ND[FFLEN_WWW];
 #else
-    BIG_XXX T_mem[16][n],ND[n];
+    BIG_XXX T_mem[16][n];
+    BIG_XXX ND[n];
 #endif
 
     BIG_XXX *T[] =
@@ -1182,9 +1199,11 @@ void FF_WWW_nt_pow(BIG_XXX r[], BIG_XXX x[], BIG_XXX e[], BIG_XXX p[], int n, in
 void FF_WWW_nt_pow_2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *p,int n, int en)
 {
 #ifndef C99
-    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[16][FFLEN_WWW];
+    BIG_XXX ND[FFLEN_WWW];
 #else
-    BIG_XXX T_mem[16][n],ND[n];
+    BIG_XXX T_mem[16][n];
+    BIG_XXX ND[n];
 #endif
 
     BIG_XXX *T[] =
@@ -1207,9 +1226,11 @@ void FF_WWW_nt_pow_2(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, B
 void FF_WWW_nt_pow_3(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *p, int n, int en)
 {
 #ifndef C99
-    BIG_XXX T_mem[8][FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[8][FFLEN_WWW];
+    BIG_XXX ND[FFLEN_WWW];
 #else
-    BIG_XXX T_mem[8][n],ND[n];
+    BIG_XXX T_mem[8][n];
+    BIG_XXX ND[n];
 #endif
 
     BIG_XXX *T[] =
@@ -1230,9 +1251,11 @@ void FF_WWW_nt_pow_3(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, B
 void FF_WWW_nt_pow_4(BIG_XXX *r,BIG_XXX *x,BIG_XXX *e, BIG_XXX *y, BIG_XXX *f, BIG_XXX *z, BIG_XXX *g, BIG_XXX *w, BIG_XXX *h, BIG_XXX *p, int n, int en)
 {
 #ifndef C99
-    BIG_XXX T_mem[16][FFLEN_WWW],ND[FFLEN_WWW];
+    BIG_XXX T_mem[16][FFLEN_WWW];
+    BIG_XXX ND[FFLEN_WWW];
 #else
-    BIG_XXX T_mem[16][n],ND[n];
+    BIG_XXX T_mem[16][n];
+    BIG_XXX ND[n];
 #endif
 
     BIG_XXX *T[] =
@@ -1258,7 +1281,10 @@ static sign32 igcd(sign32 x,sign32 y)
     sign32 r;
     if (y==0) return x;
     while ((r=x%y)!=0)
-        x=y,y=r;
+    {
+        x=y;
+        y=r;
+    }
     return y;
 }
 
@@ -1268,9 +1294,11 @@ int FF_WWW_cfactor(BIG_XXX w[],sign32 s,int n)
     int r;
     sign32 g;
 #ifndef C99
-    BIG_XXX x[FFLEN_WWW],y[FFLEN_WWW];
+    BIG_XXX x[FFLEN_WWW];
+    BIG_XXX y[FFLEN_WWW];
 #else
-    BIG_XXX x[n],y[n];
+    BIG_XXX x[n];
+    BIG_XXX y[n];
 #endif
     FF_WWW_init(y,s,n);
     FF_WWW_copy(x,w,n);
@@ -1296,11 +1324,16 @@ int FF_WWW_cfactor(BIG_XXX w[],sign32 s,int n)
 /* Miller-Rabin test for primality. Slow. */
 int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 {
-    int i,j,loop,s=0;
+    int loop;
+    int s=0;
 #ifndef C99
-    BIG_XXX d[FFLEN_WWW],x[FFLEN_WWW],nm1[FFLEN_WWW];
+    BIG_XXX d[FFLEN_WWW];
+    BIG_XXX x[FFLEN_WWW];
+    BIG_XXX nm1[FFLEN_WWW];
 #else
-    BIG_XXX d[n],x[n],nm1[n];
+    BIG_XXX d[n];
+    BIG_XXX x[n];
+    BIG_XXX nm1[n];
 #endif
     sign32 sf=4849845;/* 3*5*.. *19 */
 
@@ -1319,13 +1352,13 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
     }
     if (s==0) return 0;
 
-    for (i=0; i<10; i++)
+    for (int i=0; i<10; i++)
     {
         FF_WWW_randomnum(x,p,rng,n);
         FF_WWW_nt_pow(x,x,d,p,n,n);
         if (FF_WWW_isunity(x,n) || FF_WWW_comp(x,nm1,n)==0) continue;
         loop=0;
-        for (j=1; j<s; j++)
+        for (int j=1; j<s; j++)
         {
             FF_WWW_nt_pow_int(x,x,2,p,n);
             if (FF_WWW_isunity(x,n)) return 0;
@@ -1346,9 +1379,13 @@ int FF_WWW_prime(BIG_XXX p[],csprng *rng,int n)
 void FF_WWW_crt(BIG_XXX *r, BIG_XXX *rp, BIG_XXX *rq, BIG_XXX *p, BIG_XXX *invp, BIG_XXX *pq, int n)
 {
 #ifndef C99
-    BIG_XXX c[FFLEN_WWW], a[FFLEN_WWW], b[2*FFLEN_WWW];
+    BIG_XXX c[FFLEN_WWW];
+    BIG_XXX a[FFLEN_WWW];
+    BIG_XXX b[2*FFLEN_WWW];
 #else
-    BIG_XXX c[2*n], a[2*n], b[4*n];
+    BIG_XXX c[2*n];
+    BIG_XXX a[2*n];
+    BIG_XXX b[4*n];
 #endif
 
     // c = p * (p^-1 mod q)

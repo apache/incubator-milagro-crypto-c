@@ -109,7 +109,7 @@ int paillier(csprng *RNG)
     {
         PAILLIER_KEY_PAIR(RNG, NULL, NULL,&PUB, &PRIV);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -135,7 +135,7 @@ int paillier(csprng *RNG)
     {
         PAILLIER_ENCRYPT(RNG, &PUB, &PTIN[0], &CT[0], NULL);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -144,14 +144,14 @@ int paillier(csprng *RNG)
 
     PAILLIER_ENCRYPT(RNG, &PUB, &PTIN[1], &CT[1], NULL);
 
-    // Multiple by constant
+    // Multiply by constant
     iterations=0;
     start=clock();
     do
     {
         PAILLIER_MULT(&PUB, &CT[0], &PTK[0], &CTA[0]);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -167,7 +167,7 @@ int paillier(csprng *RNG)
     {
         PAILLIER_ADD(&PUB, &CTA[0], &CTA[1], &CT3);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -181,7 +181,7 @@ int paillier(csprng *RNG)
     {
         PAILLIER_DECRYPT(&PRIV, &CT3, &PT3);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -219,7 +219,7 @@ int paillier(csprng *RNG)
 
 int main()
 {
-    char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
+    const char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
     char seed[16] = {0};
     octet SEED = {sizeof(seed),sizeof(seed),seed};
 

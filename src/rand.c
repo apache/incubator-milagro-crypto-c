@@ -33,8 +33,10 @@ under the License.
 static unsign32 sbrand(csprng *rng)
 {
     /* Marsaglia & Zaman random number generator */
-    int i,k;
-    unsign32 pdiff,t;
+    int i;
+    int k;
+    unsign32 pdiff;
+    unsign32 t;
     rng->rndptr++;
     if (rng->rndptr<NK) return rng->ira[rng->rndptr];
     rng->rndptr=0;
@@ -58,8 +60,10 @@ static void sirand(csprng* rng,unsign32 seed)
     /* initialise random number system */
     /* modified so that a subsequent call "stirs" in another seed value */
     /* in this way as many seed bits as desired may be used */
-    int i,in;
-    unsign32 t,m=1;
+    int i;
+    int in;
+    unsign32 t;
+    unsign32 m=1;
     rng->borrow=0L;
     rng->rndptr=0;
     rng->ira[0]^=seed;
@@ -79,10 +83,9 @@ static void sirand(csprng* rng,unsign32 seed)
 static void fill_pool(csprng *rng)
 {
     /* hash down output of RNG to re-fill the pool */
-    int i;
     hash256 sh;
     HASH256_init(&sh);
-    for (i=0; i<128; i++) HASH256_process(&sh,sbrand(rng));
+    for (int i=0; i<128; i++) HASH256_process(&sh,sbrand(rng));
     HASH256_hash(&sh,rng->pool);
     rng->pool_ptr=0;
 }
@@ -95,7 +98,7 @@ static unsign32 pack(const uchar *b)
 
 /* SU= 360 */
 /* Initialize RNG with some real entropy from some external source */
-void RAND_seed(csprng *rng,int rawlen,char *raw)
+void RAND_seed(csprng *rng,int rawlen,const char *raw)
 {
     /* initialise from at least 128 byte string of raw  *
      * random (keyboard?) input, and 32-bit time-of-day */
@@ -120,7 +123,6 @@ void RAND_seed(csprng *rng,int rawlen,char *raw)
             b[1]=digest[4*i+1];
             b[2]=digest[4*i+2];
             b[3]=digest[4*i+3];
-            //	printf("%08x\n",pack(b));
             sirand(rng,pack(b));
         }
     }
@@ -147,26 +149,3 @@ int RAND_byte(csprng *rng)
     if (rng->pool_ptr>=32) fill_pool(rng);
     return (r&0xff);
 }
-
-/* test main program */
-/*
-#include <stdio.h>
-#include <string.h>
-
-void main()
-{
-    int i;
-    char raw[256];
-    csprng rng;
-
-	RAND_clean(&rng);
-
-
-	for (i=0;i<256;i++) raw[i]=(char)i;
-    RAND_seed(&rng,256,raw);
-
-	for (i=0;i<1000;i++)
-		printf("%02x ",(unsigned char)RAND_byte(&rng));
-}
-
-*/

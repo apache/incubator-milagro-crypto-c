@@ -28,7 +28,7 @@
 
 void read_OCTET(octet* OCT, char* string)
 {
-    int len = strlen(string);
+    int len = (int)strlen(string);
     char buff[len];
     memcpy(buff,string,len);
     char *end = strchr(buff,',');
@@ -43,7 +43,7 @@ void read_OCTET(octet* OCT, char* string)
 
 void read_FF_4096(BIG_512_60 *x, char* string, int n)
 {
-    int len = strlen(string);
+    int len = (int)strlen(string);
     char oct[len/2];
     octet OCT = {0, len/2, oct};
 
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
         // Read TEST Number
         if (!strncmp(line,TESTline, strlen(TESTline)))
         {
-            len = strlen(TESTline);
+            len = (int)strlen(TESTline);
             linePtr = line + len;
             sscanf(linePtr,"%d\n",&testNo);
         }
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
         // Read N
         if (!strncmp(line,Nline, strlen(Nline)))
         {
-            len = strlen(Nline);
+            len = (int)strlen(Nline);
             linePtr = line + len;
             read_FF_4096(PUB.n, linePtr, HFLEN_4096);
 
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
         // Read CIPHERTEXT1
         if (!strncmp(line,CT1line, strlen(CT1line)))
         {
-            len = strlen(CT1line);
+            len = (int)strlen(CT1line);
             linePtr = line + len;
             read_OCTET(&CT1GOLDEN,linePtr);
         }
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
         // Read PLAINTEXT2
         if (!strncmp(line,PT2line, strlen(PT2line)))
         {
-            len = strlen(PT2line);
+            len = (int)strlen(PT2line);
             linePtr = line + len;
             read_OCTET(&PT2GOLDEN,linePtr);
         }
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
         // Read CIPHERTEXT and process test vector
         if (!strncmp(line,CTline, strlen(CTline)))
         {
-            len = strlen(CTline);
+            len = (int)strlen(CTline);
             linePtr = line + len;
             read_OCTET(&CTGOLDEN,linePtr);
 

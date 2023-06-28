@@ -50,7 +50,7 @@ extern const BIG_XXX CURVE_BB_ZZZ[4][4]; /**< BN curve constant for GS decomposi
 	@param QV ECP instance, an element of G1
 
  */
-extern void PAIR_ZZZ_another(FP12_YYY r[],ECP2_ZZZ* PV,ECP_ZZZ* QV);
+extern void PAIR_ZZZ_another(FP12_YYY r[],const ECP2_ZZZ* PV,const ECP_ZZZ* QV);
 
 /**	@brief Calculate Miller loop for Optimal ATE pairing e(P,Q)
  *
@@ -59,7 +59,7 @@ extern void PAIR_ZZZ_another(FP12_YYY r[],ECP2_ZZZ* PV,ECP_ZZZ* QV);
 	@param Q ECP instance, an element of G1
 
  */
-extern void PAIR_ZZZ_ate(FP12_YYY *r,ECP2_ZZZ *P,ECP_ZZZ *Q);
+extern void PAIR_ZZZ_ate(FP12_YYY *r,const ECP2_ZZZ *P,const ECP_ZZZ *Q);
 /**	@brief Calculate Miller loop for Optimal ATE double-pairing e(P,Q).e(R,S)
  *
 	Faster than calculating two separate pairings
@@ -69,7 +69,7 @@ extern void PAIR_ZZZ_ate(FP12_YYY *r,ECP2_ZZZ *P,ECP_ZZZ *Q);
 	@param R ECP2 instance, an element of G2
 	@param S ECP instance, an element of G1
  */
-extern void PAIR_ZZZ_double_ate(FP12_YYY *r,ECP2_ZZZ *P,ECP_ZZZ *Q,ECP2_ZZZ *R,ECP_ZZZ *S);
+extern void PAIR_ZZZ_double_ate(FP12_YYY *r,const ECP2_ZZZ *P,const ECP_ZZZ *Q,const ECP2_ZZZ *R,const ECP_ZZZ *S);
 /**	@brief Final exponentiation of pairing, converts output of Miller loop to element in GT
  *
 	Here p is the internal modulus, and r is the group order
@@ -83,7 +83,7 @@ extern void PAIR_ZZZ_fexp(FP12_YYY *x);
 	@param b BIG multiplier
 
  */
-extern void PAIR_ZZZ_G1mul(ECP_ZZZ *Q,BIG_XXX b);
+extern void PAIR_ZZZ_G1mul(ECP_ZZZ *Q,const BIG_XXX b);
 /**	@brief Fast point multiplication of a member of the group G2 by a BIG number
  *
 	May exploit endomorphism for speed.
@@ -91,7 +91,7 @@ extern void PAIR_ZZZ_G1mul(ECP_ZZZ *Q,BIG_XXX b);
 	@param b BIG multiplier
 
  */
-extern void PAIR_ZZZ_G2mul(ECP2_ZZZ *P,BIG_XXX b);
+extern void PAIR_ZZZ_G2mul(ECP2_ZZZ *P,const BIG_XXX b);
 /**	@brief Fast raising of a member of GT to a BIG power
  *
 	May exploit endomorphism for speed.
@@ -99,7 +99,7 @@ extern void PAIR_ZZZ_G2mul(ECP2_ZZZ *P,BIG_XXX b);
 	@param b BIG exponent
 
  */
-extern void PAIR_ZZZ_GTpow(FP12_YYY *x,BIG_XXX b);
+extern void PAIR_ZZZ_GTpow(FP12_YYY *x,const BIG_XXX b);
 /**	@brief Tests FP12 for membership of GT
  *
 	@param x FP12 instance
@@ -131,6 +131,6 @@ extern void PAIR_ZZZ_initmp(FP12_YYY r[]);
 	@param r FP12 precomputed array of accumulated line functions
 
  */
-extern void PAIR_ZZZ_miller(FP12_YYY *res,FP12_YYY r[]);
+extern void PAIR_ZZZ_miller(FP12_YYY *res,const FP12_YYY r[]);
 
 #endif

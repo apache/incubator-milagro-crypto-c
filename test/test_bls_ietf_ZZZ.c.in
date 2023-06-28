@@ -1,0 +1,554 @@
+/*
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+*/
+
+
+#include "arch.h"
+#include "amcl.h"
+#include "utils.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "config_curve_ZZZ.h"
+
+#if CURVE_SECURITY_ZZZ == 128
+#include "bls_ietf_ZZZ.h"
+#else
+#error "IETF-compliant BLS currently only supports 128-bit security level (i.e. BLS12-381)"
+#endif
+
+#define LINE_LEN 500
+//#define DEBUG
+
+#define NTESTS       256
+#define MAX_AGG_SIGS 32  // defines the max # sigs to test the aggregated signatures features
+
+int main(int argc, char** argv)
+{
+    if (argc != 2) {
+        printf("ERROR Not enough input arguments\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Elliptic curve points for public keys/signatures
+    ECP_ZZZ G1;
+    ECP_ZZZ G1_prime;
+    ECP2_ZZZ G2;
+    ECP2_ZZZ G2_prime;
+
+    // Arrays to store the successive sigs/PKs to test aggregated signatures
+    ECP_ZZZ  PK_G1[NTESTS];
+    ECP2_ZZZ PK_G2[NTESTS];
+    octet sig_G1[NTESTS];
+    octet sig_G2[NTESTS];
+    char  sig_G1_char[NTESTS*48];
+    char  sig_G2_char[NTESTS*96];
+    octet messages[NTESTS];
+    unsigned int n = 0;
+
+
+    // Variables to store proofs of possession (pop)
+    char pop_g1[BFS_ZZZ]   = {0x00};
+    char pop_g2[2*BFS_ZZZ] = {0x00};
+    octet pop_g1_oct = {  BFS_ZZZ,   BFS_ZZZ, pop_g1};
+    octet pop_g2_oct = {2*BFS_ZZZ, 2*BFS_ZZZ, pop_g2};
+
+    // Point at infinity for specific compression/uncompression tests
+    char point_at_inf_g1[BFS_ZZZ]   = {0x00};
+    char point_at_inf_g2[2*BFS_ZZZ] = {0x00};
+    octet inf_g1_oct = {  BFS_ZZZ,   BFS_ZZZ, point_at_inf_g1};
+    octet inf_g2_oct = {2*BFS_ZZZ, 2*BFS_ZZZ, point_at_inf_g2};
+
+    // Variables for file parsing
+    FILE *fp = NULL;
+    char line[LINE_LEN];
+    const char *linePtr = NULL;
+    unsigned int l1 = 0;
+    bool readLine = false;
+    int lineNo = 0;
+
+    const char *ikm_str        = "IKM = ";
+    const char *salt_str       = "Salt = ";
+    const char *info_str       = "Info = ";
+    const char *sk_str         = "SK = ";
+    const char *pk_g1_ser_str  = "PK in G1 (serialized) = ";
+    const char *pk_g1_com_str  = "PK in G1 (compressed) = ";
+    const char *pk_g2_ser_str  = "PK in G2 (serialized) = ";
+    const char *pk_g2_com_str  = "PK in G2 (compressed) = ";
+    const char *sig_g1_com_str = "Signature in G1 (compressed) = ";
+    const char *sig_g2_com_str = "Signature in G2 (compressed) = ";
+
+    // fixed domain separator and message for test vectors
+    char *dst = "QUUX-V01-CS02-with-BLS12381G1_XMD:SHA-256_SSWU_NU_";
+    char *msg = "test vector";
+    octet msg_oct = {11, 11, msg};
+    octet dst_oct = {50, 50, dst};
+
+    char *ikm        = NULL;
+    char *salt       = NULL;
+    char *sk         = NULL;
+    char *info       = NULL;
+    char *pk_g1_ser  = NULL;
+    char *pk_g1_com  = NULL;
+    char *pk_g2_ser  = NULL;
+    char *pk_g2_com  = NULL;
+    char *sig_g1_com = NULL;
+    char *sig_g2_com = NULL;
+
+    int ikm_len        = 0;
+    int salt_len       = 0;
+    int sk_len         = 0;
+    int info_len       = 0;
+    int pk_g1_ser_len  = 0;
+    int pk_g1_com_len  = 0;
+    int pk_g2_ser_len  = 0;
+    int pk_g2_com_len  = 0;
+    int sig_g1_com_len = 0;
+    int sig_g2_com_len = 0;
+
+    int ret = 0;
+    int cmp = 0;
+
+    // Open file
+    fp = fopen(argv[1], "r");
+    if (fp == NULL) {
+        printf("ERROR opening test vector file\n");
+        exit(EXIT_FAILURE);
+    }
+
+    while (fgets(line, LINE_LEN, fp) != NULL) {
+        readLine = true;
+        // Read the input keying material
+        if (!strncmp(line, ikm_str, strlen(ikm_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            // Find hex value in string
+            linePtr = line + (unsigned int)strlen(ikm_str);
+            // Allocate memory
+            l1      = (unsigned int)strlen(linePtr) - 1;
+            ikm_len  = l1 / 2;
+            ikm     = (char*) malloc(ikm_len);
+            if (ikm == NULL)
+                exit(EXIT_FAILURE);
+            amcl_hex2bin(linePtr, ikm, l1);
+        }
+
+        // Read the salt value
+        if (!strncmp(line, salt_str, strlen(salt_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            // Find hex value in string
+            linePtr = line + (unsigned int)strlen(salt_str);
+            // Allocate memory
+            l1      = (unsigned int)strlen(linePtr) - 1;
+            salt_len  = l1 / 2;
+            salt     = (char*) malloc(salt_len);
+            if (salt == NULL)
+                exit(EXIT_FAILURE);
+            amcl_hex2bin(linePtr, salt, l1);
+        }
+
+        // Read the key info value
+        if (!strncmp(line, info_str, strlen(info_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            // Find hex value in string
+            linePtr = line + (unsigned int)strlen(info_str);
+            // Allocate memory
+            l1       = (unsigned int)strlen(linePtr) - 1;
+            info_len = l1 / 2;
+            info     = (char*) malloc(info_len);
+            if (info == NULL)
+                exit(EXIT_FAILURE);
+            amcl_hex2bin(linePtr, info, l1);
+        }
+
+        // Read the secret key
+        if (!strncmp(line, sk_str, strlen(sk_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            char *out_sk = NULL;
+            // Find hex value in string
+            linePtr = line + (unsigned int)strlen(sk_str);
+            // Allocate memory
+            l1     = (unsigned int)strlen(linePtr) - 1;
+            sk_len = l1 / 2;
+            sk     = (char*) malloc(sk_len);
+            out_sk = (char*) malloc(sk_len);
+            if (out_sk == NULL || sk == NULL)
+                exit(EXIT_FAILURE);
+            octet sk_oct = {sk_len, sk_len, sk};
+            octet out_sk_oct = {sk_len, sk_len, out_sk};
+            amcl_hex2bin(linePtr, sk, l1);
+            // Regenerate secret key
+            ret = BLS_IETF_ZZZ_keygen(out_sk, ikm, ikm_len, salt, salt_len, info, info_len);
+            cmp = OCT_comp(&sk_oct, &out_sk_oct);
+            free(out_sk);
+            if (!cmp || ret) {
+                printf("TEST BLS_IETF_ZZZ_keygen FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Generate the proof of possession for minimal-sig-size setting
+            ret = BLS_IETF_ZZZ_pop_prove_G1(&pop_g1_oct, sk);
+            if (ret) {
+                printf("TEST BLS_IETF_ZZZ_pop_prove_G1 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Generate the proof of possession for minimal-pub-size setting
+            ret = BLS_IETF_ZZZ_pop_prove_G2(&pop_g2_oct, sk);
+            if (ret) {
+                printf("TEST BLS_IETF_ZZZ_pop_prove_G2 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        // Read the public key serialized (minimal-pubkey-setting)
+        if (!strncmp(line, pk_g1_ser_str, strlen(pk_g1_ser_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            char *out_pk_g1_ser = NULL;
+            // Find hex value in string
+            linePtr = line + (unsigned int)strlen(pk_g1_ser_str);
+            // Allocate memory
+            l1            = (unsigned int)strlen(linePtr) - 1;
+            pk_g1_ser_len = l1 / 2;
+            pk_g1_ser     = (char*) malloc(pk_g1_ser_len);
+            out_pk_g1_ser = (char*) malloc(pk_g1_ser_len);
+            if (pk_g1_ser == NULL || out_pk_g1_ser == NULL)
+                exit(EXIT_FAILURE);
+            octet pk_g1_ser_oct = {pk_g1_ser_len, pk_g1_ser_len, pk_g1_ser};
+            octet out_pk_g1_ser_oct = {pk_g1_ser_len, pk_g1_ser_len, out_pk_g1_ser};
+            // PK serialized (minimal-pubkey-setting) binary value
+            amcl_hex2bin(linePtr, pk_g1_ser, l1);
+            // Regenerate public key in G1
+            ret = BLS_IETF_ZZZ_sk_to_pk_G1(&G1, sk);
+            // Serialize the public key
+            ret |= BLS_IETF_ZZZ_serialize_G1(&out_pk_g1_ser_oct, &G1);
+            cmp = OCT_comp(&pk_g1_ser_oct, &out_pk_g1_ser_oct);
+            if (!cmp || ret) {
+                printf("TEST BLS_IETF_ZZZ_serialize_G1 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Deserialize the public key
+            ret |= BLS_IETF_ZZZ_deserialize_G1(&G1_prime, &out_pk_g1_ser_oct);
+            free(out_pk_g1_ser);
+            if (!ECP_ZZZ_equals(&G1, &G1_prime) || ret) {
+                printf("TEST BLS_IETF_ZZZ_deserialize_G1 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        // Read the public key compressed (minimal-pubkey-setting)
+        if (!strncmp(line, pk_g1_com_str, strlen(pk_g1_com_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            char *out_pk_g1_com = NULL;
+            // Find hex value in string
+            linePtr = line + (unsigned int)strlen(pk_g1_com_str);
+            // Allocate memory
+            l1            = (unsigned int)strlen(linePtr) - 1;
+            pk_g1_com_len = l1 / 2;
+            pk_g1_com     = (char*) malloc(pk_g1_com_len);
+            out_pk_g1_com = (char*) malloc(pk_g1_com_len);
+            if (pk_g1_com == NULL || out_pk_g1_com == NULL)
+                exit(EXIT_FAILURE);
+            octet pk_g1_com_oct = {pk_g1_com_len, pk_g1_com_len, pk_g1_com};
+            octet out_pk_g1_com_oct = {pk_g1_com_len, pk_g1_com_len, out_pk_g1_com};
+            // PK compressed (minimal-pubkey-setting) binary value
+            amcl_hex2bin(linePtr, pk_g1_com, l1);
+            // Compress the public key
+            ret = BLS_IETF_ZZZ_compress_G1(&out_pk_g1_com_oct, &G1);
+            cmp = OCT_comp(&pk_g1_com_oct, &out_pk_g1_com_oct);
+            if (!cmp || ret) {
+                printf("TEST BLS_IETF_ZZZ_compress_G1 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Uncompress the public key
+            ret |= BLS_IETF_ZZZ_uncompress_G1(&G1_prime, &out_pk_g1_com_oct);
+            free(out_pk_g1_com);
+            if (!ECP_ZZZ_equals(&G1, &G1_prime) || ret) {
+                printf("TEST BLS_IETF_ZZZ_uncompress_G1 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Verify the proof of possession for minimal-pubkey-size setting
+            ret = BLS_IETF_ZZZ_pop_verify_G2(&pop_g2_oct, &G1);
+            if (ret) {
+                printf("TEST BLS_IETF_ZZZ_pop_verify_G2 FAILED WITH ERROR %08x LINE %d\n",ret,lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Copy the compressed public key for signature aggregation
+            ECP_ZZZ_copy(PK_G1 + n, &G1_prime);
+        }
+
+        // Read the signature compressed (minimal-pubkey-setting)
+        if (!strncmp(line, sig_g2_com_str, strlen(sig_g2_com_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            char *out_sig_g2_com = NULL;
+            char *agg_sig_g2_com = NULL;
+            // Find hex value in string
+            linePtr = line + strlen(sig_g2_com_str);
+            // Allocate memory
+            l1             = (unsigned int)strlen(linePtr) - 1;
+            sig_g2_com_len = l1 / 2;
+            sig_g2_com     = (char*) malloc(sig_g2_com_len);
+            out_sig_g2_com = (char*) malloc(sig_g2_com_len);
+            agg_sig_g2_com = (char*) malloc(sig_g2_com_len);
+            if (sig_g2_com == NULL || out_sig_g2_com == NULL)
+                exit(EXIT_FAILURE);
+            octet sig_g2_com_oct = {sig_g2_com_len, sig_g2_com_len, sig_g2_com};
+            octet out_sig_g2_com_oct = {sig_g2_com_len, sig_g2_com_len, out_sig_g2_com};
+            octet agg_sig_g2_com_oct = {sig_g2_com_len, sig_g2_com_len, agg_sig_g2_com};
+            // PK compressed (minimal-pubkey-setting) binary value
+            amcl_hex2bin(linePtr, sig_g2_com, l1);
+
+            // Generate the signature
+            ret = BLS_IETF_ZZZ_core_sign_G2(&out_sig_g2_com_oct, sk, &msg_oct, &dst_oct);
+            cmp = OCT_comp(&sig_g2_com_oct, &out_sig_g2_com_oct);
+            if (!cmp || ret) {
+                printf("TEST BLS_IETF_ZZZ_core_sign_G2 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+
+            // verify the signature
+            ret = BLS_IETF_ZZZ_core_verify_G2(&out_sig_g2_com_oct, &G1, &msg_oct, &dst_oct);
+            if (ret) {
+                printf("TEST BLS_IETF_ZZZ_core_verify_G2 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+
+            if (n < MAX_AGG_SIGS) {
+                // Copy the test message to messages[n]
+                messages[n].max = 11;
+                messages[n].len = 11;
+                messages[n].val = msg;
+                // Copy the compressed public key for signature aggregation
+                sig_G2[n].max = 96;
+                sig_G2[n].len = 96;
+                sig_G2[n].val = sig_G2_char + 96*n;
+                OCT_copy(sig_G2 + n, &sig_g2_com_oct);
+                BLS_IETF_ZZZ_aggregate_G2(&agg_sig_g2_com_oct, sig_G2, n+1);
+                ret =  BLS_IETF_ZZZ_core_aggregate_verify_G2(&agg_sig_g2_com_oct, PK_G1, messages, n+1, &dst_oct);
+                ret |= BLS_IETF_ZZZ_fast_aggregate_verify_G2(&agg_sig_g2_com_oct, PK_G1, messages, n+1, &dst_oct);
+                // Test both verification at once to avoid sonarqube code smell...
+                if (ret) {
+                    printf("TEST BLS_IETF_ZZZ_core/fast_aggregate_verify_G2 FAILED LINE %d\n",lineNo);
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            free(out_sig_g2_com);
+            free(agg_sig_g2_com);
+        }
+
+        // Read the public key serialized (minimal-signature-setting)
+        if (!strncmp(line, pk_g2_ser_str, strlen(pk_g2_ser_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            char *out_pk_g2_ser = NULL;
+            // Find hex value in string
+            linePtr = line + (unsigned int)strlen(pk_g2_ser_str);
+            // Allocate memory
+            l1            = (unsigned int)strlen(linePtr) - 1;
+            pk_g2_ser_len = l1 / 2;
+            pk_g2_ser     = (char*) malloc(pk_g2_ser_len);
+            out_pk_g2_ser = (char*) malloc(pk_g2_ser_len);
+            if (pk_g2_ser == NULL || out_pk_g2_ser == NULL)
+                exit(EXIT_FAILURE);
+            octet pk_g2_ser_oct = {pk_g2_ser_len, pk_g2_ser_len, pk_g2_ser};
+            octet out_pk_g2_ser_oct = {pk_g2_ser_len, pk_g2_ser_len, out_pk_g2_ser};
+            // PK serialized (minimal-pubkey-setting) binary value
+            amcl_hex2bin(linePtr, pk_g2_ser, l1);
+            // Regenerate public key in G1
+            ret = BLS_IETF_ZZZ_sk_to_pk_G2(&G2, sk);
+            // Serialize the public key
+            ret |= BLS_IETF_ZZZ_serialize_G2(&out_pk_g2_ser_oct, &G2);
+            cmp = OCT_comp(&pk_g2_ser_oct, &out_pk_g2_ser_oct);
+            if (!cmp || ret) {
+                printf("TEST BLS_IETF_ZZZ_SERIALIZE_P2 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Deserialize the public key
+            ret |= BLS_IETF_ZZZ_deserialize_G2(&G2_prime, &out_pk_g2_ser_oct);
+            free(out_pk_g2_ser);
+            if (!ECP2_ZZZ_equals(&G2, &G2_prime) || ret) {
+                printf("TEST BLS_IETF_ZZZ_DESERIALIZE_P2 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        // Read the public key compressed (minimal-signature-setting)
+        if (!strncmp(line, pk_g2_com_str, strlen(pk_g2_com_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            char *out_pk_g2_com = NULL;
+            // Find hex value in string
+            linePtr = line + (unsigned int)strlen(pk_g2_com_str);
+            // Allocate memory
+            l1            = (unsigned int)strlen(linePtr) - 1;
+            pk_g2_com_len = l1 / 2;
+            pk_g2_com     = (char*) malloc(pk_g2_com_len);
+            out_pk_g2_com = (char*) malloc(pk_g2_com_len);
+            if (pk_g2_com == NULL || out_pk_g2_com == NULL)
+                exit(EXIT_FAILURE);
+            octet pk_g2_com_oct = {pk_g2_com_len, pk_g2_com_len, pk_g2_com};
+            octet out_pk_g2_com_oct = {pk_g2_com_len, pk_g2_com_len, out_pk_g2_com};
+            // PK compressed (minimal-pubkey-setting) binary value
+            amcl_hex2bin(linePtr, pk_g2_com, l1);
+            // Compress the public key
+            ret = BLS_IETF_ZZZ_compress_G2(&out_pk_g2_com_oct, &G2);
+            cmp = OCT_comp(&pk_g2_com_oct, &out_pk_g2_com_oct);
+            if (!cmp || ret) {
+                printf("TEST BLS_IETF_ZZZ_COMPRESS_P2 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Uncompress the public key
+            ret |= BLS_IETF_ZZZ_uncompress_G2(&G2_prime, &out_pk_g2_com_oct);
+            free(out_pk_g2_com);
+            if (!ECP2_ZZZ_equals(&G2, &G2_prime) || ret) {
+                printf("TEST BLS_IETF_ZZZ_UNCOMPRESS_P2 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Verify the proof of possession for minimal-sig-size setting
+            ret = BLS_IETF_ZZZ_pop_verify_G1(&pop_g1_oct, &G2);
+            if (ret) {
+                printf("TEST BLS_IETF_ZZZ_pop_verify_G1 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            // Copy the compressed public key for signature aggregation
+            ECP2_ZZZ_copy(PK_G2 + n, &G2_prime);
+        }
+
+        // Read the signature compressed (minimal-signature-setting)
+        if (!strncmp(line, sig_g1_com_str, strlen(sig_g1_com_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            char *out_sig_g1_com = NULL;
+            char *agg_sig_g1_com = NULL;
+            // Find hex value in string
+            linePtr = line + (unsigned int)strlen(sig_g1_com_str);
+            // Allocate memory
+            l1             = (unsigned int)strlen(linePtr) - 1;
+            sig_g1_com_len = l1 / 2;
+            sig_g1_com     = (char*) malloc(sig_g1_com_len);
+            out_sig_g1_com = (char*) malloc(sig_g1_com_len);
+            agg_sig_g1_com = (char*) malloc(sig_g1_com_len);
+            if (sig_g1_com == NULL || out_sig_g1_com == NULL)
+                exit(EXIT_FAILURE);
+            octet sig_g1_com_oct = {sig_g1_com_len, sig_g1_com_len, sig_g1_com};
+            octet out_sig_g1_com_oct = {sig_g1_com_len, sig_g1_com_len, out_sig_g1_com};
+            octet agg_sig_g1_com_oct = {sig_g1_com_len, sig_g1_com_len, agg_sig_g1_com};
+            // PK compressed (minimal-pubkey-setting) binary value
+            amcl_hex2bin(linePtr, sig_g1_com, l1);
+
+            // Generate the signature
+            ret = BLS_IETF_ZZZ_core_sign_G1(&out_sig_g1_com_oct, sk, &msg_oct, &dst_oct);
+            cmp = OCT_comp(&sig_g1_com_oct, &out_sig_g1_com_oct);
+            if (!cmp || ret) {
+                printf("TEST BLS_IETF_ZZZ_core_sign_G1 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+            
+            // Verify the signature
+            ret = BLS_IETF_ZZZ_core_verify_G1(&out_sig_g1_com_oct, &G2, &msg_oct, &dst_oct);
+            if (ret) {
+                printf("TEST BLS_IETF_ZZZ_core_verify_G1 FAILED LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+
+            if (n < MAX_AGG_SIGS) {
+                // Copy the compressed public key for signature aggregation
+                sig_G1[n].max = sig_g1_com_len;
+                sig_G1[n].len = sig_g1_com_len;
+                sig_G1[n].val = sig_G1_char + sig_g1_com_len*n;
+
+                OCT_copy(sig_G1 + n, &sig_g1_com_oct);
+                BLS_IETF_ZZZ_aggregate_G1(&agg_sig_g1_com_oct, sig_G1, n+1);
+                ret =  BLS_IETF_ZZZ_core_aggregate_verify_G1(&agg_sig_g1_com_oct, PK_G2, messages, n+1, &dst_oct);
+                ret |= BLS_IETF_ZZZ_fast_aggregate_verify_G1(&agg_sig_g1_com_oct, PK_G2, messages, n+1, &dst_oct);
+                // Test both verification at once to avoid sonarqube code smell...
+                if (ret) {
+                    printf("TEST BLS_IETF_ZZZ_core_aggregate_verify_G2 FAILED LINE %d\n",lineNo);
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            free(out_sig_g1_com);
+            free(agg_sig_g1_com);
+
+            free(ikm);
+            free(salt);
+            free(sk);
+            free(info);
+            free(pk_g1_ser);
+            free(pk_g1_com);
+            free(pk_g2_ser);
+            free(pk_g2_com);
+            free(sig_g1_com);
+            free(sig_g2_com);
+            ikm        = NULL;
+            salt       = NULL;
+            info       = NULL;
+            sk         = NULL;
+            pk_g1_ser  = NULL;
+            pk_g1_com  = NULL;
+            pk_g2_ser  = NULL;
+            pk_g2_com  = NULL;
+            sig_g1_com = NULL;
+            sig_g2_com = NULL;
+            n++;
+        }
+
+        lineNo++;
+    }
+    fclose(fp);
+    if (!readLine) {
+        printf("ERROR No test vectors\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Additional test for compression/uncompression of point at infinity in G1
+    ECP_ZZZ_inf(&G1);
+    ret = BLS_IETF_ZZZ_compress_G1(&inf_g1_oct, &G1);
+    ret |= BLS_IETF_ZZZ_uncompress_G1(&G1, &inf_g1_oct);
+    if (ret || !ECP_ZZZ_isinf(&G1))  {
+        printf("TEST BLS_IETF_ZZZ_COMPRESS_P1 FAILED FOR POINT AT INFINITY\n");
+        exit(EXIT_FAILURE);
+    }
+    // Additional test for compression/uncompression of point at infinity in G2
+    ECP2_ZZZ_inf(&G2);
+    ret = BLS_IETF_ZZZ_compress_G2(&inf_g2_oct, &G2);
+    ret |= BLS_IETF_ZZZ_uncompress_G2(&G2, &inf_g2_oct);
+    if (ret || !ECP2_ZZZ_isinf(&G2))  {
+        printf("TEST BLS_IETF_ZZZ_COMPRESS_P2 FAILED FOR POINT AT INFINITY\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("SUCCESS TEST BLS12-381 PASSED\n");
+    exit(EXIT_SUCCESS);
+}

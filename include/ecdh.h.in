@@ -34,8 +34,8 @@ under the License.
 
 /*** START OF USER CONFIGURABLE SECTION -  ***/
 
-//#define EAS_ZZZ 16 /**< Symmetric Key size - 128 bits */
-//#define HASH_TYPE_ECC_ZZZ SHA512  /**< Hash type */
+//#define //EAS_ZZZ 16 Symmetric Key size - 128 bits
+//#define //HASH_TYPE_ECC_ZZZ SHA512 Hash type
 
 /*** END OF USER CONFIGURABLE SECTION ***/
 
@@ -66,7 +66,7 @@ extern int  ECP_ZZZ_KEY_PAIR_GENERATE(csprng *R,octet *s,octet *W);
 	@param W the input public key to be validated
 	@return 0 if public key is OK, or an error code
  */
-extern int  ECP_ZZZ_PUBLIC_KEY_VALIDATE(octet *W);
+extern int  ECP_ZZZ_PUBLIC_KEY_VALIDATE(const octet *W);
 
 /* ECDH primitives */
 
@@ -78,8 +78,7 @@ extern int  ECP_ZZZ_PUBLIC_KEY_VALIDATE(octet *W);
 	@param K the output shared key, in fact the x-coordinate of s.W
 	@return 0 or an error code
  */
-extern int ECP_ZZZ_SVDP_DH(octet *s,octet *W,octet *K);
-/*extern int ECPSVDP_DHC(octet *,octet *,int,octet *);*/
+extern int ECP_ZZZ_SVDP_DH(const octet *s,const octet *W,octet *K);
 
 /*#if CURVETYPE!=MONTGOMERY */
 /* ECIES functions */
@@ -99,7 +98,7 @@ extern int ECP_ZZZ_SVDP_DH(octet *s,octet *W,octet *K);
 	@param C the output ciphertext
 	@param T the output HMAC tag, part of the ciphertext
  */
-extern void ECP_ZZZ_ECIES_ENCRYPT(int h,octet *P1,octet *P2,csprng *R,octet *W,octet *M,int len,octet *V,octet *C,octet *T);
+extern void ECP_ZZZ_ECIES_ENCRYPT(int h,const octet *P1,const octet *P2,csprng *R,const octet *W,const octet *M,int len,octet *V,octet *C,octet *T);
 /**	@brief ECIES Decryption
  *
 	IEEE-1363 ECIES Decryption
@@ -113,7 +112,7 @@ extern void ECP_ZZZ_ECIES_ENCRYPT(int h,octet *P1,octet *P2,csprng *R,octet *W,o
 	@param M the output plaintext message
 	@return 1 if successful, else 0
  */
-extern int ECP_ZZZ_ECIES_DECRYPT(int h,octet *P1,octet *P2,octet *V,octet *C,octet *T,octet *U,octet *M);
+extern int ECP_ZZZ_ECIES_DECRYPT(int h,const octet *P1,const octet *P2,const octet *V,octet *C,const octet *T,const octet *U,octet *M);
 
 /* ECDSA functions */
 /**	@brief ECDSA Signature
@@ -128,7 +127,7 @@ extern int ECP_ZZZ_ECIES_DECRYPT(int h,octet *P1,octet *P2,octet *V,octet *C,oct
 	@param d component of the output signature
 
  */
-extern int ECP_ZZZ_SP_DSA(int h,csprng *R,octet *k,octet *s,octet *M,octet *c,octet *d);
+extern int ECP_ZZZ_SP_DSA(int h,csprng *R,const octet *k,const octet *s,const octet *M,octet *c,octet *d);
 /**	@brief ECDSA Signature Verification
  *
 	IEEE-1363 ECDSA Signature Verification
@@ -139,7 +138,7 @@ extern int ECP_ZZZ_SP_DSA(int h,csprng *R,octet *k,octet *s,octet *M,octet *c,oc
 	@param d component of the input signature
 	@return 0 or an error code
  */
-extern int ECP_ZZZ_VP_DSA(int h,octet *W,octet *M,octet *c,octet *d);
+extern int ECP_ZZZ_VP_DSA(int h,const octet *W,const octet *M,octet *c,octet *d);
 /*#endif*/
 
 #endif

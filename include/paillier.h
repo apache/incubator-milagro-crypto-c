@@ -94,7 +94,7 @@ typedef struct
  *  @param  PUB              Public key
  *  @param  PRIV             Private key
  */
-void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV);
+void PAILLIER_KEY_PAIR(csprng *RNG, const octet *P, const octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV);
 
 /*! \brief Clear private key
  *
@@ -118,7 +118,7 @@ void PAILLIER_PRIVATE_KEY_KILL(PAILLIER_private_key *PRIV);
  *  @param  CT               Ciphertext
  *  @param  R                R value for testing. If RNG is NULL then this value is read.
  */
-void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* CT, octet* R);
+void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, const octet* PT, octet* CT, octet* R);
 
 /*! \brief Decrypt ciphertext
  *
@@ -136,7 +136,7 @@ void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* C
  *  @param   CT               Ciphertext
  *  @param   PT               Plaintext
  */
-void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT);
+void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, const octet* CT, octet* PT);
 
 /*! \brief Homomorphic addition of plaintexts
  *
@@ -150,9 +150,8 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT);
  *  @param   CT1              Ciphertext one
  *  @param   CT2              Ciphertext two
  *  @param   CT               Ciphertext
- *  @return                   Returns 0 or else error code
  */
-void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT);
+void PAILLIER_ADD(PAILLIER_public_key *PUB, const octet* CT1, const octet* CT2, octet* CT);
 
 /*! \brief Homomorphic multipication of plaintexts
  *
@@ -167,14 +166,14 @@ void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT);
  *  @param   PT               Plaintext constant
  *  @param   CT               Ciphertext
  */
-void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT);
+void PAILLIER_MULT(PAILLIER_public_key *PUB, const octet* CT1, const octet* PT, octet* CT);
 
 /*! \brief Read a public key from its octet representation
  *
  * @param   PUB   Public key
  * @param   PK    Octet representation of the public key
  */
-void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK);
+void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, const octet *PK);
 
 /*! \brief Write a public key to an octet
  *

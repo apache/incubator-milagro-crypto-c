@@ -1,0 +1,1275 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+*/
+
+/* Boneh-Lynn-Shacham signature 128-bit API */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "config_curve_ZZZ.h"
+#include "hash_to_field_YYY.h"
+
+#if CURVE_SECURITY_ZZZ == 128
+#include "bls_ietf_ZZZ.h"
+#else
+#error "IETF-compliant BLS currently only supports 128-bit security level (i.e. BLS12-381)"
+#endif
+
+int BLS_IETF_ZZZ_keygen(char sk[SK_LEN],
+    const char *ikm,  unsigned int ikmlen,
+    const char *salt, unsigned int saltlen,
+    const char *info, unsigned int infolen)
+{
+
+    if (ikm == NULL || salt == NULL || (info == NULL && infolen))
+        return ERR_NULLPOINTER_BLS;
+    if (ikmlen < 32 || saltlen < SHA256_HASH_SIZE)
+        return ERR_BADARGLEN_BLS;
+
+    int ret;
+    // L = ceil((3 * ceil(log2(r))) / 16) as defined in RFC
+    unsigned int L = (3*(unsigned int)BIG_XXX_nbits(CURVE_Order_ZZZ) + 15) / 16; // 15 is added to ensure ceiling-division
+    char okm[L];
+    char prk[SHA256_HASH_SIZE];
+    char ikm_prime[ikmlen + 1];
+    char info_prime[infolen + 2];
+    char salt_prime[saltlen];
+    BIG_XXX s;
+
+    for(unsigned int i = 0; i < saltlen; i++)
+        salt_prime[i] = salt[i];
+
+    for(unsigned int i = 0; i < ikmlen; i++)
+        ikm_prime[i] = ikm[i];
+    // ikm_prime = ikm || I2OSP(0, 1)
+    ikm_prime[ikmlen] = 0x00;
+
+    for(unsigned int i = 0; i < infolen; i++)
+        info_prime[i] = info[i];
+    // info_prime = info || I2OSP(L, 2)
+    info_prime[infolen]     = (char)(L >> 8);   // most significant byte
+    info_prime[infolen + 1] = (char)(L & 0xff); // least significant byte
+
+    while (1) {
+        // PRK = HKDF-Extract(salt, IKM || I2OSP(0, 1))
+        ret = HKDF_SHA256_extract(prk, salt_prime, saltlen, ikm_prime, ikmlen + 1);
+        // OKM = HKDF-Expand(PRK, key_info || I2OSP(L, 2), L)
+        ret |= HKDF_SHA256_expand(okm, L, prk, SHA256_HASH_SIZE, info_prime, infolen + 2);
+        if (ret != SUCCESS)
+            return ret;
+        // SK = OS2IP(OKM) mod r
+        BIG_XXX_fromBytesLen(s, okm, L);
+        BIG_XXX_mod(s, CURVE_Order_ZZZ);
+        // if SK != 0
+        if (!BIG_XXX_iszilch(s)) {
+            // return SK
+            BIG_XXX_toBytes(okm, s);
+            // SK is only 32-byte long and requires BE encoding
+            for(unsigned int i = 0; i < SK_LEN; i++)
+                sk[i] = okm[L - SK_LEN + i];
+            break;
+        }
+        // salt = H(salt)
+        HASH256_oneshot(salt_prime, salt_prime, saltlen);
+        // the initial saltlen may be greater than the hash size
+        saltlen = SHA256_HASH_SIZE;
+    }
+
+    // zeroize pseudo-random key
+    for(unsigned int i = 0; i < SHA256_HASH_SIZE; i++)
+        prk[i] = 0x00;
+    // zeroize output keying material
+    for(unsigned int i = 0; i < L; i++)
+        okm[i] = 0x00;
+    // zeroize big variable
+    BIG_XXX_zero(s);
+
+    return SUCCESS;
+}
+
+int BLS_IETF_ZZZ_sk_to_pk_G1(ECP_ZZZ *pk, const char *sk)
+{
+    if (pk == NULL || sk == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX s;
+
+    // s <- SK
+    BIG_XXX_fromBytesLen(s, sk, SK_LEN);
+    // PK <- G
+    ECP_ZZZ_generator(pk);
+    // PK <- s*G
+    ECP_ZZZ_mul(pk, s);
+    // zeroize big variable
+    BIG_XXX_zero(s);
+
+    return SUCCESS;
+}
+
+int BLS_IETF_ZZZ_sk_to_pk_G2(ECP2_ZZZ *pk, const char *sk)
+{
+    if (pk == NULL || sk == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX s;
+
+    // s <- SK
+    BIG_XXX_fromBytesLen(s, sk, SK_LEN);
+    // PK <- G
+    ECP2_ZZZ_generator(pk);
+    // PK <- s*G
+    ECP2_ZZZ_mul(pk, s);
+    // zeroize big variable
+    BIG_XXX_zero(s);
+
+    return SUCCESS;
+}
+
+int BLS_IETF_ZZZ_serialize_G1(octet *bytes, const ECP_ZZZ *point)
+{
+    if (bytes == NULL || point == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX x;
+    BIG_XXX y;
+
+    if (ECP_ZZZ_get(x, y, point) == -1)
+        return ERR_NOTONCURVE_BLS;
+
+    BIG_XXX_toBytes(bytes->val, x);
+    BIG_XXX_toBytes(bytes->val + BFS_ZZZ, y);
+
+    return SUCCESS;
+}
+
+int BLS_IETF_ZZZ_deserialize_G1(ECP_ZZZ *point, const octet *bytes)
+{
+    if (bytes == NULL || point == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX x;
+    BIG_XXX y;
+
+    BIG_XXX_fromBytes(x, bytes->val);
+    BIG_XXX_fromBytes(y, bytes->val + BFS_ZZZ);
+
+    if (ECP_ZZZ_set(point, x, y) == 0)
+        return ERR_NOTONCURVE_BLS;
+
+    return SUCCESS;
+}
+
+int BLS_IETF_ZZZ_serialize_G2(octet *bytes, const ECP2_ZZZ *point)
+{
+    if (bytes == NULL || point == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX b;
+    FP2_YYY qx;
+    FP2_YYY qy;
+
+    if (ECP2_ZZZ_get(&qx, &qy, point) == -1)
+        return ERR_NOTONCURVE_BLS;
+
+    FP_YYY_redc(b, &(qx.b));
+    BIG_XXX_toBytes(bytes->val, b);
+    bytes->len = BFS_ZZZ;
+
+    FP_YYY_redc(b, &(qx.a));
+    BIG_XXX_toBytes(bytes->val + BFS_ZZZ, b);
+    bytes->len += BFS_ZZZ;
+
+    FP_YYY_redc(b, &(qy.b));
+    BIG_XXX_toBytes(bytes->val + 2*BFS_ZZZ, b);
+    bytes->len += BFS_ZZZ;
+
+    FP_YYY_redc(b, &(qy.a));
+    BIG_XXX_toBytes(bytes->val + 3*BFS_ZZZ, b);
+    bytes->len += BFS_ZZZ;
+
+    return SUCCESS;
+}
+
+int BLS_IETF_ZZZ_deserialize_G2(ECP2_ZZZ *point, const octet *bytes)
+{
+    if (bytes == NULL || point == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX re;
+    BIG_XXX im;
+    FP2_YYY x;
+    FP2_YYY y;
+
+    // First FP2 element
+    BIG_XXX_fromBytes(im, bytes->val);
+    BIG_XXX_fromBytes(re, bytes->val + BFS_ZZZ);
+    FP2_YYY_from_BIGs(&x, re, im);
+
+    // Second FP2 element
+    BIG_XXX_fromBytes(im, bytes->val + 2*BFS_ZZZ);
+    BIG_XXX_fromBytes(re, bytes->val + 3*BFS_ZZZ);
+    FP2_YYY_from_BIGs(&y, re, im);
+
+    if (ECP2_ZZZ_set(point, &x, &y) == 0)
+        return ERR_NOTONCURVE_BLS;
+
+    return SUCCESS;
+}
+
+/**
+ * @brief Indicates if given a y-coordinate is the lexicographically greatest
+ * as well as its parity.
+ *
+ * @param y y-coordinate
+ *
+ * @return A 2-bit value where:
+ * - the most-significant bit is set to 1 if the y-coordinate is the
+ * lexicographically largest of the two associated with its x-coordinate.
+ * - the least-significant bit is set to 1 if the y-coordinate is odd.
+ */
+static int sgn0_big(const BIG_XXX y)
+{
+    int i;
+    int carry;
+    int ret;
+    chunk borrow;
+    chunk chunkx;
+    BIG_XXX tmp;
+
+    ret = y[0] & 1;
+
+    for (carry=0, i=0; i<NLEN_XXX; i++) {
+        tmp[i] = (y[i] << 1) | carry;
+        carry = y[i] >> (BASEBITS_XXX - 1);
+    }
+
+    for (borrow=0, i=0; i<NLEN_XXX; i++) {
+        chunkx = tmp[i] - (Modulus_ZZZ[i] + borrow);
+        borrow = (chunkx >> BASEBITS_XXX) & 1;
+    }
+
+    ret |= ((carry - (int)borrow) & 2) ^ 2;
+
+    return ret;
+}
+
+/**
+ * @brief Indicates if given a y-coordinate (FP2 element) is the
+ * lexicographically greatest as well as its parity.
+ *
+ * @param y y-coordinate
+ *
+ * @return A 2-bit value where:
+ * - the most-significant bit is set to 1 if the y-coordinate is the
+ * lexicographically largest of the two associated with its x-coordinate.
+ * - the least-significant bit is set to 1 if the y-coordinate is odd.
+ */
+static int sgn0_fp2(const FP2_YYY y)
+{
+    int re;
+    int im;
+    int sign;
+    int prty;
+
+    BIG_XXX a;
+    BIG_XXX b;
+
+    FP_YYY_redc(a, &(y.a));
+    FP_YYY_redc(b, &(y.b));
+
+    re = sgn0_big(a);
+    im = sgn0_big(b);
+
+    // y->b != 0 ? sgn0_big(y->b) : sgn0_big(a->a)
+    sign = 0 - BIG_XXX_iszilch(b);
+    sign = (re & sign) | (im & ~sign);
+
+    // y->a == 0 ? prty(y->b) : prty(a->a)
+    prty = 0 - BIG_XXX_iszilch(a);
+    prty = (im & prty) | (re & ~prty);
+
+    return (sign & 2) | (prty & 1);
+}
+
+int BLS_IETF_ZZZ_compress_G1(octet *bytes, const ECP_ZZZ *point)
+{
+    if (bytes == NULL || point == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int sign;
+    BIG_XXX x;
+    BIG_XXX y;
+
+    if (ECP_ZZZ_isinf(point)) {
+        for(int i = 0; i < BFS_ZZZ; i++)
+            bytes->val[i] = 0x00;
+        bytes->val[0] = 0xc0; // compressed and infinity bits
+    } else {
+        if (ECP_ZZZ_get(x, y, point) == -1)
+            return ERR_NOTONCURVE_BLS;
+        BIG_XXX_toBytes(bytes->val, x);
+        sign = sgn0_big(y);
+        bytes->val[0] |= (unsigned char)(0x80 | ((sign & 2) << 4)); // compressed and not infinity
+    }
+
+    return SUCCESS;
+}
+
+int BLS_IETF_ZZZ_uncompress_G1(ECP_ZZZ *point, const octet *bytes)
+{
+    if (bytes == NULL || point == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    if ((bytes->val[0] & 0x80) == 0x00)
+        return ERR_BADENCODING_BLS;
+
+    int sign;
+    BIG_XXX a;
+    BIG_XXX b;
+    FP_YYY x;
+    FP_YYY y;
+    char bytes_prime[BFS_ZZZ];
+
+    if (bytes->val[0] & 0x40) {
+        /**
+         * Ensure that all bytes are equal to zero
+         */
+        if ((bytes->val[0] & 0x3f) != 0x00)
+            return ERR_BADENCODING_BLS;
+        for(int i = 1; i < BFS_ZZZ; i++) {
+            if ((bytes->val[i]) != 0x00)
+                return ERR_BADENCODING_BLS;
+        }
+        ECP_ZZZ_inf(point);
+        return SUCCESS;
+    }
+
+    for(int i = 0; i < BFS_ZZZ; i++)
+        bytes_prime[i] = bytes->val[i];
+    bytes_prime[0] &= 0x1f; //discard top 3 bits
+
+    BIG_XXX_fromBytes(a, bytes_prime);
+    FP_YYY_nres(&x, a);
+
+    ECP_ZZZ_rhs(&y, &x);
+    FP_YYY_sqrt(&y, &y);
+    FP_YYY_redc(b, &y);
+
+    sign = sgn0_big(b);
+    sign >>= 1; // discard parity bit
+    if (sign != ((bytes->val[0] & 0x20) >> 5)) {
+        FP_YYY_neg(&y, &y);
+        FP_YYY_redc(b, &y);
+    }
+
+    if (ECP_ZZZ_set(point, a, b) == 0)
+        return ERR_NOTONCURVE_BLS;
+
+    return SUCCESS;
+}
+
+int BLS_IETF_ZZZ_compress_G2(octet *bytes, const ECP2_ZZZ *point)
+{
+    if (bytes == NULL || point == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int sign;
+    BIG_XXX b;
+    FP2_YYY x;
+    FP2_YYY y;
+
+    if (ECP2_ZZZ_isinf(point)) {
+        for(int i = 1; i < 2*BFS_ZZZ; i++)
+            bytes->val[i] = 0x00;
+        bytes->val[0] = 0xc0; // compressed and infinity bits
+    } else {
+        if (ECP2_ZZZ_get(&x, &y, point) == -1)
+            return ERR_NOTONCURVE_BLS;
+
+        FP_YYY_redc(b, &(x.b));
+        BIG_XXX_toBytes(bytes->val, b);
+
+        FP_YYY_redc(b, &(x.a));
+        BIG_XXX_toBytes(bytes->val + BFS_ZZZ, b);
+
+        sign = sgn0_fp2(y);
+        bytes->val[0] |= (unsigned char)(0x80 | ((sign & 2) << 4)); // compressed and not infinity
+    }
+
+    return SUCCESS;
+}
+
+int BLS_IETF_ZZZ_uncompress_G2(ECP2_ZZZ *point, const octet *bytes)
+{
+    if (bytes == NULL || point == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    if ((bytes->val[0] & 0x80) == 0x00)
+        return ERR_BADENCODING_BLS;
+
+    int sign;
+    BIG_XXX re;
+    BIG_XXX im;
+    FP2_YYY x;
+    FP2_YYY y;
+    char bytes_prime[2*BFS_ZZZ];
+
+    if (bytes->val[0] & 0x40) {
+        /**
+         * Ensure that all bytes are equal to zero
+         */
+        if ((bytes->val[0] & 0x3f) != 0x00)
+            return ERR_BADENCODING_BLS;
+        for(int i = 1; i < 2*BFS_ZZZ; i++) {
+            if ((bytes->val[i]) != 0x00)
+                return ERR_BADENCODING_BLS;
+        }
+        ECP2_ZZZ_inf(point);
+        return SUCCESS;
+    }
+
+    for(int i = 0; i < 2*BFS_ZZZ; i++)
+        bytes_prime[i] = bytes->val[i];
+    bytes_prime[0] &= 0x1f; //discard top 3 bits
+
+    BIG_XXX_fromBytes(im, bytes_prime);
+    BIG_XXX_fromBytes(re, bytes_prime + BFS_ZZZ);
+    FP2_YYY_from_BIGs(&x, re, im);
+
+    ECP2_ZZZ_rhs(&y, &x);
+    FP2_YYY_sqrt(&y, &y);
+
+    sign = sgn0_fp2(y);
+    sign >>= 1; // discard parity bit
+    if (sign != ((bytes->val[0] & 0x20) >> 5))
+        FP2_YYY_neg(&y, &y);
+
+    if (ECP2_ZZZ_set(point, &x, &y) == 0)
+        return ERR_NOTONCURVE_BLS;
+
+    return SUCCESS;
+}
+
+/**
+ * @brief Calculates the 11-isogeny mapping for BLS12-381 G1.
+ *
+ * @param P Output point
+ * @param x_prime x-coordinate of input point
+ * @param y_prime y-coordinate of input point
+ *
+ * @return 0 if successful, error code otherwise
+ */
+static int iso11_to_ecp(ECP_ZZZ *P, FP_YYY x_prime, FP_YYY y_prime)
+{
+    if (P == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX x;
+    BIG_XXX y;
+    FP_YYY k;
+    FP_YYY xnum;
+    FP_YYY xden;
+    FP_YYY ynum;
+    FP_YYY yden;
+
+    FP_YYY_zero(&xnum);
+    FP_YYY_zero(&ynum);
+    FP_YYY_copy(&xden, &x_prime);
+    FP_YYY_copy(&yden, &x_prime);
+
+    // x_num = k_(1,11) * x'^11 + k_(1,10) * x'^10 + k_(1,9) * x'^9 + ... + k_(1,0)
+    for(int i = 11; i > 0; i--) {
+        FP_YYY_nres(&k, ISO11_XNUM_BLS381[i]);
+        FP_YYY_add(&xnum, &xnum, &k);
+        FP_YYY_mul(&xnum, &xnum, &x_prime);
+    }
+    FP_YYY_nres(&k, ISO11_XNUM_BLS381[0]);
+    FP_YYY_add(&xnum, &xnum, &k);
+
+    // x_den = x'^10 + k_(2,9) * x'^9 + k_(2,8) * x'^8 + ... + k_(2,0)
+    for(int i = 9; i > 0; i--) {
+        FP_YYY_nres(&k, ISO11_XDEN_BLS381[i]);
+        FP_YYY_add(&xden, &xden, &k);
+        FP_YYY_mul(&xden, &xden, &x_prime);
+    }
+    FP_YYY_nres(&k, ISO11_XDEN_BLS381[0]);
+    FP_YYY_add(&xden, &xden, &k);
+
+    // y_num = k_(3,15) * x'^15 + k_(3,14) * x'^14 + k_(3,13) * x'^13 + ... + k_(3,0)
+    for(int i = 15; i > 0; i--) {
+        FP_YYY_nres(&k, ISO11_YNUM_BLS381[i]);
+        FP_YYY_add(&ynum, &ynum, &k);
+        FP_YYY_mul(&ynum, &ynum, &x_prime);
+    }
+    FP_YYY_nres(&k, ISO11_YNUM_BLS381[0]);
+    FP_YYY_add(&ynum, &ynum, &k);
+
+    // y_den = x'^15 + k_(4,14) * x'^14 + k_(4,13) * x'^13 + ... + k_(4,0)
+    for(int i = 14; i > 0; i--) {
+        FP_YYY_nres(&k, ISO11_YDEN_BLS381[i]);
+        FP_YYY_add(&yden, &yden, &k);
+        FP_YYY_mul(&yden, &yden, &x_prime);
+    }
+    FP_YYY_nres(&k, ISO11_YDEN_BLS381[0]);
+    FP_YYY_add(&yden, &yden, &k);
+
+    // x = x_num / x_den
+    FP_YYY_inv(&xden, &xden);
+    FP_YYY_mul(&xnum, &xnum, &xden);
+    // y = y' * y_num / y_den
+    FP_YYY_inv(&yden, &yden);
+    FP_YYY_mul(&ynum, &ynum, &yden);
+    FP_YYY_mul(&ynum, &ynum, &y_prime);
+    // P = (x, y)
+    FP_YYY_redc(x, &xnum);
+    FP_YYY_redc(y, &ynum);
+    if (ECP_ZZZ_set(P, x, y) == 0)
+        return ERR_NOTONCURVE_BLS;
+
+    return SUCCESS;
+}
+
+/**
+ * @brief Calculates the 3-isogeny mapping for BLS12-381 G2.
+ *
+ * @param P Output point
+ * @param x_prime x-coordinate of input point
+ * @param y_prime y-coordinate of input point
+ *
+ * @return 0 if successful, error code otherwise
+ */
+static int iso3_to_ecp(ECP2_ZZZ *P, FP2_YYY x_prime, FP2_YYY y_prime)
+{
+    if (P == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    FP2_YYY k;
+    FP2_YYY xnum;
+    FP2_YYY xden;
+    FP2_YYY ynum;
+    FP2_YYY yden;
+
+    FP2_YYY_zero(&xnum);
+    FP2_YYY_zero(&ynum);
+    FP2_YYY_copy(&yden, &x_prime);
+
+    // x_num = k_(1,3) * x'^3 + k_(1,2) * x'^2 + k_(1,1) * x' + k_(1,0)
+    for(int i = 3; i > 0; i--) {
+        FP2_YYY_from_BIGs(&k, ISO3_XNUMre_BLS381[i], ISO3_XNUMim_BLS381[i]);
+        FP2_YYY_add(&xnum, &xnum, &k);
+        FP2_YYY_mul(&xnum, &xnum, &x_prime);
+    }
+    FP2_YYY_from_BIGs(&k, ISO3_XNUMre_BLS381[0], ISO3_XNUMim_BLS381[0]);
+    FP2_YYY_add(&xnum, &xnum, &k);
+
+    // x_den = x'^2 + k_(2,1) * x' + k_(2,0)
+    FP2_YYY_from_BIGs(&k, ISO3_XDENre_BLS381[1], ISO3_XDENim_BLS381[1]);
+    FP2_YYY_add(&xden, &x_prime, &k);
+    FP2_YYY_mul(&xden, &xden, &x_prime);
+    FP2_YYY_from_BIGs(&k, ISO3_XDENre_BLS381[0], ISO3_XDENim_BLS381[0]);
+    FP2_YYY_add(&xden, &xden, &k);
+
+    // y_num = k_(3,3) * x'^3 + k_(3,2) * x'^2 + k_(3,1) * x' + k_(3,0)
+    for(int i = 3; i > 0; i--) {
+        FP2_YYY_from_BIGs(&k, ISO3_YNUMre_BLS381[i], ISO3_YNUMim_BLS381[i]);
+        FP2_YYY_add(&ynum, &ynum, &k);
+        FP2_YYY_mul(&ynum, &ynum, &x_prime);
+    }
+    FP2_YYY_from_BIGs(&k, ISO3_YNUMre_BLS381[0], ISO3_YNUMim_BLS381[0]);
+    FP2_YYY_add(&ynum, &ynum, &k);
+
+    // y_den = x'^3 + k_(4,2) * x'^2 + k_(4,1) * x' + k_(4,0)
+    for(int i = 2; i > 0; i--) {
+        FP2_YYY_from_BIGs(&k, ISO3_YDENre_BLS381[i], ISO3_YDENim_BLS381[i]);
+        FP2_YYY_add(&yden, &yden, &k);
+        FP2_YYY_mul(&yden, &yden, &x_prime);
+    }
+    FP2_YYY_from_BIGs(&k, ISO3_YDENre_BLS381[0], ISO3_YDENim_BLS381[0]);
+    FP2_YYY_add(&yden, &yden, &k);
+
+    // x = x_num / x_den
+    FP2_YYY_inv(&xden, &xden);
+    FP2_YYY_mul(&xnum, &xnum, &xden);
+    // y = y' * y_num / y_den
+    FP2_YYY_inv(&yden, &yden);
+    FP2_YYY_mul(&ynum, &ynum, &yden);
+    FP2_YYY_mul(&ynum, &ynum, &y_prime);
+    // P = (x, y)
+    ECP2_ZZZ_set(P, &xnum, &ynum);
+
+    return SUCCESS;
+}
+
+/**
+ * @brief Calculates a point on the elliptic curve E from an element of the finite field F over which E is defined.
+ * Follows the Simplified SWU for AB == 0 method as defined at
+ * https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#name-simplified-swu-for-ab-0 (§ 6.6.3)
+ *
+ * @param P Output EC point
+ * @param u Input finite field element
+ *
+ * @return 0 if successful, error code otherwise
+ */
+static int map_to_curve_G1(ECP_ZZZ *P, FP_YYY u)
+{
+    if (P == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    FP_YYY x;
+    FP_YYY y;
+    int ret = SUCCESS;
+
+    // (x, y) = map_to_curve_simple_swu(u)
+    ret |= ECP_ZZZ_sswu(&x, &y, u);
+    // P = (x, y) = iso_map(x, y)
+    ret |= iso11_to_ecp(P, x, y);
+
+    return ret;
+}
+
+/**
+ * @brief Calculates a point on the elliptic curve from a quadratic extension field element.
+ * Follows the Simplified SWU for AB == 0 method as defined at
+ * https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#name-simplified-swu-for-ab-0
+ *
+ * @param P Output EC point
+ * @param u Input finite field element
+ *
+ * @return 0 if successful, error code otherwise
+ */
+static int map_to_curve_G2(ECP2_ZZZ *P, FP2_YYY u)
+{
+    if (P == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int ret = SUCCESS;
+    FP2_YYY x;
+    FP2_YYY y;
+
+    // (x, y) = map_to_curve_simple_swu(u)
+    ret |= ECP2_ZZZ_sswu(&x, &y, u);
+    // P = (x, y) = iso_map(x, y)
+    ret |= iso3_to_ecp(P, x, y);
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_hash2curve_G1(ECP_ZZZ *P, const octet *msg, const octet *dst)
+{
+    if (P == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX elems[2];
+    FP_YYY u;
+    ECP_ZZZ Q;
+    int ret = SUCCESS;
+
+    // u = hash_to_field(msg, 2)
+    ret |= hash_to_field_YYY(elems, 2, 1, msg->val, msg->len, dst->val, dst->len);
+    // P = map_to_curve(u[0])
+    FP_YYY_nres(&u, elems[0]);
+    ret |= map_to_curve_G1(P, u);
+    // Q = map_to_curve(u[1])
+    FP_YYY_nres(&u, elems[1]);
+    ret |= map_to_curve_G1(&Q, u);
+    // P = P + Q
+    ECP_ZZZ_add(P, &Q);
+    // P = clear_cofactor(P)
+    ECP_ZZZ_mul(P, H_EFF_G1);
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_encode2curve_G1(ECP_ZZZ *P, const octet *msg, const octet *dst)
+{
+    if (P == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX elems;
+    FP_YYY u;
+    int ret = SUCCESS;
+
+    // u = hash_to_field(msg, 1)
+    ret |= hash_to_field_YYY(&elems, 1, 1, msg->val, msg->len, dst->val, dst->len);
+    //P = map_to_curve(u[0])
+    FP_YYY_nres(&u, elems);
+    ret |= map_to_curve_G1(P, u);
+    // P = P = clear_cofactor(P)
+    ECP_ZZZ_mul(P, H_EFF_G1);
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_hash2curve_G2(ECP2_ZZZ *P, const octet *msg, const octet *dst)
+{
+    if (P == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int ret = SUCCESS;
+    BIG_XXX elems[4];
+    FP2_YYY u;
+    ECP2_ZZZ Q;
+
+    // u = hash_to_field(msg, 2)
+    ret |= hash_to_field_YYY(elems, 2, 2, msg->val, msg->len, dst->val, dst->len);
+    // P = map_to_curve(u[0])
+    FP2_YYY_from_BIGs(&u, elems[0], elems[1]);
+    ret |= map_to_curve_G2(P, u);
+    // Q = map_to_curve(u[1])
+    FP2_YYY_from_BIGs(&u, elems[2], elems[3]);
+    ret |= map_to_curve_G2(&Q, u);
+    // P = P + Q
+    ECP2_ZZZ_add(P, &Q);
+    // P = clear_cofactor(P)
+    ret |= ECP2_ZZZ_clearcofactor(P);
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_encode2curve_G2(ECP2_ZZZ *P, const octet *msg, const octet *dst)
+{
+    if (P == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int ret = SUCCESS;
+    BIG_XXX elems[2];
+    FP2_YYY u;
+
+    // u = hash_to_field(msg, 1)
+    ret |= hash_to_field_YYY(elems, 1, 2, msg->val, msg->len, dst->val, dst->len);
+    // P = map_to_curve(u[0])
+    FP2_YYY_from_BIGs(&u, elems[0], elems[1]);
+    ret |= map_to_curve_G2(P, u);
+    // P = clear_cofactor(P)
+    ret |= ECP2_ZZZ_clearcofactor(P);
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_core_sign_G1(octet *sig, const char *sk, const octet *msg, const octet *dst)
+{
+    if (sig == NULL || sk == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX s;
+    ECP_ZZZ Q;
+    int ret = SUCCESS;
+
+    // s <- SK
+    BIG_XXX_fromBytesLen(s, sk, SK_LEN);
+    // Q <- hash_to_point(msg)
+    ret |= BLS_IETF_ZZZ_hash2curve_G1(&Q, msg, dst);
+    // Q <- s*Q
+    PAIR_ZZZ_G1mul(&Q, s);
+    // sig <- point_to_signature(Q)
+    ret |= BLS_IETF_ZZZ_compress_G1(sig, &Q);
+    // zeroization
+    BIG_XXX_zero(s);
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_core_sign_G2(octet *sig, const char *sk, const octet *msg, const octet *dst)
+{
+    if (sig == NULL || sk == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    BIG_XXX s;
+    ECP2_ZZZ Q;
+    int ret = SUCCESS;
+
+    // s <- SK
+    BIG_XXX_fromBytesLen(s, sk, SK_LEN);
+    // Q <- hash_to_point(msg)
+    ret |= BLS_IETF_ZZZ_hash2curve_G2(&Q, msg, dst);
+    // Q <- s*Q
+    PAIR_ZZZ_G2mul(&Q, s);
+    // sig <- point_to_signature(Q)
+    ret |= BLS_IETF_ZZZ_compress_G2(sig, &Q);
+    // zeroization
+    BIG_XXX_zero(s);
+
+    return ret;
+}
+
+// TODO: Implement a faster variant based on https://eprint.iacr.org/2019/814
+static inline int subgroup_check_G1(ECP_ZZZ P)
+{
+    ECP_ZZZ_mul(&P, CURVE_Order_ZZZ);
+    return ECP_ZZZ_isinf(&P);
+}
+
+// TODO: Implement a faster variant based on https://eprint.iacr.org/2019/814
+static inline int subgroup_check_G2(ECP2_ZZZ P)
+{
+    ECP2_ZZZ_mul(&P, CURVE_Order_ZZZ);
+    return ECP2_ZZZ_isinf(&P);
+}
+
+int BLS_IETF_ZZZ_core_verify_G1(const octet *sig, const ECP2_ZZZ *PK, const octet *msg, const octet *dst)
+{
+    if (sig == NULL || PK == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int ret = SUCCESS;
+    ECP_ZZZ  Q;
+    ECP_ZZZ  R;
+    ECP2_ZZZ P;
+    FP12_YYY f;
+    FP12_YYY acc[ATE_BITS_ZZZ];
+
+    // R <- signature_to_point(sig)
+    ret |= BLS_IETF_ZZZ_uncompress_G1(&R, sig);
+    if (ret != SUCCESS)
+        return ERR_BADSIGNATURE_BLS;
+
+    if (!subgroup_check_G1(R))
+        return ERR_NOTONCURVE_BLS;
+
+    if(ECP2_ZZZ_isinf(PK) || !subgroup_check_G2(*PK))
+        return ERR_INVALIDPUBKEY_BLS;
+
+    // Q <- hash_to_point(msg)
+    ret |= BLS_IETF_ZZZ_hash2curve_G1(&Q, msg, dst);
+
+    // pairing protocol according to https://eprint.iacr.org/2019/077.pdf
+    ECP2_ZZZ_generator(&P);
+    ECP2_ZZZ_neg(&P);
+    PAIR_ZZZ_initmp(acc);
+    PAIR_ZZZ_another(acc, &P, &R);
+    PAIR_ZZZ_another(acc, PK, &Q);
+    PAIR_ZZZ_miller(&f, acc);
+    PAIR_ZZZ_fexp(&f);
+
+    // ensure that pairing(Q, PK) * pairing(R, -P) == 1
+    if (!FP12_YYY_isunity(&f))
+        return ERR_BADSIGNATURE_BLS;
+
+    return ret;
+}
+
+
+int BLS_IETF_ZZZ_core_verify_G2(const octet *sig, const ECP_ZZZ *PK, const octet *msg, const octet *dst)
+{
+    if (sig == NULL || PK == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int ret = SUCCESS;
+    ECP2_ZZZ Q;
+    ECP2_ZZZ R;
+    ECP_ZZZ  P;
+    FP12_YYY f;
+    FP12_YYY acc[ATE_BITS_ZZZ];
+
+    // R <- signature_to_point(sig)
+    ret |= BLS_IETF_ZZZ_uncompress_G2(&R, sig);
+    if (ret != SUCCESS)
+        return ERR_BADSIGNATURE_BLS;
+
+    if (!subgroup_check_G2(R))
+        return ERR_NOTONCURVE_BLS;
+
+    if(ECP_ZZZ_isinf(PK) || !subgroup_check_G1(*PK))
+        return ERR_INVALIDPUBKEY_BLS;
+
+    // Q <- hash_to_point(msg)
+    ret |= BLS_IETF_ZZZ_hash2curve_G2(&Q, msg, dst);
+
+    // pairing protocol according to https://eprint.iacr.org/2019/077.pdf
+    ECP_ZZZ_generator(&P);
+    ECP_ZZZ_neg(&P);
+    PAIR_ZZZ_initmp(acc);
+    PAIR_ZZZ_another(acc, &R, &P);
+    PAIR_ZZZ_another(acc, &Q, PK);
+    PAIR_ZZZ_miller(&f, acc);
+    PAIR_ZZZ_fexp(&f);
+
+    // ensure that pairing(Q, PK) * pairing(R, -P) == 1
+    if (!FP12_YYY_isunity(&f))
+        return ERR_BADSIGNATURE_BLS;
+
+    return ret;
+}
+
+
+int BLS_IETF_ZZZ_aggregate_G1(octet *out, const octet *in, unsigned int n)
+{
+    if (out == NULL || in == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    if (n == 0)
+        return ERR_BADARGLEN_BLS;
+
+    int ret = SUCCESS;
+    ECP_ZZZ  A;
+    ECP_ZZZ  B;
+
+    // A <- signature_to_point(in)
+    ret |= BLS_IETF_ZZZ_uncompress_G1(&A, in);
+    if (ret != SUCCESS)
+        return ERR_BADSIGNATURE_BLS;
+
+    for (unsigned int i = 1; i < n; i++) {
+        // B <- signature_to_point(in + i)
+        ret |= BLS_IETF_ZZZ_uncompress_G1(&B, in + i);
+        if (ret != SUCCESS)
+            return ERR_BADSIGNATURE_BLS;
+        // A <- A + B
+        ECP_ZZZ_add(&A, &B);
+    }
+
+    // out <- point_to_signature(A)
+    ret |= BLS_IETF_ZZZ_compress_G1(out, &A);
+    return ret;
+}
+
+int BLS_IETF_ZZZ_aggregate_G2(octet *out, const octet *in, unsigned int n)
+{
+    if (out == NULL || in == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    if (n == 0)
+        return ERR_BADARGLEN_BLS;
+
+    int ret = SUCCESS;
+    ECP2_ZZZ  A;
+    ECP2_ZZZ  B;
+
+    // A <- signature_to_point(in)
+    ret |= BLS_IETF_ZZZ_uncompress_G2(&A, in);
+    if (ret != SUCCESS)
+        return ERR_BADSIGNATURE_BLS;
+    for (unsigned int i = 1; i < n; i++) {
+        // B <- signature_to_point(in + i)
+        ret |= BLS_IETF_ZZZ_uncompress_G2(&B, in + i);
+        if (ret != SUCCESS)
+            return ERR_BADSIGNATURE_BLS;
+        // A <- A + B
+        ECP2_ZZZ_add(&A, &B);
+    }
+
+    // out <- point_to_signature(A)
+    ret |= BLS_IETF_ZZZ_compress_G2(out, &A);
+    return ret;
+}
+
+int BLS_IETF_ZZZ_core_aggregate_verify_G1(const octet *sig, const ECP2_ZZZ PK[], const octet msg[], unsigned int n, const octet *dst)
+{
+    if (sig == NULL || PK == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    if (n == 0)
+        return ERR_BADARGLEN_BLS;
+
+    int ret = SUCCESS;
+    ECP_ZZZ  Q;
+    ECP_ZZZ  R;
+    ECP2_ZZZ P;
+    FP12_YYY f;
+    FP12_YYY acc[ATE_BITS_ZZZ];
+
+    // R <- signature_to_point(sig)
+    ret |= BLS_IETF_ZZZ_uncompress_G1(&R, sig);
+    if (ret != SUCCESS)
+        return ERR_BADSIGNATURE_BLS;
+
+    if (!subgroup_check_G1(R))
+        return ERR_NOTONCURVE_BLS;
+
+    // initialize the pairing protocol
+    ECP2_ZZZ_generator(&P);
+    ECP2_ZZZ_neg(&P);
+    PAIR_ZZZ_initmp(acc);
+    PAIR_ZZZ_another(acc, &P, &R);
+
+    for (unsigned int i = 0; i < n; i++) {
+        if(ECP2_ZZZ_isinf(PK + i) || !subgroup_check_G2(PK[i]))
+            return ERR_INVALIDPUBKEY_BLS;
+        if (ret != SUCCESS)
+            return ERR_BADSIGNATURE_BLS;
+        // Q <- hash_to_point(msg)
+        ret |= BLS_IETF_ZZZ_hash2curve_G1(&Q, msg + i, dst);
+        PAIR_ZZZ_another(acc, PK + i, &Q);
+
+    }
+
+    PAIR_ZZZ_miller(&f, acc);
+    PAIR_ZZZ_fexp(&f);
+
+    if (!FP12_YYY_isunity(&f))
+        return ERR_BADSIGNATURE_BLS;
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_core_aggregate_verify_G2(const octet *sig, const ECP_ZZZ PK[], const octet msg[], unsigned int n, const octet *dst)
+{
+    if (sig == NULL || PK == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    if (n == 0)
+        return ERR_BADARGLEN_BLS;
+
+    int ret = SUCCESS;
+    ECP2_ZZZ Q;
+    ECP2_ZZZ R;
+    ECP_ZZZ  P;
+    FP12_YYY f;
+    FP12_YYY acc[ATE_BITS_ZZZ];
+
+    // R <- signature_to_point(sig)
+    ret |= BLS_IETF_ZZZ_uncompress_G2(&R, sig);
+    if (ret != SUCCESS)
+        return ERR_BADSIGNATURE_BLS;
+
+    if (!subgroup_check_G2(R))
+        return ERR_NOTONCURVE_BLS;
+
+    // initialize the pairing protocol
+    ECP_ZZZ_generator(&P);
+    ECP_ZZZ_neg(&P);
+    PAIR_ZZZ_initmp(acc);
+    PAIR_ZZZ_another(acc, &R, &P);
+
+    for (unsigned int i = 0; i < n; i++) {
+        if(ECP_ZZZ_isinf(PK + i) || !subgroup_check_G1(PK[i]))
+            return ERR_INVALIDPUBKEY_BLS;
+        if (ret != SUCCESS)
+            return ERR_BADSIGNATURE_BLS;
+        // Q <- hash_to_point(msg)
+        ret |= BLS_IETF_ZZZ_hash2curve_G2(&Q, msg + i, dst);
+        PAIR_ZZZ_another(acc, &Q, PK + i);
+
+    }
+
+    PAIR_ZZZ_miller(&f, acc);
+    PAIR_ZZZ_fexp(&f);
+
+    if (!FP12_YYY_isunity(&f))
+        return ERR_BADSIGNATURE_BLS;
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_pop_prove_G1(octet *proof, const char *sk)
+{
+    if (proof == NULL || sk == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int ret = SUCCESS;
+    BIG_XXX s;
+    ECP_ZZZ Q;
+    ECP2_ZZZ PK;
+    char dst[43]  = "BLS_POP_BLS12381G1_XMD:SHA-256_SSWU_RO_POP_";
+    octet dst_oct = {43, 43, dst};
+    char pubkey[2*BFS_ZZZ];
+    octet pk_oct  = {2*BFS_ZZZ, 2*BFS_ZZZ, pubkey};
+
+    // s <- sk
+    BIG_XXX_fromBytesLen(s, sk, SK_LEN);
+    // PK <- SkToPk(sk)
+    ret |= BLS_IETF_ZZZ_sk_to_pk_G2(&PK, sk);
+    ret |= BLS_IETF_ZZZ_compress_G2(&pk_oct, &PK);
+    // Q <- hash_pubkey_to_point(PK)
+    ret |= BLS_IETF_ZZZ_hash2curve_G1(&Q, &pk_oct, &dst_oct);
+    // Q <- s*Q
+    ECP_ZZZ_mul(&Q, s);
+    // proof <- point_to_signature(Q)
+    ret |= BLS_IETF_ZZZ_compress_G1(proof, &Q);
+    // zeroize big variable
+    BIG_XXX_zero(s);
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_pop_prove_G2(octet *proof, const char *sk)
+{
+    if (proof == NULL || sk == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int ret = SUCCESS;
+    BIG_XXX s;
+    ECP2_ZZZ Q;
+    ECP_ZZZ PK;
+    char dst[43]  = "BLS_POP_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+    octet dst_oct = {43, 43, dst};
+    char pubkey[BFS_ZZZ];
+    octet pk_oct  = {BFS_ZZZ, BFS_ZZZ, pubkey};
+
+    // s <- sk
+    BIG_XXX_fromBytesLen(s, sk, SK_LEN);
+    // PK <- SkToPk(sk)
+    ret |= BLS_IETF_ZZZ_sk_to_pk_G1(&PK, sk);
+    ret |= BLS_IETF_ZZZ_compress_G1(&pk_oct, &PK);
+    // Q <- hash_pubkey_to_point(PK)
+    ret |= BLS_IETF_ZZZ_hash2curve_G2(&Q, &pk_oct, &dst_oct);
+    // Q <- s*Q
+    ECP2_ZZZ_mul(&Q, s);
+    // proof <- point_to_signature(Q)
+    ret |= BLS_IETF_ZZZ_compress_G2(proof, &Q);
+    // zeroize big variable
+    BIG_XXX_zero(s);
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_pop_verify_G1(const octet *proof, const ECP2_ZZZ *PK)
+{
+    if (proof == NULL || PK == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int ret = SUCCESS;
+    ECP_ZZZ  Q;
+    ECP_ZZZ  R;
+    ECP2_ZZZ P;
+    FP12_YYY f;
+    FP12_YYY acc[ATE_BITS_ZZZ];
+    char dst[43]  = "BLS_POP_BLS12381G1_XMD:SHA-256_SSWU_RO_POP_";
+    octet dst_oct = {43, 43, dst};
+    char pubkey[2*BFS_ZZZ];
+    octet pk_oct  = {2*BFS_ZZZ, 2*BFS_ZZZ, pubkey};
+
+    // R <- signature_to_point(proof)
+    ret |= BLS_IETF_ZZZ_uncompress_G1(&R, proof);
+    if (ret != SUCCESS)
+        return ERR_BADPOP_BLS;
+
+    if (!subgroup_check_G1(R))
+        return ERR_NOTONCURVE_BLS;
+
+    if(ECP2_ZZZ_isinf(PK) || !subgroup_check_G2(*PK))
+        return ERR_INVALIDPUBKEY_BLS;
+
+    // Q <- hash_pubkey_to_point(PK)
+    ret |= BLS_IETF_ZZZ_compress_G2(&pk_oct, PK);
+    ret |= BLS_IETF_ZZZ_hash2curve_G1(&Q, &pk_oct, &dst_oct);
+
+    // pairing protocol according to https://eprint.iacr.org/2019/077.pdf
+    ECP2_ZZZ_generator(&P);
+    ECP2_ZZZ_neg(&P);
+    PAIR_ZZZ_initmp(acc);
+    // accumulate 1st pairing(R, -P)
+    PAIR_ZZZ_another(acc, &P, &R);
+    // accumulate 2nd pairing(Q, PK)
+    PAIR_ZZZ_another(acc, PK, &Q);
+    // combined Miller loop calculation
+    PAIR_ZZZ_miller(&f, acc);
+    // final exponentiation
+    PAIR_ZZZ_fexp(&f);
+
+    // ensure that pairing(Q, PK) * pairing(R, -P) == 1
+    if (!FP12_YYY_isunity(&f))
+        return ERR_BADPOP_BLS;
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_pop_verify_G2(const octet *proof, const ECP_ZZZ *PK)
+{
+    if (proof == NULL || PK == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    int ret = SUCCESS;
+    ECP2_ZZZ Q;
+    ECP2_ZZZ R;
+    ECP_ZZZ  P;
+    FP12_YYY f;
+    FP12_YYY acc[ATE_BITS_ZZZ];
+    char dst[43]  = "BLS_POP_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+    octet dst_oct = {43, 43, dst};
+    char pubkey[BFS_ZZZ];
+    octet pk_oct  = {BFS_ZZZ, BFS_ZZZ, pubkey};
+
+    // R <- signature_to_point(proof)
+    ret |= BLS_IETF_ZZZ_uncompress_G2(&R, proof);
+    if (ret != SUCCESS)
+        return ERR_BADPOP_BLS;
+
+    if (!subgroup_check_G2(R))
+        return ERR_NOTONCURVE_BLS;
+
+    if(ECP_ZZZ_isinf(PK) || !subgroup_check_G1(*PK))
+        return ERR_INVALIDPUBKEY_BLS;
+
+    // Q <- hash_pubkey_to_point(PK)
+    ret |= BLS_IETF_ZZZ_compress_G1(&pk_oct, PK);
+    ret |= BLS_IETF_ZZZ_hash2curve_G2(&Q, &pk_oct, &dst_oct);
+
+    // pairing protocol according to https://eprint.iacr.org/2019/077.pdf
+    ECP_ZZZ_generator(&P);
+    ECP_ZZZ_neg(&P);
+    PAIR_ZZZ_initmp(acc);
+    // accumulate 1st pairing(R, -P)
+    PAIR_ZZZ_another(acc, &R, &P);
+    // accumulate 2nd pairing(Q, PK)
+    PAIR_ZZZ_another(acc, &Q, PK);
+    // combined Miller loop calculation
+    PAIR_ZZZ_miller(&f, acc);
+    // final exponentiation
+    PAIR_ZZZ_fexp(&f);
+
+    // ensure that pairing(Q, PK) * pairing(R, -P) == 1
+    if (!FP12_YYY_isunity(&f))
+        return ERR_BADPOP_BLS;
+
+    return ret;
+}
+
+int BLS_IETF_ZZZ_fast_aggregate_verify_G1(const octet *sig, const ECP2_ZZZ PK[], const octet *msg, unsigned int n, const octet *dst)
+{
+    if (PK == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    if (n == 0)
+        return ERR_BADARGLEN_BLS;
+
+    ECP2_ZZZ A;
+
+    // aggregate <- pubkey_to_point(PK_1)
+    ECP2_ZZZ_copy(&A, PK);
+
+    // aggregate <- aggregate + pubkey_to_point(PK_i)
+    for (unsigned int i = 1; i < n; i++)
+        ECP2_ZZZ_add(&A, PK + i);
+
+    // return CoreVerify(A, message, signature)
+    return BLS_IETF_ZZZ_core_verify_G1(sig, &A, msg, dst);
+}
+
+int BLS_IETF_ZZZ_fast_aggregate_verify_G2(const octet *sig, const ECP_ZZZ PK[], const octet *msg, unsigned int n, const octet *dst)
+{
+    if (PK == NULL || msg == NULL || dst == NULL)
+        return ERR_NULLPOINTER_BLS;
+
+    if (n == 0)
+        return ERR_BADARGLEN_BLS;
+
+    ECP_ZZZ A;
+
+    // aggregate <- pubkey_to_point(PK_1)
+    ECP_ZZZ_copy(&A, PK);
+
+    // aggregate <- aggregate + pubkey_to_point(PK_i)
+    for (unsigned int i = 1; i < n; i++)
+        ECP_ZZZ_add(&A, PK + i);
+
+    // return CoreVerify(A, message, signature)
+    return BLS_IETF_ZZZ_core_verify_G2(sig, &A, msg, dst);
+}

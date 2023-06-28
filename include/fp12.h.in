@@ -50,19 +50,19 @@ extern const BIG_XXX Frb_YYY; /**< imaginary part of BN curve Frobenius Constant
 	@param x FP12 number to be tested
 	@return 1 if zero, else returns 0
  */
-extern int FP12_YYY_iszilch(FP12_YYY *x);
+extern int FP12_YYY_iszilch(const FP12_YYY *x);
 /**	@brief Tests for FP12 equal to unity
  *
 	@param x FP12 number to be tested
 	@return 1 if unity, else returns 0
  */
-extern int FP12_YYY_isunity(FP12_YYY *x);
+extern int FP12_YYY_isunity(const FP12_YYY *x);
 /**	@brief Copy FP12 to another FP12
  *
 	@param x FP12 instance, on exit = y
 	@param y FP12 instance to be copied
  */
-extern void FP12_YYY_copy(FP12_YYY *x,FP12_YYY *y);
+extern void FP12_YYY_copy(FP12_YYY *x,const FP12_YYY *y);
 /**	@brief Set FP12 to unity
  *
 	@param x FP12 instance to be set to one
@@ -81,21 +81,21 @@ extern void FP12_YYY_zero(FP12_YYY *x);
 	@param y FP12 instance to be compared
 	@return 1 if x=y, else returns 0
  */
-extern int FP12_YYY_equals(FP12_YYY *x,FP12_YYY *y);
+extern int FP12_YYY_equals(const FP12_YYY *x,const FP12_YYY *y);
 /**	@brief Conjugation of FP12
  *
 	If y=(a,b,c) (where a,b,c are its three FP4 components) on exit x=(conj(a),-conj(b),conj(c))
 	@param x FP12 instance, on exit = conj(y)
 	@param y FP12 instance
  */
-extern void FP12_YYY_conj(FP12_YYY *x,FP12_YYY *y);
+extern void FP12_YYY_conj(FP12_YYY *x,const FP12_YYY *y);
 /**	@brief Initialise FP12 from single FP4
  *
 	Sets first FP4 component of an FP12, other components set to zero
 	@param x FP12 instance to be initialised
 	@param a FP4 to form first part of FP4
  */
-extern void FP12_YYY_from_FP4(FP12_YYY *x,FP4_YYY *a);
+extern void FP12_YYY_from_FP4(FP12_YYY *x,const FP4_YYY *a);
 /**	@brief Initialise FP12 from three FP4s
  *
 	@param x FP12 instance to be initialised
@@ -103,7 +103,7 @@ extern void FP12_YYY_from_FP4(FP12_YYY *x,FP4_YYY *a);
 	@param b FP4 to form second part of FP12
 	@param c FP4 to form third part of FP12
  */
-extern void FP12_YYY_from_FP4s(FP12_YYY *x,FP4_YYY *a,FP4_YYY* b,FP4_YYY *c);
+extern void FP12_YYY_from_FP4s(FP12_YYY *x,const FP4_YYY *a,const FP4_YYY* b,const FP4_YYY *c);
 /**	@brief Fast Squaring of an FP12 in "unitary" form
  *
 	@param x FP12 instance, on exit = y^2
@@ -122,14 +122,14 @@ extern void FP12_YYY_sqr(FP12_YYY *x,FP12_YYY *y);
 	@param x FP12 instance, on exit = x*y
 	@param y FP12 instance, of special form
  */
-extern void FP12_YYY_smul(FP12_YYY *x,FP12_YYY *y);
+extern void FP12_YYY_smul(FP12_YYY *x,const FP12_YYY *y);
 
 /**	@brief Fast multiplication of what may be sparse multiplicands
  *
 	@param x FP12 instance, on exit = x*y
 	@param y FP12 instance, of special form
  */
-extern void FP12_YYY_ssmul(FP12_YYY *x,FP12_YYY *y);
+extern void FP12_YYY_ssmul(FP12_YYY *x,const FP12_YYY *y);
 
 
 /**	@brief Full unconditional Multiplication of two FP12s
@@ -137,7 +137,7 @@ extern void FP12_YYY_ssmul(FP12_YYY *x,FP12_YYY *y);
 	@param x FP12 instance, on exit = x*y
 	@param y FP12 instance, the multiplier
  */
-extern void FP12_YYY_mul(FP12_YYY *x,FP12_YYY *y);
+extern void FP12_YYY_mul(FP12_YYY *x,const FP12_YYY *y);
 /**	@brief Inverting an FP12
  *
 	@param x FP12 instance, on exit = 1/y
@@ -150,7 +150,7 @@ extern void FP12_YYY_inv(FP12_YYY *x,FP12_YYY *y);
 	@param x FP12 instance
 	@param b BIG number
  */
-extern void FP12_YYY_pow(FP12_YYY *r,FP12_YYY *x,BIG_XXX b);
+extern void FP12_YYY_pow(FP12_YYY *r,const FP12_YYY *x,const BIG_XXX b);
 /**	@brief Raises an FP12 instance x to a small integer power, side-channel resistant
  *
 	@param x FP12 instance, on exit = x^i
@@ -166,7 +166,7 @@ extern void FP12_YYY_pinpow(FP12_YYY *x,int i,int b);
 	@param e BIG exponent
 	@param r BIG group order
  */
-extern void FP12_YYY_compow(FP4_YYY *c,FP12_YYY *x,BIG_XXX e,BIG_XXX r);
+extern void FP12_YYY_compow(FP4_YYY *c,const FP12_YYY *x,const BIG_XXX e,const BIG_XXX r);
 
 /**	@brief Calculate x[0]^b[0].x[1]^b[1].x[2]^b[2].x[3]^b[3], side-channel resistant
  *
@@ -174,13 +174,13 @@ extern void FP12_YYY_compow(FP4_YYY *c,FP12_YYY *x,BIG_XXX e,BIG_XXX r);
 	@param x FP12 array with 4 FP12s
 	@param b BIG array of 4 exponents
  */
-extern void FP12_YYY_pow4(FP12_YYY *r,FP12_YYY *x,BIG_XXX *b);
+extern void FP12_YYY_pow4(FP12_YYY *r,const FP12_YYY *x,const BIG_XXX b[4]);
 /**	@brief Raises an FP12 to the power of the internal modulus p, using the Frobenius
  *
 	@param x FP12 instance, on exit = x^p
 	@param f FP2 precalculated Frobenius constant
  */
-extern void FP12_YYY_frob(FP12_YYY *x,FP2_YYY *f);
+extern void FP12_YYY_frob(FP12_YYY *x,const FP2_YYY *f);
 /**	@brief Reduces all components of possibly unreduced FP12 mod Modulus
  *
 	@param x FP12 instance, on exit reduced mod Modulus
@@ -202,7 +202,7 @@ extern void FP12_YYY_output(FP12_YYY *x);
 	@param S output octet string
 	@param x FP12 instance to be converted to an octet string
  */
-extern void FP12_YYY_toOctet(octet *S,FP12_YYY *x);
+extern void FP12_YYY_toOctet(octet *S,const FP12_YYY *x);
 /**	@brief Creates an FP12 instance from an octet string
  *
 	De-serializes the components of an FP12 to create an FP12 from big-endian base 256 components.
@@ -210,14 +210,14 @@ extern void FP12_YYY_toOctet(octet *S,FP12_YYY *x);
 	@param S input octet string
 
  */
-extern void FP12_YYY_fromOctet(FP12_YYY *x,octet *S);
+extern void FP12_YYY_fromOctet(FP12_YYY *x,const octet *S);
 /**	@brief Calculate the trace of an FP12
  *
 	@param t FP4 trace of x, on exit = tr(x)
 	@param x FP12 instance
 
  */
-extern void FP12_YYY_trace(FP4_YYY *t,FP12_YYY *x);
+extern void FP12_YYY_trace(FP4_YYY *t,const FP12_YYY *x);
 
 /**	@brief Conditional copy of FP12 number
  *
@@ -226,7 +226,7 @@ extern void FP12_YYY_trace(FP4_YYY *t,FP12_YYY *x);
 	@param y another FP12 instance
 	@param s copy only takes place if not equal to 0
  */
-extern void FP12_YYY_cmove(FP12_YYY *x,FP12_YYY *y,int s);
+extern void FP12_YYY_cmove(FP12_YYY *x,const FP12_YYY *y,int s);
 
 
 #endif

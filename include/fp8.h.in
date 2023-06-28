@@ -157,7 +157,7 @@ extern void FP8_YYY_qmul(FP8_YYY *x,FP8_YYY *y,FP2_YYY *a);
 	@param y FP8 instance
 	@param a FP multiplier
  */
-extern void FP8_YYY_tmul(FP8_YYY *x,FP8_YYY *y,FP_YYY *a);
+extern void FP8_YYY_tmul(FP8_YYY *x,const FP8_YYY *y,FP_YYY *a);
 
 /**	@brief Multiplication of an FP8 by a small integer
  *
@@ -165,7 +165,7 @@ extern void FP8_YYY_tmul(FP8_YYY *x,FP8_YYY *y,FP_YYY *a);
 	@param y FP8 instance
 	@param i an integer
  */
-extern void FP8_YYY_imul(FP8_YYY *x,FP8_YYY *y,int i);
+extern void FP8_YYY_imul(FP8_YYY *x,const FP8_YYY *y,int i);
 /**	@brief Squaring an FP8
  *
 	@param x FP8 instance, on exit = y^2

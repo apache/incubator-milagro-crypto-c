@@ -22,9 +22,11 @@ under the License.
 #define ROUNDUP(a,b) ((a)-1)/(b)+1
 
 /* general purpose hash function w=hash(p|n|x|y) */
-int hashit(int sha,octet *p,int n,octet *w)
+int hashit(int sha,const octet *p,int n,octet *w)
 {
-    int i,c[4],hlen;
+    int i;
+    int c[4];
+    int hlen;
     hash256 sha256;
     hash512 sha512;
     char hh[64];
@@ -39,6 +41,8 @@ int hashit(int sha,octet *p,int n,octet *w)
         break;
     case SHA512:
         HASH512_init(&sha512);
+        break;
+    default:
         break;
     }
 
@@ -57,6 +61,8 @@ int hashit(int sha,octet *p,int n,octet *w)
             case SHA512:
                 HASH512_process(&sha512,p->val[i]);
                 break;
+            default:
+                break;
             }
         }
     if (n>=0)
@@ -64,7 +70,7 @@ int hashit(int sha,octet *p,int n,octet *w)
         c[0]=(n>>24)&0xff;
         c[1]=(n>>16)&0xff;
         c[2]=(n>>8)&0xff;
-        c[3]=(n)&0xff;
+        c[3]=n&0xff;
         for (i=0; i<4; i++)
         {
             switch(sha)
@@ -77,6 +83,8 @@ int hashit(int sha,octet *p,int n,octet *w)
                 break;
             case SHA512:
                 HASH512_process(&sha512,c[i]);
+                break;
+            default:
                 break;
             }
         }
@@ -93,6 +101,8 @@ int hashit(int sha,octet *p,int n,octet *w)
     case SHA512:
         HASH512_hash(&sha512,hh);
         break;
+    default:
+        break;
     }
 
     OCT_empty(w);
@@ -104,17 +114,17 @@ int hashit(int sha,octet *p,int n,octet *w)
 
 /* Mask Generation Function */
 
-static void MGF1(int sha,octet *z,int olen,octet *mask)
+static void MGF1(int sha,const octet *z,int olen,octet *mask)
 {
     char h[64];
     octet H= {0,sizeof(h),h};
     int hlen=sha;
-    int counter,cthreshold;
+    int cthreshold;
 
     OCT_empty(mask);
 
     cthreshold=ROUNDUP(olen,hlen);
-    for (counter=0; counter<cthreshold; counter++)
+    for (int counter=0; counter<cthreshold; counter++)
     {
         hashit(sha,z,counter,&H);
         if (mask->len+hlen>olen) OCT_jbytes(mask,H.val,olen%hlen);
@@ -124,13 +134,13 @@ static void MGF1(int sha,octet *z,int olen,octet *mask)
 }
 
 /* SHAXXX identifier strings */
-const unsigned char SHA256ID[]= {0x30,0x31,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,0x01,0x65,0x03,0x04,0x02,0x01,0x05,0x00,0x04,0x20};
-const unsigned char SHA384ID[]= {0x30,0x41,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,0x01,0x65,0x03,0x04,0x02,0x02,0x05,0x00,0x04,0x30};
-const unsigned char SHA512ID[]= {0x30,0x51,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,0x01,0x65,0x03,0x04,0x02,0x03,0x05,0x00,0x04,0x40};
+unsigned char SHA256ID[]= {0x30,0x31,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,0x01,0x65,0x03,0x04,0x02,0x01,0x05,0x00,0x04,0x20};
+unsigned char SHA384ID[]= {0x30,0x41,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,0x01,0x65,0x03,0x04,0x02,0x02,0x05,0x00,0x04,0x30};
+unsigned char SHA512ID[]= {0x30,0x51,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,0x01,0x65,0x03,0x04,0x02,0x03,0x05,0x00,0x04,0x40};
 
 /* PKCS 1.5 padding of a message to be signed */
 
-int PKCS15(int sha,octet *m,octet *w)
+int PKCS15(int sha,const octet *m,octet *w)
 {
     int olen=w->max;
     int hlen=sha;
@@ -158,12 +168,15 @@ int PKCS15(int sha,octet *m,octet *w)
 
 /* OAEP Message Encoding for Encryption */
 
-int OAEP_ENCODE(int sha,octet *m,csprng *RNG,octet *p,octet *f)
+int OAEP_ENCODE(int sha,const octet *m,csprng *RNG,const octet *p,octet *f)
 {
-    int slen,olen=f->max-1;
+    int slen;
+    int olen=f->max-1;
     int mlen=m->len;
-    int hlen,seedlen;
-    char dbmask[MAX_RSA_BYTES],seed[64];
+    int hlen;
+    int seedlen;
+    char dbmask[MAX_RSA_BYTES];
+    char seed[64];
     octet DBMASK= {0,sizeof(dbmask),dbmask};
     octet SEED= {0,sizeof(seed),seed};
 
@@ -199,12 +212,19 @@ int OAEP_ENCODE(int sha,octet *m,csprng *RNG,octet *p,octet *f)
 
 /* OAEP Message Decoding for Decryption */
 
-int OAEP_DECODE(int sha,octet *p,octet *f)
+int OAEP_DECODE(int sha,const octet *p,octet *f)
 {
-    int comp,x,t;
-    int i,k,olen=f->max-1;
-    int hlen,seedlen;
-    char dbmask[MAX_RSA_BYTES],seed[64],chash[64];
+    int comp;
+    int x;
+    int t;
+    int i;
+    int k;
+    int olen=f->max-1;
+    int hlen;
+    int seedlen;
+    char dbmask[MAX_RSA_BYTES];
+    char seed[64];
+    char chash[64];
     octet DBMASK= {0,sizeof(dbmask),dbmask};
     octet SEED= {0,sizeof(seed),seed};
     octet CHASH= {0,sizeof(chash),chash};

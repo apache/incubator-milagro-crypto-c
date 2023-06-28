@@ -35,7 +35,6 @@ under the License.
 
 #define PGS_ZZZ MODBYTES_XXX  /**< MPIN Group Size */
 #define PFS_ZZZ MODBYTES_XXX  /**< MPIN Field Size */
-//#define PAS_ZZZ 16            /**< MPIN Symmetric Key Size */
 
 #define MPIN_OK             0   /**< Function completed without error */
 #define MPIN_INVALID_POINT  -14	/**< Point is NOT on the curve */
@@ -45,7 +44,6 @@ under the License.
 #define MAXPIN 10000         /**< max PIN */
 #define PBLEN 14             /**< max length of PIN in bits */
 
-//#define HASH_TYPE_MPIN_ZZZ SHA256   /**< Choose Hash function */
 
 #define MESSAGE_SIZE 256        /**< Signature message size  */
 #define M_SIZE_ZZZ (MESSAGE_SIZE+2*PFS_ZZZ+1)   /**< Signature message size and G1 size */
@@ -62,7 +60,7 @@ under the License.
 	@param O is an input octet
 	@param Y is the output octet
 */
-void MPIN_ZZZ_GET_Y(int h,int t,octet *O,octet *Y);
+void MPIN_ZZZ_GET_Y(int h,int t,const octet *O,octet *Y);
 
 /**	@brief Extract a PIN number from a client secret
  *
@@ -73,7 +71,7 @@ void MPIN_ZZZ_GET_Y(int h,int t,octet *O,octet *Y);
 	@param CS is the client secret from which the factor is to be extracted
 	@return 0 or an error code
  */
-int MPIN_ZZZ_EXTRACT_FACTOR(int h,octet *ID,int factor,int facbits,octet *CS);
+int MPIN_ZZZ_EXTRACT_FACTOR(int h,const octet *ID,int factor,int facbits,octet *CS);
 
 /**	@brief Extract a PIN number from a client secret
  *
@@ -84,7 +82,7 @@ int MPIN_ZZZ_EXTRACT_FACTOR(int h,octet *ID,int factor,int facbits,octet *CS);
 	@param CS is the client secret to which the factor is to be added
 	@return 0 or an error code
  */
-int MPIN_ZZZ_RESTORE_FACTOR(int h,octet *ID,int factor,int facbits,octet *CS);
+int MPIN_ZZZ_RESTORE_FACTOR(int h,const octet *ID,int factor,int facbits,octet *CS);
 
 
 /**	@brief Extract a PIN number from a client secret
@@ -95,7 +93,7 @@ int MPIN_ZZZ_RESTORE_FACTOR(int h,octet *ID,int factor,int facbits,octet *CS);
 	@param CS is the client secret from which the PIN is to be extracted
 	@return 0 or an error code
  */
-int MPIN_ZZZ_EXTRACT_PIN(int h,octet *ID,int pin,octet *CS);
+int MPIN_ZZZ_EXTRACT_PIN(int h,const octet *ID,int pin,octet *CS);
 
 
 
@@ -120,7 +118,7 @@ int MPIN_ZZZ_EXTRACT_PIN(int h,octet *ID,int pin,octet *CS);
 	@param y is output H(t|U) or H(t|UT) if Time Permits enabled
 	@return 0 or an error code
  */
-int MPIN_ZZZ_CLIENT(int h,int d,octet *ID,csprng *R,octet *x,int pin,octet *T,octet *V,octet *U,octet *UT,octet *TP, octet* MESSAGE, int t, octet *y);
+int MPIN_ZZZ_CLIENT(int h,int d,const octet *ID,csprng *R,octet *x,int pin,const octet *T,octet *V,octet *U,octet *UT,const octet *TP,const octet* MESSAGE, int t, octet *y);
 /**	@brief Perform first pass of the client side of the 3-pass version of the M-Pin protocol
  *
 	If Time Permits are disabled, set d = 0, and UT is not generated and can be set to NULL.
@@ -139,7 +137,7 @@ int MPIN_ZZZ_CLIENT(int h,int d,octet *ID,csprng *R,octet *x,int pin,octet *T,oc
 	@param TP is the input time permit
 	@return 0 or an error code
  */
-int MPIN_ZZZ_CLIENT_1(int h,int d,octet *ID,csprng *R,octet *x,int pin,octet *T,octet *S,octet *U,octet *UT,octet *TP);
+int MPIN_ZZZ_CLIENT_1(int h,int d,const octet *ID,csprng *R,octet *x,int pin,const octet *T,octet *S,octet *U,octet *UT,const octet *TP);
 /**	@brief Generate a random group element
  *
 	@param R is a pointer to a cryptographically secure random number generator
@@ -154,7 +152,7 @@ int MPIN_ZZZ_RANDOM_GENERATE(csprng *R,octet *S);
 	@param V on output = -(x+y).V
 	@return 0 or an error code
  */
-int MPIN_ZZZ_CLIENT_2(octet *x,octet *y,octet *V);
+int MPIN_ZZZ_CLIENT_2(const octet *x,const octet *y,octet *V);
 /**	@brief Perform server side of the one-pass version of the M-Pin protocol
  *
 	If Time Permits are disabled, set d = 0, and UT and HTID are not generated and can be set to NULL.
@@ -177,7 +175,7 @@ int MPIN_ZZZ_CLIENT_2(octet *x,octet *y,octet *V);
 	@param Pa is input from the client z.Q or NULL if the key-escrow less scheme is not used
 	@return 0 or an error code
  */
-int MPIN_ZZZ_SERVER(int h,int d,octet *HID,octet *HTID,octet *y,octet *SS,octet *U,octet *UT,octet *V,octet *E,octet *F,octet *ID,octet *MESSAGE, int t, octet *Pa);
+int MPIN_ZZZ_SERVER(int h,int d,octet *HID,octet *HTID,octet *y,const octet *SS,const octet *U,const octet *UT,const octet *V,octet *E,octet *F,const octet *ID,const octet *MESSAGE, int t,const octet *Pa);
 /**	@brief Perform first pass of the server side of the 3-pass version of the M-Pin protocol
  *
  	@param h is the hash type
@@ -187,7 +185,7 @@ int MPIN_ZZZ_SERVER(int h,int d,octet *HID,octet *HTID,octet *y,octet *SS,octet 
 	@param HTID is output H(ID)+H(d|H(ID))
 	@return 0 or an error code
  */
-void MPIN_ZZZ_SERVER_1(int h,int d,octet *ID,octet *HID,octet *HTID);
+void MPIN_ZZZ_SERVER_1(int h,int d,const octet *ID,octet *HID,octet *HTID);
 /**	@brief Perform third pass on the server side of the 3-pass version of the M-Pin protocol
  *
 	If Time Permits are disabled, set d = 0, and UT and HTID are not needed and can be set to NULL.
@@ -206,7 +204,7 @@ void MPIN_ZZZ_SERVER_1(int h,int d,octet *ID,octet *HID,octet *HTID);
 	@param Pa is the input public key from the client, z.Q or NULL if the client uses regular mpin
 	@return 0 or an error code
  */
-int MPIN_ZZZ_SERVER_2(int d,octet *HID,octet *HTID,octet *y,octet *SS,octet *U,octet *UT,octet *V,octet *E,octet *F,octet *Pa);
+int MPIN_ZZZ_SERVER_2(int d,const octet *HID,const octet *HTID,const octet *y,const octet *SS,const octet *U,const octet *UT,const octet *V,octet *E,octet *F,const octet *Pa);
 /**	@brief Add two members from the group G1
  *
 	@param Q1 an input member of G1
@@ -214,7 +212,7 @@ int MPIN_ZZZ_SERVER_2(int d,octet *HID,octet *HTID,octet *y,octet *SS,octet *U,o
 	@param Q an output member of G1 = Q1+Q2
 	@return 0 or an error code
  */
-int MPIN_ZZZ_RECOMBINE_G1(octet *Q1,octet *Q2,octet *Q);
+int MPIN_ZZZ_RECOMBINE_G1(const octet *Q1,const octet *Q2,octet *Q);
 /**	@brief Add two members from the group G2
  *
 	@param P1 an input member of G2
@@ -222,14 +220,14 @@ int MPIN_ZZZ_RECOMBINE_G1(octet *Q1,octet *Q2,octet *Q);
 	@param P an output member of G2 = P1+P2
 	@return 0 or an error code
  */
-int MPIN_ZZZ_RECOMBINE_G2(octet *P1,octet *P2,octet *P);
+int MPIN_ZZZ_RECOMBINE_G2(const octet *P1,const octet *P2,octet *P);
 /**	@brief Use Kangaroos to find PIN error
  *
 	@param E a member of the group GT
 	@param F a member of the group GT =  E^e
 	@return 0 if Kangaroos failed, or the PIN error e
  */
-int MPIN_ZZZ_KANGAROO(octet *E,octet *F);
+int MPIN_ZZZ_KANGAROO(const octet *E,const octet *F);
 /**	@brief Encoding of a Time Permit to make it indistinguishable from a random string
  *
 	@param R is a pointer to a cryptographically secure random number generator
@@ -253,7 +251,7 @@ int MPIN_ZZZ_DECODING(octet *TP);
 	@param W the output =x.G or x.M(G), where M(.) is a mapping
 	@return 0 or an error code
  */
-int MPIN_ZZZ_GET_G1_MULTIPLE(csprng *R,int type,octet *x,octet *G,octet *W);
+int MPIN_ZZZ_GET_G1_MULTIPLE(csprng *R,int type,octet *x,const octet *G,octet *W);
 /**	@brief Find a random multiple of a point in G1
  *
 	@param R is a pointer to a cryptographically secure random number generator
@@ -263,7 +261,7 @@ int MPIN_ZZZ_GET_G1_MULTIPLE(csprng *R,int type,octet *x,octet *G,octet *W);
 	@param W the output =x.G or (1/x).G
 	@return 0 or an error code
  */
-int MPIN_ZZZ_GET_G2_MULTIPLE(csprng *R,int type,octet *x,octet *G,octet *W);
+int MPIN_ZZZ_GET_G2_MULTIPLE(csprng *R,int type,octet *x,const octet *G,octet *W);
 
 /**	@brief Create a client secret in G1 from a master secret and the client ID
  *
@@ -272,7 +270,7 @@ int MPIN_ZZZ_GET_G2_MULTIPLE(csprng *R,int type,octet *x,octet *G,octet *W);
 	@param CS is the full client secret = s.H(ID)
 	@return 0 or an error code
  */
-int MPIN_ZZZ_GET_CLIENT_SECRET(octet *S,octet *ID,octet *CS);
+int MPIN_ZZZ_GET_CLIENT_SECRET(octet *S,const octet *ID,octet *CS);
 /**	@brief Create a Time Permit in G1 from a master secret and the client ID
  *
   	@param h is the hash type
@@ -282,15 +280,14 @@ int MPIN_ZZZ_GET_CLIENT_SECRET(octet *S,octet *ID,octet *CS);
 	@param TP is a Time Permit for the given date = s.H(d|H(ID))
 	@return 0 or an error code
  */
-int MPIN_ZZZ_GET_CLIENT_PERMIT(int h,int d,octet *S,octet *ID,octet *TP);
+int MPIN_ZZZ_GET_CLIENT_PERMIT(int h,int d,const octet *S,const octet *ID,octet *TP);
 /**	@brief Create a server secret in G2 from a master secret
  *
 	@param S is an input master secret
 	@param SS is the server secret = s.Q where Q is a fixed generator of G2
 	@return 0 or an error code
  */
-int MPIN_ZZZ_GET_SERVER_SECRET(octet *S,octet *SS);
-/* int MPIN_TEST_PAIRING(octet *,octet *); */
+int MPIN_ZZZ_GET_SERVER_SECRET(const octet *S,octet *SS);
 
 /* For M-Pin Full */
 /**	@brief Precompute values for use by the client side of M-Pin Full
@@ -302,7 +299,7 @@ int MPIN_ZZZ_GET_SERVER_SECRET(octet *S,octet *SS);
 	@param g2 precomputed output
 	@return 0 or an error code
  */
-int MPIN_ZZZ_PRECOMPUTE(octet *T,octet *ID,octet *CP,octet *g1,octet *g2);
+int MPIN_ZZZ_PRECOMPUTE(const octet *T,const octet *ID,const octet *CP,octet *g1,octet *g2);
 /**	@brief Calculate Key on Server side for M-Pin Full
  *
 	Uses UT internally for the key calculation, unless not available in which case U is used
@@ -317,7 +314,7 @@ int MPIN_ZZZ_PRECOMPUTE(octet *T,octet *ID,octet *CP,octet *g1,octet *g2);
 	@param K is the output calculated shared key
 	@return 0 or an error code
  */
-int MPIN_ZZZ_SERVER_KEY(int h,octet *Z,octet *SS,octet *w,octet *p,octet *I,octet *U,octet *UT,octet *K);
+int MPIN_ZZZ_SERVER_KEY(int h,const octet *Z,const octet *SS,const octet *w,const octet *p,const octet *I,const octet *U,const octet *UT,octet *K);
 /**	@brief Calculate Key on Client side for M-Pin Full
  *
   	@param h is the hash type
@@ -331,7 +328,7 @@ int MPIN_ZZZ_SERVER_KEY(int h,octet *Z,octet *SS,octet *w,octet *p,octet *I,octe
 	@param K is the output calculated shared key
 	@return 0 or an error code
  */
-int MPIN_ZZZ_CLIENT_KEY(int h,octet *g1,octet *g2,int pin,octet *r,octet *x,octet *p,octet *T,octet *K);
+int MPIN_ZZZ_CLIENT_KEY(int h,const octet *g1,const octet *g2,int pin,const octet *r,const octet *x,const octet *p,const octet *T,octet *K);
 
 /** @brief Generates a random public key for the client z.Q
  *

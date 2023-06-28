@@ -157,7 +157,7 @@ extern void FP16_YYY_qmul(FP16_YYY *x,FP16_YYY *y,FP2_YYY *a);
 	@param y FP16 instance
 	@param i an integer
  */
-extern void FP16_YYY_imul(FP16_YYY *x,FP16_YYY *y,int i);
+extern void FP16_YYY_imul(FP16_YYY *x,const FP16_YYY *y,int i);
 /**	@brief Squaring an FP16
  *
 	@param x FP16 instance, on exit = y^2

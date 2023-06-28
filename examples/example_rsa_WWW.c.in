@@ -26,7 +26,11 @@ under the License.
 
 int rsa(csprng *RNG)
 {
-    char m[RFS_WWW],ml[RFS_WWW],c[RFS_WWW],e[RFS_WWW],s[RFS_WWW];
+    char m[RFS_WWW];
+    char ml[RFS_WWW];
+    char c[RFS_WWW];
+    char e[RFS_WWW];
+    char s[RFS_WWW];
     rsa_public_key_WWW pub;
     rsa_private_key_WWW priv;
 
@@ -81,7 +85,6 @@ int rsa(csprng *RNG)
 
 int main()
 {
-    int i;
     unsigned long ran;
 
     char raw[100];
@@ -91,11 +94,11 @@ int main()
     time((time_t *)&ran);
 
     RAW.len=100;				/* fake random seed source */
-    RAW.val[0]=ran;
-    RAW.val[1]=ran>>8;
-    RAW.val[2]=ran>>16;
-    RAW.val[3]=ran>>24;
-    for (i=0; i<100; i++) RAW.val[i]=i+1;
+    RAW.val[0]=(char)ran;
+    RAW.val[1]=(char)(ran>>8);
+    RAW.val[2]=(char)(ran>>16);
+    RAW.val[3]=(char)(ran>>24);
+    for (int i=0; i<100; i++) RAW.val[i]=(char)(i+1);
 
     CREATE_CSPRNG(&RNG,&RAW);   /* initialise strong RNG */
 

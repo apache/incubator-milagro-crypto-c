@@ -44,6 +44,11 @@ foreach(curve ${AMCL_CURVE})
   add_executable(benchtest_ec_${TC} ${benchtest_ec_${TC}_GEN_SRCS} $<TARGET_OBJECTS:amcl_bench_utils>)
   target_link_libraries(benchtest_ec_${TC} PRIVATE amcl_curve_${TC})
 
+  # ECDSA Benchmark
+  amcl_configure_file_curve(benchtest_ecdsa_ZZZ.c.in benchtest_ecdsa_${TC}.c "${curve}" benchtest_ecdsa_${TC}_GEN_SRCS)
+  add_executable(benchtest_ecdsa_${TC} ${benchtest_ecdsa_${TC}_GEN_SRCS} $<TARGET_OBJECTS:amcl_bench_utils>)
+  target_link_libraries(benchtest_ecdsa_${TC} PRIVATE amcl_curve_${TC})
+
   # Pairing Benchmark
   if(TARGET amcl_pairing_${TC})
     amcl_configure_file_curve(benchtest_pair_ZZZ.c.in benchtest_pair_${TC}.c "${curve}" benchtest_pair_${TC}_GEN_SRCS)
@@ -57,7 +62,14 @@ foreach(curve ${AMCL_CURVE})
     add_executable(benchtest_mpin_${TC} ${benchtest_mpin_${TC}_GEN_SRCS} $<TARGET_OBJECTS:amcl_bench_utils>)
     target_link_libraries(benchtest_mpin_${TC} PRIVATE amcl_mpin_${TC})
   endif()
-  
+
+  # BLS Benchmark
+  if(TARGET amcl_bls_${TC})
+    amcl_configure_file_curve(benchtest_bls_ZZZ.c.in benchtest_bls_${TC}.c "${curve}" benchtest_bls_${TC}_GEN_SRCS)
+    add_executable(benchtest_bls_${TC} ${benchtest_bls_${TC}_GEN_SRCS} $<TARGET_OBJECTS:amcl_bench_utils>)
+    target_link_libraries(benchtest_bls_${TC} PRIVATE amcl_bls_${TC})
+  endif()
+
 endforeach()
 
 foreach(level ${AMCL_RSA})

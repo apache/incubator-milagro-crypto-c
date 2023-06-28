@@ -40,7 +40,7 @@
 	@param w output
 	@param pad padding
  */
-extern void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad);
+extern void ehashit(int sha,const octet *p,int n,const octet *x,octet *w,int pad);
 
 /**	@brief hash an octet into another octet
  *
@@ -48,7 +48,7 @@ extern void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad);
 	@param I input octet
 	@param O output octet - H(I)
  */
-extern void HASH(int h,octet *I,octet *O);
+extern void HASH(int h,const octet *I,octet *O);
 /**	@brief HMAC of message M using key K to create tag of length len in octet tag
  *
 	IEEE-1363 MAC1 function. Uses SHA256 internally.
@@ -59,9 +59,7 @@ extern void HASH(int h,octet *I,octet *O);
 	@param tag is the output HMAC
 	@return 0 for bad parameters, else 1
  */
-extern int HMAC(int h,octet *M,octet *K,int len,octet *tag);
-
-/*extern void KDF1(octet *,int,octet *);*/
+extern int HMAC(int h,const octet *M,const octet *K,int len,octet *tag);
 
 /**	@brief Key Derivation Function - generates key K from inputs Z and P
  *
@@ -72,7 +70,7 @@ extern int HMAC(int h,octet *M,octet *K,int len,octet *tag);
 	@param len is output desired length of key
 	@param K is the derived key
  */
-extern void KDF2(int h,octet *Z,octet *P,int len,octet *K);
+extern void KDF2(int h,const octet *Z,const octet *P,int len,octet *K);
 /**	@brief Password Based Key Derivation Function - generates key K from password, salt and repeat counter
  *
 	PBKDF2 Password Based Key Derivation Function. Uses SHA256 internally.
@@ -83,7 +81,7 @@ extern void KDF2(int h,octet *Z,octet *P,int len,octet *K);
 	@param len is output desired length
 	@param K is the derived key
  */
-extern void PBKDF2(int h,octet *P,octet *S,int rep,int len,octet *K);
+extern void PBKDF2(int h,const octet *P,octet *S,int rep,int len,octet *K);
 /**	@brief AES encrypts a plaintext to a ciphtertext
  *
 	IEEE-1363 AES_CBC_IV0_ENCRYPT function. Encrypts in CBC mode with a zero IV, padding as necessary to create a full final block.
@@ -91,7 +89,7 @@ extern void PBKDF2(int h,octet *P,octet *S,int rep,int len,octet *K);
 	@param P input plaintext octet
 	@param C output ciphertext octet
  */
-extern void AES_CBC_IV0_ENCRYPT(octet *K,octet *P,octet *C);
+extern void AES_CBC_IV0_ENCRYPT(octet *K,const octet *P,octet *C);
 /**	@brief AES encrypts a plaintext to a ciphtertext
  *
 	IEEE-1363 AES_CBC_IV0_DECRYPT function. Decrypts in CBC mode with a zero IV.
@@ -100,7 +98,7 @@ extern void AES_CBC_IV0_ENCRYPT(octet *K,octet *P,octet *C);
 	@param P output plaintext octet
 	@return 0 if bad input, else 1
  */
-extern int AES_CBC_IV0_DECRYPT(octet *K,octet *C,octet *P);
+extern int AES_CBC_IV0_DECRYPT(octet *K,const octet *C,octet *P);
 
 /* ECDH primitives - support functions */
 /**	@brief Generate an ECC public/private key pair

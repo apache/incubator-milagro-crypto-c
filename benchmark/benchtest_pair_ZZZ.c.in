@@ -78,19 +78,19 @@
 int main()
 {
     csprng RNG;
-    unsigned long ran;
+    time_t ran;
     char pr[10];
 
     printf("Bechmark test PAIR - ZZZ Curve\n");
 
     print_system_info();
 
-    time((time_t *)&ran);
-    pr[0]=ran;
-    pr[1]=ran>>8;
-    pr[2]=ran>>16;
-    pr[3]=ran>>24;
-    for (int i=4; i<10; i++) pr[i]=i;
+    time(&ran);
+    pr[0]=(char)ran;
+    pr[1]=(char)(ran>>4);
+    pr[2]=(char)(ran>>12);
+    pr[3]=(char)(ran>>16);
+    for (int i=4; i<10; i++) pr[i]=(char)i;
 
     RAND_seed(&RNG,10,pr);
 
@@ -98,22 +98,30 @@ int main()
     clock_t start;
     double elapsed;
 
-    ECP_ZZZ P,G;
+    ECP_ZZZ P;
+    ECP_ZZZ G;
 #if CURVE_SECURITY_ZZZ == 128
-    ECP2_ZZZ Q,W;
-    FP12_YYY g,w;
+    ECP2_ZZZ Q;
+    ECP2_ZZZ W;
+    FP12_YYY g;
+    FP12_YYY w;
     FP4_YYY cm;
 #elif CURVE_SECURITY_ZZZ == 192
-    ECP4_ZZZ Q,W;
-    FP24_YYY g,w;
+    ECP4_ZZZ Q;
+    ECP4_ZZZ W;
+    FP24_YYY g;
+    FP24_YYY w;
     FP8_YYY cm;
 #elif CURVE_SECURITY_ZZZ == 256
-    ECP8_ZZZ Q,W;
-    FP48_YYY g,w;
+    ECP8_ZZZ Q;
+    ECP8_ZZZ W;
+    FP48_YYY g;
+    FP48_YYY w;
     FP16_YYY cm;
 #endif
 
-    BIG_XXX s,r;
+    BIG_XXX s;
+    BIG_XXX r;
     printf("\nTesting/Timing ZZZ Pairings\n");
 
     ECP_ZZZ_generator(&G);
@@ -137,7 +145,7 @@ int main()
         PAIR_ZZZ_G1mul(&P,s);
 
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -163,7 +171,7 @@ int main()
         PAIR_ZZZ_G2mul(&Q,s);
 
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -191,7 +199,7 @@ int main()
         PAIR_ZZZ_GTpow(&g,s);
 
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -206,7 +214,7 @@ int main()
     {
         GT_ZZZ_compow(&cm,&g,s,r);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -219,7 +227,7 @@ int main()
     {
         PAIR_ZZZ_ate(&w,&Q,&P);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -233,7 +241,7 @@ int main()
         GT_ZZZ_copy(&g,&w);
         PAIR_ZZZ_fexp(&g);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;

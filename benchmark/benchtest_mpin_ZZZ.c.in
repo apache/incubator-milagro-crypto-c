@@ -48,13 +48,34 @@ under the License.
 
 int mpin(csprng *RNG)
 {
-    int pin,rtn;
+    int pin;
+    int rtn;
     int date=0;
-    char x[PGS_ZZZ],s[PGS_ZZZ],y[PGS_ZZZ],client_id[100],sst[G2LEN],token[2*PFS_ZZZ+1],sec[2*PFS_ZZZ+1],permit[2*PFS_ZZZ+1],xcid[2*PFS_ZZZ+1],xid[2*PFS_ZZZ+1],e[GTLEN],f[GTLEN];
-    char hcid[PFS_ZZZ],hsid[PFS_ZZZ],hid[2*PFS_ZZZ+1],htid[2*PFS_ZZZ+1],h[PGS_ZZZ];
-    char r[PGS_ZZZ],z[2*PFS_ZZZ+1],w[PGS_ZZZ],t[2*PFS_ZZZ+1];
-    char g1[GTLEN],g2[GTLEN];
-    char ck[AESKEY_ZZZ],sk[AESKEY_ZZZ];
+    char x[PGS_ZZZ];
+    char s[PGS_ZZZ];
+    char y[PGS_ZZZ];
+    char client_id[100];
+    char sst[G2LEN];
+    char token[2*PFS_ZZZ+1];
+    char sec[2*PFS_ZZZ+1];
+    char permit[2*PFS_ZZZ+1];
+    char xcid[2*PFS_ZZZ+1];
+    char xid[2*PFS_ZZZ+1];
+    char e[GTLEN];
+    char f[GTLEN];
+    char hcid[PFS_ZZZ];
+    char hsid[PFS_ZZZ];
+    char hid[2*PFS_ZZZ+1];
+    char htid[2*PFS_ZZZ+1];
+    char h[PGS_ZZZ];
+    char r[PGS_ZZZ];
+    char z[2*PFS_ZZZ+1];
+    char w[PGS_ZZZ];
+    char t[2*PFS_ZZZ+1];
+    char g1[GTLEN];
+    char g2[GTLEN];
+    char ck[AESKEY_ZZZ];
+    char sk[AESKEY_ZZZ];
     octet S= {0,sizeof(s),s};
     octet X= {0,sizeof(x),x};
     octet Y= {0,sizeof(y),y};
@@ -80,14 +101,20 @@ int mpin(csprng *RNG)
     octet G2= {0,sizeof(g2),g2};
     octet SK= {0,sizeof(sk),sk};
     octet CK= {0,sizeof(ck),ck};
-    octet *pxID,*pxCID,*pHID,*pHTID,*pE,*pF,*pPERMIT,*prHID;
+    octet *pxID;
+    octet *pxCID;
+    octet *pHID;
+    octet *pHTID;
+    octet *pE;
+    octet *pF;
+    const octet *prHID;
     char idhex[100];
 
     int iterations;
     clock_t start;
     double elapsed;
 
-    printf("\nBechmark test MPIN - ");
+    printf("\nBenchmark test MPIN - ");
 
     printf("ZZZ Curve\n");
 
@@ -107,7 +134,7 @@ int mpin(csprng *RNG)
     printf("\n");
 
     OCT_toHex(&CLIENT_ID,idhex);
-    printf("Client ID= %s\n",idhex);// OCT_toHex(&CLIENT_ID); printf("\n");
+    printf("Client ID= %s\n",idhex);
 
     /* Client and Server are issued secrets by DTA */
     MPIN_ZZZ_GET_SERVER_SECRET(&S,&SST);
@@ -129,15 +156,9 @@ int mpin(csprng *RNG)
 
     /* MPin Protocol */
     pxID=&xID;
-    pxCID=&xCID;
     pHID=&HID;
-    pHTID=&HTID;
-    pE=&E;
-    pF=&F;
-    pPERMIT=&PERMIT;
 
     prHID=pHID;
-    pPERMIT=NULL;
     pxCID=NULL;
     pHTID=NULL;
     pE=NULL;
@@ -151,10 +172,10 @@ int mpin(csprng *RNG)
     start=clock();
     do
     {
-        MPIN_ZZZ_CLIENT(HASH_TYPE_ZZZ,date,&CLIENT_ID,RNG,&X,pin,&TOKEN,&SEC,pxID,pxCID,pPERMIT,NULL,timeValue,&Y);
+        MPIN_ZZZ_CLIENT(HASH_TYPE_ZZZ,date,&CLIENT_ID,RNG,&X,pin,&TOKEN,&SEC,pxID,pxCID,NULL,NULL,timeValue,&Y);
 
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -171,7 +192,7 @@ int mpin(csprng *RNG)
         rtn = MPIN_ZZZ_SERVER(HASH_TYPE_ZZZ,date,pHID,pHTID,&Y,&SST,pxID,pxCID,&SEC,pE,pF,&CLIENT_ID,NULL,timeValue,NULL);
 
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -235,23 +256,22 @@ int mpin(csprng *RNG)
 
 int main()
 {
-    int i;
-    unsigned long ran;
+    time_t ran;
 
     char raw[100];
     octet RAW= {0,sizeof(raw),raw};
     /* Crypto Strong RNG */
     csprng RNG;
 
-    time((time_t *)&ran);
+    time(&ran);
 
     /* fake random seed source */
     RAW.len=100;
-    RAW.val[0]=ran;
-    RAW.val[1]=ran>>8;
-    RAW.val[2]=ran>>16;
-    RAW.val[3]=ran>>24;
-    for (i=0; i<100; i++) RAW.val[i]=i+1;
+    RAW.val[0]=(char)ran;
+    RAW.val[1]=(char)(ran>>4);
+    RAW.val[2]=(char)(ran>>12);
+    RAW.val[3]=(char)(ran>>16);
+    for (int i=0; i<100; i++) RAW.val[i]=(char)(i+1);
 
     /* initialise strong RNG */
     CREATE_CSPRNG(&RNG,&RAW);

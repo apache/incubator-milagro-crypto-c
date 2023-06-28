@@ -116,6 +116,23 @@ int compare_data(octet *cert,octet *data,int index)
     return 1;
 }
 
+void print_out(char *des,octet *c,int index,int len)
+{
+    int i;
+    printf("%s [",des);
+    for (i=0; i<len; i++)
+        printf("%c",c->val[index+i]);
+    printf("]\n");
+}
+
+void print_date(char *des,octet *c,int index)
+{
+    int i=index;
+    printf("%s [",des);
+    if (i==0) printf("]\n");
+    else printf("20%c%c-%c%c-%c%c %c%c:%c%c:%c%c]\n",c->val[i],c->val[i+1],c->val[i+2],c->val[i+3],c->val[i+4],c->val[i+5],c->val[i+6],c->val[i+7],c->val[i+8],c->val[i+9],c->val[i+10],c->val[i+11]);
+}
+
 int main(int argc, char** argv)
 {
     if (argc != 2)
@@ -555,7 +572,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(CAStr);
             l1 = strlen(linePtr);
             char* ca_b64 = (char*) calloc (l1,sizeof(char));
-            strncpy(ca_b64,linePtr,l1-1);
+            memcpy(ca_b64,linePtr,l1-1);
             OCT_frombase64(&IO,ca_b64);
 
 #ifdef DEBUG
@@ -692,7 +709,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(CERTStr);
             l1 = strlen(linePtr);
             char* cert_b64 = (char*) calloc (l1,sizeof(char));
-            strncpy(cert_b64,linePtr,l1-1);
+            memcpy(cert_b64,linePtr,l1-1);
             OCT_frombase64(&IO,cert_b64);
 
 #ifdef DEBUG

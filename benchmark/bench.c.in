@@ -78,7 +78,6 @@ static void print_platform_info()
 
 static void print_amcl_configuration()
 {
-    printf("Project Version:\t@BUILD_VERSION@\n");
     printf("CFLAGS:\t\t\t@CMAKE_C_FLAGS@\n");
     printf("Build type:\t\t@CMAKE_BUILD_TYPE@\n");
     printf("AMCL Version:\t\t%d.%d.%d\n", AMCL_VERSION_MAJOR, AMCL_VERSION_MINOR, AMCL_VERSION_PATCH);

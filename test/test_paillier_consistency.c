@@ -56,7 +56,8 @@ int paillier(csprng *RNG)
 
     // Key material
     PAILLIER_private_key PRIV;
-    PAILLIER_public_key PUB, PUBIN;
+    PAILLIER_public_key PUB;
+    PAILLIER_public_key PUBIN;
 
     char pub[HFS_4096];
     octet PUBOCT = {0,HFS_4096,pub};
@@ -198,7 +199,7 @@ int paillier(csprng *RNG)
 
 int main()
 {
-    char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
+    const char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
     char seed[16] = {0};
     octet SEED = {sizeof(seed),sizeof(seed),seed};
 

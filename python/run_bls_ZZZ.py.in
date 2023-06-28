@@ -22,7 +22,6 @@ under the License.
 
 """
 example for using bls
-
 """
 
 import cffi

@@ -19,6 +19,8 @@
 
 # AMCL - *Apache Milagro Crypto Library*
 
+[![Master Branch](https://img.shields.io/badge/-master:-gray.svg)](https://github.com/apache/incubator-milagro-crypto-c/tree/master)
+
 * **category**:    Library
 * **copyright**:   2019 The Apache Software Foundation
 * **license**:     ASL 2.0 ([Apache License Version 2.0, January 2004](http://www.apache.org/licenses/LICENSE-2.0))
@@ -119,21 +121,23 @@ brew install parallel
 
 ##### Quick start
 
-Either clone the repository using Git:
+Clone the repository
 
 ```
 git clone https://github.com/apache/incubator-milagro-crypto-c.git
 cd incubator-milagro-crypto-c
 ```
 
-Or, if using an official Apache release, download the compressed archive, extract it and navigate into its root directory.
-
-A Makefile is present at the project root that reads the options defined in
-config.mk. Change these options and then type the following to build and test
-the library.
+Edit and run this script
 
 ```
-make
+./scripts/build.sh
+```
+
+or use the docker build
+
+```
+./scripts/docker.sh -h
 ```
 
 ##### Multiple curves and RSA security levels
@@ -165,6 +169,12 @@ make
 make test
 make doc
 sudo make install
+```
+
+NOTE: When running the ASan tests, make sure to export the following variable:
+
+```
+export ASAN_OPTIONS=verify_asan_link_order=0
 ```
 
 On Debian/Ubuntu machine instead of executing the *"sudo make install"* command it is possible to execute *"sudo checkinstall"* to build and install a DEB package.
@@ -300,7 +310,7 @@ To format the code (please use this command before submitting any pull request):
 ```
 make format
 ```
-### Contributors
+### Contributors 
 
 The following people have contributed to milagro-crypto-c
 

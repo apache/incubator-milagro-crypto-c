@@ -48,8 +48,14 @@ int main()
     double elapsed;
 
     // Material for exponents
-    BIG_XXX A[FFLEN_WWW], B[FFLEN_WWW], C[FFLEN_WWW], D[FFLEN_WWW];
-    BIG_XXX E[FFLEN_WWW], F[FFLEN_WWW], G[FFLEN_WWW], H[FFLEN_WWW];
+    BIG_XXX A[FFLEN_WWW];
+    BIG_XXX B[FFLEN_WWW];
+    BIG_XXX C[FFLEN_WWW];
+    BIG_XXX D[FFLEN_WWW];
+    BIG_XXX E[FFLEN_WWW];
+    BIG_XXX F[FFLEN_WWW];
+    BIG_XXX G[FFLEN_WWW];
+    BIG_XXX H[FFLEN_WWW];
     BIG_XXX N[FFLEN_WWW];
     BIG_XXX R[FFLEN_WWW];
 
@@ -72,12 +78,11 @@ int main()
     octet OCT = {0,sizeof(oct),oct};
 
     /* Fake random source */
-    int i;
     char seed[256];
     csprng RNG;
 
     RAND_clean(&RNG);
-    for (i=0; i<256; i++) seed[i]=(char)i;
+    for (int i=0; i<256; i++) seed[i]=(char)i;
     RAND_seed(&RNG,256,seed);
 
     /* Read N from hex */
@@ -87,7 +92,7 @@ int main()
     /* Compute additional values */
     FF_WWW_invmod2m(ND, N, FFLEN_WWW);
 
-    printf("\nBechmark FF exponentiation - FF_WWW\n");
+    printf("\nBenchmark FF exponentiation - FF_WWW\n");
 
     print_system_info();
 
@@ -109,7 +114,7 @@ int main()
     {
         FF_WWW_nt_pow(R, A, E, N, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -122,7 +127,7 @@ int main()
     {
         FF_WWW_nt_pow_2(R, A, E, B, F, N, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -135,7 +140,7 @@ int main()
     {
         FF_WWW_nt_pow_3(R, A, E, B, F, C, G, N, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -148,14 +153,14 @@ int main()
     {
         FF_WWW_nt_pow_4(R, A, E, B, F, C, G, D, H, N, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
     printf("FF_WWW_nt_pow_4\t%8d iterations\t",iterations);
     printf("%8.2lf ms per iteration\n",elapsed);
 
-    /* Benchmark constant-time exponenets */
+    /* Benchmark constant-time exponents */
 
     iterations=0;
     start=clock();
@@ -163,7 +168,7 @@ int main()
     {
         FF_WWW_ct_pow(R, A, E, N, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -176,7 +181,7 @@ int main()
     {
         FF_WWW_ct_pow_2(R, A, E, B, F, N, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -189,7 +194,7 @@ int main()
     {
         FF_WWW_ct_pow_3(R, A, E, B, F, C, G, N, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -204,7 +209,7 @@ int main()
     {
         FF_WWW_2w_precompute(X, T, 4, 1, N, ND, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -217,7 +222,7 @@ int main()
     {
         FF_WWW_ct_2w_pow(R, T, EXP, 4, 1, N, ND, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -230,7 +235,7 @@ int main()
     {
         FF_WWW_nt_2w_pow(R, T, EXP, 4, 1, N, ND, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -243,7 +248,7 @@ int main()
     {
         FF_WWW_bi_precompute(X, T, 4, 3, N, ND, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -256,7 +261,7 @@ int main()
     {
         FF_WWW_bi_pow(R, T, EXP, 4, 3, N, ND, FFLEN_WWW, FFLEN_WWW);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;

@@ -26,7 +26,7 @@ under the License.
 
 /* test x==0 ? */
 /* SU= 8 */
-int FP4_YYY_iszilch(FP4_YYY *x)
+int FP4_YYY_iszilch(const FP4_YYY *x)
 {
     if (FP2_YYY_iszilch(&(x->a)) && FP2_YYY_iszilch(&(x->b))) return 1;
     return 0;
@@ -34,21 +34,21 @@ int FP4_YYY_iszilch(FP4_YYY *x)
 
 /* test x==1 ? */
 /* SU= 8 */
-int FP4_YYY_isunity(FP4_YYY *x)
+int FP4_YYY_isunity(const FP4_YYY *x)
 {
     if (FP2_YYY_isunity(&(x->a)) && FP2_YYY_iszilch(&(x->b))) return 1;
     return 0;
 }
 
 /* test is w real? That is in a+ib test b is zero */
-int FP4_YYY_isreal(FP4_YYY *w)
+int FP4_YYY_isreal(const FP4_YYY *w)
 {
     return FP2_YYY_iszilch(&(w->b));
 }
 
 /* return 1 if x==y, else 0 */
 /* SU= 16 */
-int FP4_YYY_equals(FP4_YYY *x,FP4_YYY *y)
+int FP4_YYY_equals(const FP4_YYY *x,const FP4_YYY *y)
 {
     if (FP2_YYY_equals(&(x->a),&(y->a)) && FP2_YYY_equals(&(x->b),&(y->b)))
         return 1;
@@ -57,7 +57,7 @@ int FP4_YYY_equals(FP4_YYY *x,FP4_YYY *y)
 
 /* set FP4 from two FP2s */
 /* SU= 16 */
-void FP4_YYY_from_FP2s(FP4_YYY *w,FP2_YYY * x,FP2_YYY* y)
+void FP4_YYY_from_FP2s(FP4_YYY *w,const FP2_YYY * x,const FP2_YYY* y)
 {
     FP2_YYY_copy(&(w->a), x);
     FP2_YYY_copy(&(w->b), y);
@@ -65,7 +65,7 @@ void FP4_YYY_from_FP2s(FP4_YYY *w,FP2_YYY * x,FP2_YYY* y)
 
 /* set FP4 from FP2 */
 /* SU= 8 */
-void FP4_YYY_from_FP2(FP4_YYY *w,FP2_YYY *x)
+void FP4_YYY_from_FP2(FP4_YYY *w,const FP2_YYY *x)
 {
     FP2_YYY_copy(&(w->a), x);
     FP2_YYY_zero(&(w->b));
@@ -73,7 +73,7 @@ void FP4_YYY_from_FP2(FP4_YYY *w,FP2_YYY *x)
 
 /* set high part of FP4 from FP2 */
 /* SU= 8 */
-void FP4_YYY_from_FP2H(FP4_YYY *w,FP2_YYY *x)
+void FP4_YYY_from_FP2H(FP4_YYY *w,const FP2_YYY *x)
 {
     FP2_YYY_copy(&(w->b), x);
     FP2_YYY_zero(&(w->a));
@@ -81,7 +81,7 @@ void FP4_YYY_from_FP2H(FP4_YYY *w,FP2_YYY *x)
 
 /* FP4 copy w=x */
 /* SU= 16 */
-void FP4_YYY_copy(FP4_YYY *w,FP4_YYY *x)
+void FP4_YYY_copy(FP4_YYY *w,const FP4_YYY *x)
 {
     if (w==x) return;
     FP2_YYY_copy(&(w->a), &(x->a));
@@ -109,7 +109,8 @@ void FP4_YYY_one(FP4_YYY *w)
 void FP4_YYY_neg(FP4_YYY *w,FP4_YYY *x)
 {
     /* Just one field neg */
-    FP2_YYY m,t;
+    FP2_YYY m;
+    FP2_YYY t;
     FP4_YYY_norm(x);
     FP2_YYY_add(&m,&(x->a),&(x->b));
     FP2_YYY_neg(&m,&m);
@@ -121,7 +122,7 @@ void FP4_YYY_neg(FP4_YYY *w,FP4_YYY *x)
 
 /* Set w=conj(x) */
 /* SU= 16 */
-void FP4_YYY_conj(FP4_YYY *w,FP4_YYY *x)
+void FP4_YYY_conj(FP4_YYY *w,const FP4_YYY *x)
 {
     FP2_YYY_copy(&(w->a), &(x->a));
     FP2_YYY_neg(&(w->b), &(x->b));
@@ -130,7 +131,7 @@ void FP4_YYY_conj(FP4_YYY *w,FP4_YYY *x)
 
 /* Set w=-conj(x) */
 /* SU= 16 */
-void FP4_YYY_nconj(FP4_YYY *w,FP4_YYY *x)
+void FP4_YYY_nconj(FP4_YYY *w,const FP4_YYY *x)
 {
     FP2_YYY_copy(&(w->b),&(x->b));
     FP2_YYY_neg(&(w->a), &(x->a));
@@ -139,7 +140,7 @@ void FP4_YYY_nconj(FP4_YYY *w,FP4_YYY *x)
 
 /* Set w=x+y */
 /* SU= 16 */
-void FP4_YYY_add(FP4_YYY *w,FP4_YYY *x,FP4_YYY *y)
+void FP4_YYY_add(FP4_YYY *w,const FP4_YYY *x,const FP4_YYY *y)
 {
     FP2_YYY_add(&(w->a), &(x->a), &(y->a));
     FP2_YYY_add(&(w->b), &(x->b), &(y->b));
@@ -147,7 +148,7 @@ void FP4_YYY_add(FP4_YYY *w,FP4_YYY *x,FP4_YYY *y)
 
 /* Set w=x-y */
 /* Input y MUST be normed */
-void FP4_YYY_sub(FP4_YYY *w,FP4_YYY *x,FP4_YYY *y)
+void FP4_YYY_sub(FP4_YYY *w,const FP4_YYY *x,FP4_YYY *y)
 {
     FP4_YYY my;
     FP4_YYY_neg(&my, y);
@@ -171,14 +172,14 @@ void FP4_YYY_norm(FP4_YYY *w)
 
 /* Set w=s*x, where s is FP2 */
 /* SU= 16 */
-void FP4_YYY_pmul(FP4_YYY *w,FP4_YYY *x,FP2_YYY *s)
+void FP4_YYY_pmul(FP4_YYY *w,FP4_YYY *x,const FP2_YYY *s)
 {
     FP2_YYY_mul(&(w->a),&(x->a),s);
     FP2_YYY_mul(&(w->b),&(x->b),s);
 }
 
 /* Set w=s*x, where s is FP */
-void FP4_YYY_qmul(FP4_YYY *w,FP4_YYY *x,FP_YYY *s)
+void FP4_YYY_qmul(FP4_YYY *w,const FP4_YYY *x,const FP_YYY *s)
 {
     FP2_YYY_pmul(&(w->a),&(x->a),s);
     FP2_YYY_pmul(&(w->b),&(x->b),s);
@@ -186,7 +187,7 @@ void FP4_YYY_qmul(FP4_YYY *w,FP4_YYY *x,FP_YYY *s)
 
 /* SU= 16 */
 /* Set w=s*x, where s is int */
-void FP4_YYY_imul(FP4_YYY *w,FP4_YYY *x,int s)
+void FP4_YYY_imul(FP4_YYY *w,const FP4_YYY *x,int s)
 {
     FP2_YYY_imul(&(w->a),&(x->a),s);
     FP2_YYY_imul(&(w->b),&(x->b),s);
@@ -196,7 +197,9 @@ void FP4_YYY_imul(FP4_YYY *w,FP4_YYY *x,int s)
 /* Input MUST be normed  */
 void FP4_YYY_sqr(FP4_YYY *w,FP4_YYY *x)
 {
-    FP2_YYY t1,t2,t3;
+    FP2_YYY t1;
+    FP2_YYY t2;
+    FP2_YYY t3;
 
     FP2_YYY_mul(&t3,&(x->a),&(x->b)); /* norms x */
     FP2_YYY_copy(&t2,&(x->b));
@@ -225,10 +228,13 @@ void FP4_YYY_sqr(FP4_YYY *w,FP4_YYY *x)
 
 /* Set w=x*y */
 /* Inputs MUST be normed  */
-void FP4_YYY_mul(FP4_YYY *w,FP4_YYY *x,FP4_YYY *y)
+void FP4_YYY_mul(FP4_YYY *w,FP4_YYY *x,const FP4_YYY *y)
 {
 
-    FP2_YYY t1,t2,t3,t4;
+    FP2_YYY t1;
+    FP2_YYY t2;
+    FP2_YYY t3;
+    FP2_YYY t4;
     FP2_YYY_mul(&t1,&(x->a),&(y->a));
     FP2_YYY_mul(&t2,&(x->b),&(y->b));
 
@@ -265,7 +271,7 @@ void FP4_YYY_output(FP4_YYY *w)
 }
 
 /* SU= 8 */
-void FP4_YYY_rawoutput(FP4_YYY *w)
+void FP4_YYY_rawoutput(const FP4_YYY *w)
 {
     printf("[");
     FP2_YYY_rawoutput(&(w->a));
@@ -276,9 +282,10 @@ void FP4_YYY_rawoutput(FP4_YYY *w)
 
 /* Set w=1/x */
 /* SU= 160 */
-void FP4_YYY_inv(FP4_YYY *w,FP4_YYY *x)
+void FP4_YYY_inv(FP4_YYY *w,const FP4_YYY *x)
 {
-    FP2_YYY t1,t2;
+    FP2_YYY t1;
+    FP2_YYY t2;
     FP2_YYY_sqr(&t1,&(x->a));
     FP2_YYY_sqr(&t2,&(x->b));
     FP2_YYY_mul_ip(&t2);
@@ -296,7 +303,8 @@ void FP4_YYY_inv(FP4_YYY *w,FP4_YYY *x)
 void FP4_YYY_times_i(FP4_YYY *w)
 {
     FP_YYY z;
-    FP2_YYY s,t;
+    FP2_YYY s;
+    FP2_YYY t;
     FP2_YYY_copy(&t,&(w->b));
 
     FP2_YYY_copy(&s,&t);
@@ -323,10 +331,11 @@ void FP4_YYY_frob(FP4_YYY *w,FP2_YYY *f)
 
 /* Set r=a^b mod m */
 /* SU= 240 */
-void FP4_YYY_pow(FP4_YYY *r,FP4_YYY* a,BIG_XXX b)
+void FP4_YYY_pow(FP4_YYY *r,const FP4_YYY* a,const BIG_XXX b)
 {
     FP4_YYY w;
-    BIG_XXX z,zilch;
+    BIG_XXX z;
+    BIG_XXX zilch;
     int bt;
 
     BIG_XXX_zero(zilch);
@@ -350,9 +359,10 @@ void FP4_YYY_pow(FP4_YYY *r,FP4_YYY* a,BIG_XXX b)
 
 /* SU= 304 */
 /* XTR xtr_a function */
-void FP4_YYY_xtr_A(FP4_YYY *r,FP4_YYY *w,FP4_YYY *x,FP4_YYY *y,FP4_YYY *z)
+void FP4_YYY_xtr_A(FP4_YYY *r,const FP4_YYY *w,const FP4_YYY *x,FP4_YYY *y,const FP4_YYY *z)
 {
-    FP4_YYY t1,t2;
+    FP4_YYY t1;
+    FP4_YYY t2;
     FP4_YYY_copy(r,x);
     FP4_YYY_sub(&t1,w,y);
     FP4_YYY_norm(&t1);
@@ -370,7 +380,7 @@ void FP4_YYY_xtr_A(FP4_YYY *r,FP4_YYY *w,FP4_YYY *x,FP4_YYY *y,FP4_YYY *z)
 
 /* SU= 152 */
 /* XTR xtr_d function */
-void FP4_YYY_xtr_D(FP4_YYY *r,FP4_YYY *x)
+void FP4_YYY_xtr_D(FP4_YYY *r,const FP4_YYY *x)
 {
     FP4_YYY w;
     FP4_YYY_copy(r,x);
@@ -384,12 +394,17 @@ void FP4_YYY_xtr_D(FP4_YYY *r,FP4_YYY *x)
 
 /* SU= 728 */
 /* r=x^n using XTR method on traces of FP12s */
-void FP4_YYY_xtr_pow(FP4_YYY *r,FP4_YYY *x,BIG_XXX n)
+void FP4_YYY_xtr_pow(FP4_YYY *r,const FP4_YYY *x,const BIG_XXX n)
 {
-    int i,par,nb;
+    int par;
+    int nb;
     BIG_XXX v;
     FP2_YYY w;
-    FP4_YYY t,a,b,c,sf;
+    FP4_YYY t;
+    FP4_YYY a;
+    FP4_YYY b;
+    FP4_YYY c;
+    FP4_YYY sf;
 
     BIG_XXX_zero(v);
     BIG_XXX_inc(v,3);
@@ -413,7 +428,7 @@ void FP4_YYY_xtr_pow(FP4_YYY *r,FP4_YYY *x,BIG_XXX n)
     }
 
     nb=BIG_XXX_nbits(v);
-    for (i=nb-1; i>=0; i--)
+    for (int i=nb-1; i>=0; i--)
     {
         if (!BIG_XXX_bit(v,i))
         {
@@ -441,11 +456,17 @@ void FP4_YYY_xtr_pow(FP4_YYY *r,FP4_YYY *x,BIG_XXX n)
 
 /* SU= 872 */
 /* r=ck^a.cl^n using XTR double exponentiation method on traces of FP12s. See Stam thesis. */
-void FP4_YYY_xtr_pow2(FP4_YYY *r,FP4_YYY *ck,FP4_YYY *cl,FP4_YYY *ckml,FP4_YYY *ckm2l,BIG_XXX a,BIG_XXX b)
+void FP4_YYY_xtr_pow2(FP4_YYY *r,const FP4_YYY *ck,const FP4_YYY *cl,const FP4_YYY *ckml,const FP4_YYY *ckm2l,const BIG_XXX a,const BIG_XXX b)
 {
-    int i,f2;
-    BIG_XXX d,e,w;
-    FP4_YYY t,cu,cv,cumv,cum2v;
+    int f2;
+    BIG_XXX d;
+    BIG_XXX e;
+    BIG_XXX w;
+    FP4_YYY t;
+    FP4_YYY cu;
+    FP4_YYY cv;
+    FP4_YYY cumv;
+    FP4_YYY cum2v;
 
 
     BIG_XXX_copy(e,a);
@@ -569,12 +590,12 @@ void FP4_YYY_xtr_pow2(FP4_YYY *r,FP4_YYY *ck,FP4_YYY *cl,FP4_YYY *ckml,FP4_YYY *
         }
     }
     FP4_YYY_xtr_A(r,&cu,&cv,&cumv,&cum2v);
-    for (i=0; i<f2; i++)	FP4_YYY_xtr_D(r,r);
+    for (int i=0; i<f2; i++)	FP4_YYY_xtr_D(r,r);
     FP4_YYY_xtr_pow(r,r,d);
 }
 
 /* Move b to a if d=1 */
-void FP4_YYY_cmove(FP4_YYY *f,FP4_YYY *g,int d)
+void FP4_YYY_cmove(FP4_YYY *f,const FP4_YYY *g,int d)
 {
     FP2_YYY_cmove(&(f->a),&(g->a),d);
     FP2_YYY_cmove(&(f->b),&(g->b),d);
@@ -583,7 +604,7 @@ void FP4_YYY_cmove(FP4_YYY *f,FP4_YYY *g,int d)
 /* New stuff for ECp4 support */
 
 /* Set w=x/2 */
-void FP4_YYY_div2(FP4_YYY *w,FP4_YYY *x)
+void FP4_YYY_div2(FP4_YYY *w,const FP4_YYY *x)
 {
     FP2_YYY_div2(&(w->a),&(x->a));
     FP2_YYY_div2(&(w->b),&(x->b));

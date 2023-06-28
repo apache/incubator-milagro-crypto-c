@@ -97,6 +97,10 @@ extern const BIG_XXX CURVE_SB_ZZZ[2][2]; /**< BN curve constant for GLV decompos
 extern const BIG_XXX CURVE_WB_ZZZ[4];	 /**< BN curve constant for GS decomposition */
 extern const BIG_XXX CURVE_BB_ZZZ[4][4]; /**< BN curve constant for GS decomposition */
 
+extern const BIG_XXX SSWU_A1_ZZZ; /**< Parameter A' of the Weierstrass curve for 11-isogeny for BLS12-381 G1 */
+extern const BIG_XXX SSWU_B1_ZZZ; /**< Parameter B' of the Weierstrass curve for 11-isogeny for BLS12-381 G1 */
+extern const BIG_XXX SSWU_Z1_ZZZ; /**< A non-zero element of finite field for EC mapping */
+extern const BIG_XXX H_EFF_G1;    /**< Scalar parameter for clear_cofactor for BLS12-381 G1 */
 
 /**
 	@brief ECP structure - Elliptic Curve Point over base field
@@ -104,7 +108,7 @@ extern const BIG_XXX CURVE_BB_ZZZ[4][4]; /**< BN curve constant for GS decomposi
 
 typedef struct
 {
-//    int inf; /**< Infinity Flag - not needed for Edwards representation */
+//    int inf; //Infinity Flag - not needed for Edwards representation
 
     FP_YYY x; /**< x-coordinate of point */
 #if CURVETYPE_ZZZ!=MONTGOMERY
@@ -120,20 +124,20 @@ typedef struct
 	@param P ECP point to be tested
 	@return 1 if infinity, else returns 0
  */
-extern int ECP_ZZZ_isinf(ECP_ZZZ *P);
+extern int ECP_ZZZ_isinf(const ECP_ZZZ *P);
 /**	@brief Tests for equality of two ECPs
  *
 	@param P ECP instance to be compared
 	@param Q ECP instance to be compared
 	@return 1 if P=Q, else returns 0
  */
-extern int ECP_ZZZ_equals(ECP_ZZZ *P,ECP_ZZZ *Q);
+extern int ECP_ZZZ_equals(const ECP_ZZZ *P,const ECP_ZZZ *Q);
 /**	@brief Copy ECP point to another ECP point
  *
 	@param P ECP instance, on exit = Q
 	@param Q ECP instance to be copied
  */
-extern void ECP_ZZZ_copy(ECP_ZZZ *P,ECP_ZZZ *Q);
+extern void ECP_ZZZ_copy(ECP_ZZZ *P,const ECP_ZZZ *Q);
 /**	@brief Negation of an ECP point
  *
 	@param P ECP instance, on exit = -P
@@ -168,7 +172,7 @@ extern int ECP_ZZZ_set(ECP_ZZZ *P,BIG_XXX x);
 	@param P ECP instance (x,[y])
 	@return -1 if P is point-at-infinity, else 0
  */
-extern int ECP_ZZZ_get(BIG_XXX x,ECP_ZZZ *P);
+extern int ECP_ZZZ_get(BIG_XXX x,const ECP_ZZZ *P);
 /**	@brief Adds ECP instance Q to ECP instance P, given difference D=P-Q
  *
 	Differential addition of points on a Montgomery curve
@@ -186,7 +190,7 @@ extern void ECP_ZZZ_add(ECP_ZZZ *P,ECP_ZZZ *Q,ECP_ZZZ *D);
 	@param y BIG y coordinate of point
 	@return 1 if point exists, else 0
  */
-extern int ECP_ZZZ_set(ECP_ZZZ *P,BIG_XXX x,BIG_XXX y);
+extern int ECP_ZZZ_set(ECP_ZZZ *P,const BIG_XXX x,const BIG_XXX y);
 /**	@brief Extract x and y coordinates of an ECP point P
  *
 	If x=y, returns only x
@@ -195,19 +199,19 @@ extern int ECP_ZZZ_set(ECP_ZZZ *P,BIG_XXX x,BIG_XXX y);
 	@param P ECP instance (x,y)
 	@return sign of y, or -1 if P is point-at-infinity
  */
-extern int ECP_ZZZ_get(BIG_XXX x,BIG_XXX y,ECP_ZZZ *P);
+extern int ECP_ZZZ_get(BIG_XXX x,BIG_XXX y,const ECP_ZZZ *P);
 /**	@brief Adds ECP instance Q to ECP instance P
  *
 	@param P ECP instance, on exit =P+Q
 	@param Q ECP instance to be added to P
  */
-extern void ECP_ZZZ_add(ECP_ZZZ *P,ECP_ZZZ *Q);
+extern void ECP_ZZZ_add(ECP_ZZZ *P,const ECP_ZZZ *Q);
 /**	@brief Subtracts ECP instance Q from ECP instance P
  *
 	@param P ECP instance, on exit =P-Q
 	@param Q ECP instance to be subtracted from P
  */
-extern void ECP_ZZZ_sub(ECP_ZZZ *P,ECP_ZZZ *Q);
+extern void ECP_ZZZ_sub(ECP_ZZZ *P,const ECP_ZZZ *Q);
 /**	@brief Set ECP to point(x,y) given just x and sign of y
  *
 	Point P set to infinity if no such point on the curve. If x is on the curve then y is calculated from the curve equation.
@@ -216,7 +220,7 @@ extern void ECP_ZZZ_sub(ECP_ZZZ *P,ECP_ZZZ *Q);
 	@param x BIG x coordinate of point
 	@param s an integer representing the "sign" of y, in fact its least significant bit.
  */
-extern int ECP_ZZZ_setx(ECP_ZZZ *P,BIG_XXX x,int s);
+extern int ECP_ZZZ_setx(ECP_ZZZ *P,const BIG_XXX x,int s);
 
 #endif
 
@@ -231,7 +235,7 @@ extern void ECP_ZZZ_cfp(ECP_ZZZ *Q);
 	@param Q ECP instance of correct order
 	@param w OCTET byte array to be mapped
  */
-extern void ECP_ZZZ_mapit(ECP_ZZZ *Q,octet *w);
+extern void ECP_ZZZ_mapit(ECP_ZZZ *Q,const octet *w);
 
 /**	@brief Converts an ECP point from Projective (x,y,z) coordinates to affine (x,y) coordinates
  *
@@ -253,7 +257,7 @@ extern void ECP_ZZZ_output(ECP_ZZZ * P);
  *
 	@param P ECP instance to be printed
  */
-extern void ECP_ZZZ_rawoutput(ECP_ZZZ * P);
+extern void ECP_ZZZ_rawoutput(const ECP_ZZZ * P);
 
 /**	@brief Formats and outputs an ECP point to an octet string
 	The octet string is normally in the standard form 0x04|x|y
@@ -264,7 +268,7 @@ extern void ECP_ZZZ_rawoutput(ECP_ZZZ * P);
 	@param S output octet string
 	@param P ECP instance to be converted to an octet string
  */
-extern void ECP_ZZZ_toOctet(octet *S,ECP_ZZZ *P,bool c);
+extern void ECP_ZZZ_toOctet(octet *S,const ECP_ZZZ *P,bool c);
 /**	@brief Creates an ECP point from an octet string
  *
 	The octet string is normally in the standard form 0x04|x|y
@@ -275,7 +279,7 @@ extern void ECP_ZZZ_toOctet(octet *S,ECP_ZZZ *P,bool c);
 	@param S input octet string
 	return 1 if octet string corresponds to a point on the curve, else 0
  */
-extern int ECP_ZZZ_fromOctet(ECP_ZZZ *P,octet *S);
+extern int ECP_ZZZ_fromOctet(ECP_ZZZ *P,const octet *S);
 /**	@brief Doubles an ECP instance P
  *
 	@param P ECP instance, on exit =2*P
@@ -295,7 +299,7 @@ extern void ECP_ZZZ_pinmul(ECP_ZZZ *P,int i,int b);
 	@param b BIG number multiplier
 
  */
-extern void ECP_ZZZ_mul(ECP_ZZZ *P,BIG_XXX b);
+extern void ECP_ZZZ_mul(ECP_ZZZ *P,const BIG_XXX b);
 /**	@brief Calculates double multiplication P=e*P+f*Q, side-channel resistant
  *
 	@param P ECP instance, on exit =e*P+f*Q
@@ -303,12 +307,23 @@ extern void ECP_ZZZ_mul(ECP_ZZZ *P,BIG_XXX b);
 	@param e BIG number multiplier
 	@param f BIG number multiplier
  */
-extern void ECP_ZZZ_mul2(ECP_ZZZ *P,ECP_ZZZ *Q,BIG_XXX e,BIG_XXX f);
+extern void ECP_ZZZ_mul2(ECP_ZZZ *P,const ECP_ZZZ *Q,const BIG_XXX e,const BIG_XXX f);
 /**	@brief Get Group Generator from ROM
  *
 	@param G ECP instance
  */
 extern void ECP_ZZZ_generator(ECP_ZZZ *G);
 
+/**
+ * @brief Maps a field element to an EC point using Simplified Shallue-van de Woestijne-Ulas (SSWU) method as defined at
+ * https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#name-simplified-swu-for-ab-0.
+ * 
+ * @param x x-coordinate of output EC point
+ * @param y y-coordinate of output EC point
+ * @param u Input field element
+ * 
+ * @return 0 if successful, error code otherwise
+ */
+extern int ECP_ZZZ_sswu(FP_YYY *x, FP_YYY *y, FP_YYY u);
 
 #endif

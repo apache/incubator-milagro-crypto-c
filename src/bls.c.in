@@ -26,7 +26,7 @@ under the License.
 #include "bls_ZZZ.h"
 
 // Polynomial interpolation coefficients
-static void recover_coefficients(int k, octet* X, BIG_XXX* coefs)
+static void recover_coefficients(int k, const octet* X, BIG_XXX* coefs)
 {
     BIG_XXX r;
     BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
@@ -93,15 +93,14 @@ static void recover_coefficients(int k, octet* X, BIG_XXX* coefs)
 }
 
 /* hash a message, M, to an ECP point, using SHA3 */
-static void BLS_HASHIT(ECP_ZZZ *P,octet *M)
+static void BLS_HASHIT(ECP_ZZZ *P,const octet *M)
 {
-    int i;
     int j;
     sha3 hs;
     char h[MODBYTES_XXX];
     octet HM= {0,sizeof(h),h};
     SHA3_init(&hs,SHAKE256);
-    for (i=0; i<M->len; i++)
+    for (int i=0; i<M->len; i++)
     {
         j = (unsigned char) M->val[i];
         SHA3_process(&hs,j);
@@ -115,7 +114,8 @@ static void BLS_HASHIT(ECP_ZZZ *P,octet *M)
 int BLS_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
 {
     ECP2_ZZZ G;
-    BIG_XXX s,q;
+    BIG_XXX s;
+    BIG_XXX q;
     BIG_XXX_rcopy(q,CURVE_Order_ZZZ);
     ECP2_ZZZ_generator(&G);
 
@@ -138,7 +138,7 @@ int BLS_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
 }
 
 /* Sign message M using private key S to produce signature SIG */
-int BLS_ZZZ_SIGN(octet *SIG,octet *M,octet *S)
+int BLS_ZZZ_SIGN(octet *SIG,const octet *M,const octet *S)
 {
     BIG_XXX s;
     ECP_ZZZ D;
@@ -152,11 +152,13 @@ int BLS_ZZZ_SIGN(octet *SIG,octet *M,octet *S)
 }
 
 /* Verify signature of message M, the signature SIG, and the public key W */
-int BLS_ZZZ_VERIFY(octet *SIG,octet *M,octet *W)
+int BLS_ZZZ_VERIFY(const octet *SIG,const octet *M,const octet *W)
 {
     FP12_YYY v;
-    ECP2_ZZZ G,PK;
-    ECP_ZZZ D,HM;
+    ECP2_ZZZ G;
+    ECP2_ZZZ PK;
+    ECP_ZZZ D;
+    ECP_ZZZ HM;
     BLS_HASHIT(&HM,M);
 
     if (!ECP_ZZZ_fromOctet(&D,SIG))
@@ -183,7 +185,7 @@ int BLS_ZZZ_VERIFY(octet *SIG,octet *M,octet *W)
 }
 
 /* R=R1+R2 in group G1 */
-int BLS_ZZZ_ADD_G1(octet *R1,octet *R2,octet *R)
+int BLS_ZZZ_ADD_G1(const octet *R1,const octet *R2,octet *R)
 {
     ECP_ZZZ P;
     ECP_ZZZ T;
@@ -205,7 +207,7 @@ int BLS_ZZZ_ADD_G1(octet *R1,octet *R2,octet *R)
 }
 
 /* W=W1+W2 in group G2 */
-int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W)
+int BLS_ZZZ_ADD_G2(const octet *W1,const octet *W2,octet *W)
 {
     ECP2_ZZZ Q;
     ECP2_ZZZ T;
@@ -226,7 +228,7 @@ int BLS_ZZZ_ADD_G2(octet *W1,octet *W2,octet *W)
     return BLS_OK;
 }
 
-int BLS_ZZZ_MAKE_SHARES(int k, int n, csprng *RNG, octet* X, octet* Y, octet* SKI, octet* SKO)
+int BLS_ZZZ_MAKE_SHARES(int k, int n, csprng *RNG, octet* X, octet* Y, const octet* SKI, octet* SKO)
 {
     BIG_XXX r;
     BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
@@ -287,7 +289,7 @@ int BLS_ZZZ_MAKE_SHARES(int k, int n, csprng *RNG, octet* X, octet* Y, octet* SK
     return BLS_OK;
 }
 
-int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
+int BLS_ZZZ_RECOVER_SECRET(int k,const octet* X, const octet* Y, octet* SK)
 {
     BIG_XXX r;
     BIG_XXX_rcopy(r,CURVE_Order_ZZZ);
@@ -323,7 +325,7 @@ int BLS_ZZZ_RECOVER_SECRET(int k, octet* X, octet* Y, octet* SK)
     return BLS_OK;
 }
 
-int BLS_ZZZ_RECOVER_SIGNATURE(int k, octet* X, octet* Y, octet* SIG)
+int BLS_ZZZ_RECOVER_SIGNATURE(int k, const octet* X, const octet* Y, octet* SIG)
 {
     BIG_XXX coefs[k];
     ECP_ZZZ y;
