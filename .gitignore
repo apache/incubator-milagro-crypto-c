@@ -1,3 +1,8 @@
 build
 target
 *~
+.idea
+cmake-build-debug
+qredo-secret-detection-config.toml
+security-ci-cd-templates
+gitleaks_report.json

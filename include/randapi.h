@@ -34,7 +34,7 @@
 	@param R is a pointer to a cryptographically secure random number generator
 	@param S is an input truly random seed value
  */
-extern void CREATE_CSPRNG(csprng *R,octet *S);
+extern void CREATE_CSPRNG(csprng *R,const octet *S);
 /**	@brief Kill a random number generator
  *
 	Deletes all internal state

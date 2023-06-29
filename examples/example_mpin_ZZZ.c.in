@@ -50,25 +50,48 @@ under the License.
 #endif
 #define GTLEN 3*G2LEN
 
-//#define PERMITS  /* for time permits ON or OFF */
+//#define PERMITS   //for time permits ON or OFF
 #define PINERROR /* For PIN ERROR detection ON or OFF */
 #define FULL     /* for M-Pin Full or M-Pin regular */
-//#define SINGLE_MPIN_PASS /* SINGLE MPIN_PASS M-Pin */
+//#define SINGLE_MPIN_PASS //SINGLE MPIN_PASS M-Pin
 
 int mpin(csprng *RNG)
 {
-    int pin,pin2,rtn,err;
+    int pin;
+    int pin2;
+    int rtn;
+    int err;
 #ifdef PERMITS
     int date=today();
 #else
     int date=0;
 #endif
-    char x[PGS_ZZZ],s[PGS_ZZZ],y[PGS_ZZZ],client_id[100],sst[G2LEN],token[2*PFS_ZZZ+1],sec[2*PFS_ZZZ+1],permit[2*PFS_ZZZ+1],xcid[2*PFS_ZZZ+1],xid[2*PFS_ZZZ+1],e[GTLEN],f[GTLEN];
-    char hcid[PFS_ZZZ],hsid[PFS_ZZZ],hid[2*PFS_ZZZ+1],htid[2*PFS_ZZZ+1],h[PGS_ZZZ];
+    char x[PGS_ZZZ];
+    char s[PGS_ZZZ];
+    char y[PGS_ZZZ];
+    char client_id[100];
+    char sst[G2LEN];
+    char token[2*PFS_ZZZ+1];
+    char sec[2*PFS_ZZZ+1];
+    char permit[2*PFS_ZZZ+1];
+    char xcid[2*PFS_ZZZ+1];
+    char xid[2*PFS_ZZZ+1];
+    char e[GTLEN];
+    char f[GTLEN];
+    char hcid[PFS_ZZZ];
+    char hsid[PFS_ZZZ];
+    char hid[2*PFS_ZZZ+1];
+    char htid[2*PFS_ZZZ+1];
+    char h[PGS_ZZZ];
 #ifdef FULL
-    char r[PGS_ZZZ],z[2*PFS_ZZZ+1],w[PGS_ZZZ],t[2*PFS_ZZZ+1];
-    char g1[GTLEN],g2[GTLEN];
-    char ck[AESKEY_ZZZ],sk[AESKEY_ZZZ];
+    char r[PGS_ZZZ];
+    char z[2*PFS_ZZZ+1];
+    char w[PGS_ZZZ];
+    char t[2*PFS_ZZZ+1];
+    char g1[GTLEN];
+    char g2[GTLEN];
+    char ck[AESKEY_ZZZ];
+    char sk[AESKEY_ZZZ];
 #endif
     octet S= {0,sizeof(s),s};
     octet X= {0,sizeof(x),x};
@@ -97,7 +120,14 @@ int mpin(csprng *RNG)
     octet SK= {0,sizeof(sk),sk};
     octet CK= {0,sizeof(ck),ck};
 #endif
-    octet *pxID,*pxCID,*pHID,*pHTID,*pE,*pF,*pPERMIT,*prHID;
+    octet *pxID;
+    octet *pxCID;
+    octet *pHID;
+    octet *pHTID;
+    octet *pE;
+    octet *pF;
+    const octet *pPERMIT;
+    const octet *prHID;
     char idhex[100];
 
     /* Trusted Authority set-up */
@@ -114,7 +144,7 @@ int mpin(csprng *RNG)
     printf("\n");
 
     OCT_toHex(&CLIENT_ID,idhex);
-    printf("Client ID= %s\n",idhex);// OCT_toHex(&CLIENT_ID); printf("\n");
+    printf("Client ID= %s\n",idhex);
 
     /* Client and Server are issued secrets by DTA */
     MPIN_ZZZ_GET_SERVER_SECRET(&S,&SST);
@@ -168,7 +198,8 @@ int mpin(csprng *RNG)
 
     /* Client enters PIN */
     printf("\nPIN= ");
-    if(scanf("%d",&pin)) {};
+    while(! scanf("%d",&pin))
+        printf("scan error");
     /* to avoid silly compile error */
     getchar();
 
@@ -189,18 +220,16 @@ int mpin(csprng *RNG)
     */
 
     pxID=&xID;
-    pxCID=&xCID;
     pHID=&HID;
-    pHTID=&HTID;
-    pE=&E;
-    pF=&F;
-    pPERMIT=&PERMIT;
 
 #ifdef PERMITS
     prHID=pHTID;
+    pHTID=&HTID;
+    pxCID=&xCID;
+    pPERMIT=&PERMIT;
+
 #ifndef PINERROR
     pxID=NULL;
-//   pHID=NULL;  //new
 #endif
 #else
     prHID=pHID;
@@ -211,6 +240,9 @@ int mpin(csprng *RNG)
 #ifndef PINERROR
     pE=NULL;
     pF=NULL;
+#else
+    pE=&E;
+    pF=&F;
 #endif
 
 #ifdef SINGLE_MPIN_PASS
@@ -344,7 +376,7 @@ int mpin(csprng *RNG)
 
 int main()
 {
-    char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
+    const char* seedHex = "78d0fb6705ce77dee47d03eb5b9c5d30";
     char seed[16] = {0};
     octet SEED = {sizeof(seed),sizeof(seed),seed};
 

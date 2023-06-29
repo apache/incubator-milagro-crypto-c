@@ -22,7 +22,7 @@ under the License.
 /* Initialise a Cryptographically Strong Random Number Generator from
    an octet of raw random data */
 
-void CREATE_CSPRNG(csprng *RNG,octet *RAW)
+void CREATE_CSPRNG(csprng *RNG,const octet *RAW)
 {
     RAND_seed(RNG,RAW->len,RAW->val);
 }

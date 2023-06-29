@@ -54,7 +54,6 @@ log(PROJECT_VERSION)
 log(CMAKE_GENERATOR)
 
 add_definitions(-DCMAKE)
-
 set(AMCL_VERSION       ${PROJECT_VERSION})
 set(AMCL_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(AMCL_VERSION_MINOR ${PROJECT_VERSION_MINOR})
@@ -69,14 +68,14 @@ if(CMAKE_COMPILER_IS_GNUCC)
 
     if (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wshadow")
-        set(CMAKE_C_FLAGS_ASAN    "-O0 -g3 -fsanitize=address")
+        set(CMAKE_C_FLAGS_ASAN    "-O0 -g3 -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fno-strict-overflow")
     else (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
         message(STATUS "GCC 4.8 required to run address sanitizer - please upgrade your installation")
     endif(GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
 
-    set(CMAKE_C_FLAGS_RELEASE     "-O2")
-    set(CMAKE_C_FLAGS_DEBUG       "-O0 -g3")
-    set(CMAKE_C_FLAGS_COVERAGE    "-O0 -g3 --coverage")
+    set(CMAKE_C_FLAGS_RELEASE     "-O2 -fno-strict-overflow")
+    set(CMAKE_C_FLAGS_DEBUG       "-O0 -g3 -fno-strict-overflow")
+    set(CMAKE_C_FLAGS_COVERAGE    "-O0 -g3 -fno-strict-overflow --coverage")
     set(CMAKE_C_FLAGS_CHECK       "-O2 -Werror")
     set(CMAKE_C_FLAGS_CHECKFULL   "${CMAKE_C_FLAGS_CHECK} -Wcast-qual")
 endif(CMAKE_COMPILER_IS_GNUCC)
@@ -119,11 +118,13 @@ option(BUILD_MPIN     "Build MPIN"     ON)
 option(BUILD_WCC      "Build WCC"      ON)
 option(BUILD_X509     "BUild X509"     ON)
 option(BUILD_BLS      "Build BLS"      ON)
+option(BUILD_BLS_IETF "Build BLS_IETF" ON)
 option(BUILD_PAILLIER "Build Paillier" OFF)
 log(BUILD_MPIN)
 log(BUILD_WCC)
 log(BUILD_X509)
 log(BUILD_BLS)
+log(BUILD_BLS_IETF)
 log(BUILD_PAILLIER)
 
 option(DEBUG_REDUCE "Print debug message for field reduction" OFF)
@@ -192,6 +193,8 @@ unset(RSL)
 
 add_library(amcl_core
   src/hash.c
+  src/hmac.c
+  src/hkdf.c
   src/rand.c
   src/randapi.c
   src/aes.c
@@ -208,6 +211,9 @@ set_target_properties(amcl_core PROPERTIES
   SOVERSION ${AMCL_SOVERSION}
 )
 
+target_compile_options(amcl_core PUBLIC
+  "$<$<CONFIG:DEBUG>:-DDEBUG>"
+)
 target_include_directories(amcl_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -415,25 +421,40 @@ foreach(curve ${AMCL_CURVE})
   amcl_curve_field(TC "${curve}")
   amcl_curve_field(TF "${curve}")
 
-  amcl_configure_file_curve(include/big.h.in          include/big_${BD}.h          "${curve}" amcl_curve_${TC}_GEN_HDRS)
-  amcl_configure_file_curve(include/config_big.h.in   include/config_big_${BD}.h   "${curve}" amcl_curve_${TC}_GEN_HDRS)
-  amcl_configure_file_curve(include/config_field.h.in include/config_field_${TF}.h "${curve}" amcl_curve_${TC}_GEN_HDRS)
-  amcl_configure_file_curve(include/config_curve.h.in include/config_curve_${TC}.h "${curve}" amcl_curve_${TC}_GEN_HDRS)
-  amcl_configure_file_curve(include/fp.h.in           include/fp_${TF}.h           "${curve}" amcl_curve_${TC}_GEN_HDRS)
-  amcl_configure_file_curve(include/ecdh.h.in         include/ecdh_${TC}.h         "${curve}" amcl_curve_${TC}_GEN_HDRS)
-  amcl_configure_file_curve(include/ecp.h.in          include/ecp_${TC}.h          "${curve}" amcl_curve_${TC}_GEN_HDRS)
+  amcl_configure_file_curve(include/big.h.in           include/big_${BD}.h           "${curve}" amcl_curve_${TC}_GEN_HDRS)
+  amcl_configure_file_curve(include/config_big.h.in    include/config_big_${BD}.h    "${curve}" amcl_curve_${TC}_GEN_HDRS)
+  amcl_configure_file_curve(include/config_field.h.in  include/config_field_${TF}.h  "${curve}" amcl_curve_${TC}_GEN_HDRS)
+  amcl_configure_file_curve(include/config_curve.h.in  include/config_curve_${TC}.h  "${curve}" amcl_curve_${TC}_GEN_HDRS)
+  amcl_configure_file_curve(include/fp.h.in            include/fp_${TF}.h            "${curve}" amcl_curve_${TC}_GEN_HDRS)
+  amcl_configure_file_curve(include/ecdh.h.in          include/ecdh_${TC}.h          "${curve}" amcl_curve_${TC}_GEN_HDRS)
+  amcl_configure_file_curve(include/ecp.h.in           include/ecp_${TC}.h           "${curve}" amcl_curve_${TC}_GEN_HDRS)
+  if(TC STREQUAL "BLS381")
+    amcl_configure_file_curve(include/hash_to_field.h.in include/hash_to_field_${TC}.h "${curve}" amcl_curve_${TC}_GEN_HDRS)
+  endif()
 
-  amcl_configure_file_curve(src/big.c.in  src/big_${BD}.c  "${curve}" amcl_curve_${TC}_GEN_SRCS)
-  amcl_configure_file_curve(src/fp.c.in   src/fp_${TF}.c   "${curve}" amcl_curve_${TC}_GEN_SRCS)
-  amcl_configure_file_curve(src/ecp.c.in  src/ecp_${TC}.c  "${curve}" amcl_curve_${TC}_GEN_SRCS)
-  amcl_configure_file_curve(src/ecdh.c.in src/ecdh_${TC}.c "${curve}" amcl_curve_${TC}_GEN_SRCS)
+  amcl_configure_file_curve(src/big.c.in           src/big_${BD}.c           "${curve}" amcl_curve_${TC}_GEN_SRCS)
+  amcl_configure_file_curve(src/fp.c.in            src/fp_${TF}.c            "${curve}" amcl_curve_${TC}_GEN_SRCS)
+  amcl_configure_file_curve(src/ecp.c.in           src/ecp_${TC}.c           "${curve}" amcl_curve_${TC}_GEN_SRCS)
+  amcl_configure_file_curve(src/ecdh.c.in          src/ecdh_${TC}.c          "${curve}" amcl_curve_${TC}_GEN_SRCS)
+  if(TC STREQUAL "BLS381")
+    amcl_configure_file_curve(src/hash_to_field.c.in src/hash_to_field_${TC}.c "${curve}" amcl_curve_${TC}_GEN_SRCS)
+  endif()
 
   message(STATUS "Build libamcl_curve_${TC}")
-  add_library(amcl_curve_${TC}
-    ${amcl_curve_${TC}_GEN_SRCS}
-    src/rom_curve_${TC}.c
-    src/rom_field_${TF}.c
-  )
+  if(TC STREQUAL "BLS381")
+    add_library(amcl_curve_${TC}
+      ${amcl_curve_${TC}_GEN_SRCS}
+      src/rom_curve_${TC}.c
+      src/rom_iso_${TC}.c
+      src/rom_field_${TF}.c
+    )
+  else()
+    add_library(amcl_curve_${TC}
+      ${amcl_curve_${TC}_GEN_SRCS}
+      src/rom_curve_${TC}.c
+      src/rom_field_${TF}.c
+    )
+  endif()
   list(APPEND AMCL_LIBRARIES amcl_curve_${TC})
 
   set_target_properties(amcl_curve_${TC} PROPERTIES
@@ -712,6 +733,55 @@ if(BUILD_BLS)
 endif()
 
 ##################################################
+# AMCL_BLS_IETF Library
+##################################################
+if(BUILD_BLS_IETF)
+  foreach(curve ${AMCL_CURVE})
+    amcl_curve_field(TC "${curve}")
+    amcl_curve_field(CS "${curve}")
+
+    if(TC STREQUAL "BLS381")
+        amcl_configure_file_curve(include/bls_ietf.h.in include/bls_ietf_${TC}.h "${curve}" amcl_bls_ietf_${TC}_GEN_HDRS)
+        amcl_configure_file_curve(src/bls_ietf.c.in     src/bls_ietf_${TC}.c     "${curve}" amcl_bls_ietf_${TC}_GEN_SRCS)
+
+      message(STATUS "Build libamcl_bls_ietf_${TC}")
+      add_library(amcl_bls_ietf_${TC}
+        ${amcl_bls_ietf_${TC}_GEN_SRCS}
+      )
+      list(APPEND AMCL_LIBRARIES amcl_bls_ietf_${TC})
+
+      set_target_properties(amcl_bls_ietf_${TC} PROPERTIES
+        EXPORT_NAME bls_ietf_${TC}
+        VERSION ${AMCL_VERSION}
+        SOVERSION ${AMCL_SOVERSION}
+      )
+
+      target_include_directories(amcl_bls_ietf_${TC} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      )
+
+      target_link_libraries(amcl_bls_ietf_${TC} PUBLIC
+        amcl_pairing_${TC}
+      )
+
+      install(TARGETS amcl_bls_ietf_${TC}
+        EXPORT AMCLTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      )
+
+      install(FILES
+        ${amcl_bls_ietf_${TC}_GEN_HDRS}
+        DESTINATION ${INSTALL_INCLUDESUBDIR}
+      )
+    endif(TC STREQUAL "BLS381")
+  endforeach()
+endif()
+
+##################################################
 # pkgconfig
 ##################################################
 foreach(lib ${AMCL_LIBRARIES})
@@ -782,8 +852,10 @@ if(BUILD_EXAMPLES)
 endif()
 
 if(BUILD_PYTHON)
-  message(STATUS "Build Python wrappers")
-  add_subdirectory(python)
+  if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "ASan")
+    message(STATUS "Build Python wrappers")
+    add_subdirectory(python)
+  endif()
 endif()
 
 if(BUILD_TESTING)

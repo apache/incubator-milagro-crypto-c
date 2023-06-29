@@ -29,12 +29,12 @@ static int teq(sign32 b,sign32 c)
 {
     sign32 x=b^c;
     x-=1;  // if x=0, x now -1
-    return (int)((x>>31)&1);
+    return (x>>31)&1;
 }
 
 
 /* Constant time select from pre-computed table */
-static void FP12_YYY_select(FP12_YYY *f,FP12_YYY g[],sign32 b)
+static void FP12_YYY_select(FP12_YYY *f,const FP12_YYY g[],sign32 b)
 {
     FP12_YYY invf;
     sign32 m=b>>31;
@@ -53,14 +53,14 @@ static void FP12_YYY_select(FP12_YYY *f,FP12_YYY g[],sign32 b)
 
     FP12_YYY_copy(&invf,f);
     FP12_YYY_conj(&invf,&invf);  // 1/f
-    FP12_YYY_cmove(f,&invf,(int)(m&1));
+    FP12_YYY_cmove(f,&invf,m&1);
 }
 
 
 
 /* test x==0 ? */
 /* SU= 8 */
-int FP12_YYY_iszilch(FP12_YYY *x)
+int FP12_YYY_iszilch(const FP12_YYY *x)
 {
     if (FP4_YYY_iszilch(&(x->a)) && FP4_YYY_iszilch(&(x->b)) && FP4_YYY_iszilch(&(x->c))) return 1;
     return 0;
@@ -68,7 +68,7 @@ int FP12_YYY_iszilch(FP12_YYY *x)
 
 /* test x==1 ? */
 /* SU= 8 */
-int FP12_YYY_isunity(FP12_YYY *x)
+int FP12_YYY_isunity(const FP12_YYY *x)
 {
     if (FP4_YYY_isunity(&(x->a)) && FP4_YYY_iszilch(&(x->b)) && FP4_YYY_iszilch(&(x->c))) return 1;
     return 0;
@@ -76,7 +76,7 @@ int FP12_YYY_isunity(FP12_YYY *x)
 
 /* FP12 copy w=x */
 /* SU= 16 */
-void FP12_YYY_copy(FP12_YYY *w,FP12_YYY *x)
+void FP12_YYY_copy(FP12_YYY *w,const FP12_YYY *x)
 {
     if (x==w) return;
     FP4_YYY_copy(&(w->a),&(x->a));
@@ -105,7 +105,7 @@ void FP12_YYY_zero(FP12_YYY *w)
 
 /* return 1 if x==y, else 0 */
 /* SU= 16 */
-int FP12_YYY_equals(FP12_YYY *x,FP12_YYY *y)
+int FP12_YYY_equals(const FP12_YYY *x,const FP12_YYY *y)
 {
     if (FP4_YYY_equals(&(x->a),&(y->a)) && FP4_YYY_equals(&(x->b),&(y->b)) && FP4_YYY_equals(&(x->c),&(y->c)))
         return 1;
@@ -114,7 +114,7 @@ int FP12_YYY_equals(FP12_YYY *x,FP12_YYY *y)
 
 /* Set w=conj(x) */
 /* SU= 8 */
-void FP12_YYY_conj(FP12_YYY *w,FP12_YYY *x)
+void FP12_YYY_conj(FP12_YYY *w,const FP12_YYY *x)
 {
     FP12_YYY_copy(w,x);
     FP4_YYY_conj(&(w->a),&(w->a));
@@ -124,7 +124,7 @@ void FP12_YYY_conj(FP12_YYY *w,FP12_YYY *x)
 
 /* Create FP12 from FP4 */
 /* SU= 8 */
-void FP12_YYY_from_FP4(FP12_YYY *w,FP4_YYY *a)
+void FP12_YYY_from_FP4(FP12_YYY *w,const FP4_YYY *a)
 {
     FP4_YYY_copy(&(w->a),a);
     FP4_YYY_zero(&(w->b));
@@ -134,7 +134,7 @@ void FP12_YYY_from_FP4(FP12_YYY *w,FP4_YYY *a)
 
 /* Create FP12 from 3 FP4's */
 /* SU= 16 */
-void FP12_YYY_from_FP4s(FP12_YYY *w,FP4_YYY *a,FP4_YYY *b,FP4_YYY *c)
+void FP12_YYY_from_FP4s(FP12_YYY *w,const FP4_YYY *a,const FP4_YYY *b,const FP4_YYY *c)
 {
     FP4_YYY_copy(&(w->a),a);
     FP4_YYY_copy(&(w->b),b);
@@ -146,7 +146,10 @@ void FP12_YYY_from_FP4s(FP12_YYY *w,FP4_YYY *a,FP4_YYY *b,FP4_YYY *c)
 /* SU= 600 */
 void FP12_YYY_usqr(FP12_YYY *w,FP12_YYY *x)
 {
-    FP4_YYY A,B,C,D;
+    FP4_YYY A;
+    FP4_YYY B;
+    FP4_YYY C;
+    FP4_YYY D;
 
     FP4_YYY_copy(&A,&(x->a));
 
@@ -190,7 +193,10 @@ void FP12_YYY_sqr(FP12_YYY *w,FP12_YYY *x)
 {
     /* Use Chung-Hasan SQR2 method from http://cacr.uwaterloo.ca/techreports/2006/cacr2006-24.pdf */
 
-    FP4_YYY A,B,C,D;
+    FP4_YYY A;
+    FP4_YYY B;
+    FP4_YYY C;
+    FP4_YYY D;
 
     if (x->type<=AMCL_FP_UNITY)
     {
@@ -242,9 +248,14 @@ void FP12_YYY_sqr(FP12_YYY *w,FP12_YYY *x)
 
 /* SU= 896 */
 /* FP12 full multiplication w=w*y */
-void FP12_YYY_mul(FP12_YYY *w,FP12_YYY *y)
+void FP12_YYY_mul(FP12_YYY *w,const FP12_YYY *y)
 {
-    FP4_YYY z0,z1,z2,z3,t0,t1;
+    FP4_YYY z0;
+    FP4_YYY z1;
+    FP4_YYY z2;
+    FP4_YYY z3;
+    FP4_YYY t0;
+    FP4_YYY t1;
 
     FP4_YYY_mul(&z0,&(w->a),&(y->a));
     FP4_YYY_mul(&z2,&(w->b),&(y->b));  //
@@ -299,9 +310,14 @@ void FP12_YYY_mul(FP12_YYY *w,FP12_YYY *y)
 /* FP12 full multiplication w=w*y */
 /* Supports sparse multiplicands */
 /* Usually w is denser than y */
-void FP12_YYY_ssmul(FP12_YYY *w,FP12_YYY *y)
+void FP12_YYY_ssmul(FP12_YYY *w,const FP12_YYY *y)
 {
-    FP4_YYY z0,z1,z2,z3,t0,t1;
+    FP4_YYY z0;
+    FP4_YYY z1;
+    FP4_YYY z2;
+    FP4_YYY z3;
+    FP4_YYY t0;
+    FP4_YYY t1;
     if (w->type==AMCL_FP_UNITY)
     {
         FP12_YYY_copy(w,y);
@@ -477,12 +493,18 @@ void FP12_YYY_ssmul(FP12_YYY *w,FP12_YYY *y)
 /* FP12 multiplication w=w*y */
 /* catering for special case that arises from special form of ATE pairing line function */
 /* w and y are both sparser line functions - cost = 6m */
-void FP12_YYY_smul(FP12_YYY *w,FP12_YYY *y)
+void FP12_YYY_smul(FP12_YYY *w,const FP12_YYY *y)
 {
-    FP2_YYY w1,w2,w3,ta,tb,tc,td,te,t;
+    FP2_YYY w1;
+    FP2_YYY w2;
+    FP2_YYY w3;
+    FP2_YYY ta;
+    FP2_YYY tb;
+    FP2_YYY tc;
+    FP2_YYY td;
+    FP2_YYY te;
+    FP2_YYY t;
 
-//	if (type==D_TYPE)
-//	{
 #if SEXTIC_TWIST_ZZZ == D_TYPE
     FP2_YYY_mul(&w1,&(w->a).a,&(y->a).a); // A1.A2
     FP2_YYY_mul(&w2,&(w->a).b,&(y->a).b); // B1.B2
@@ -524,7 +546,7 @@ void FP12_YYY_smul(FP12_YYY *w,FP12_YYY *y)
     FP4_YYY_norm(&(w->a));
     FP4_YYY_norm(&(w->b));
 #endif
-//	} else {
+
 #if SEXTIC_TWIST_ZZZ == M_TYPE
     FP2_YYY_mul(&w1,&(w->a).a,&(y->a).a); // A1.A2
     FP2_YYY_mul(&w2,&(w->a).b,&(y->a).b); // B1.B2
@@ -581,7 +603,10 @@ void FP12_YYY_smul(FP12_YYY *w,FP12_YYY *y)
 /* SU= 600 */
 void FP12_YYY_inv(FP12_YYY *w,FP12_YYY *x)
 {
-    FP4_YYY f0,f1,f2,f3;
+    FP4_YYY f0;
+    FP4_YYY f1;
+    FP4_YYY f2;
+    FP4_YYY f3;
 
     FP4_YYY_sqr(&f0,&(x->a));
     FP4_YYY_mul(&f1,&(x->b),&(x->c));
@@ -622,13 +647,13 @@ void FP12_YYY_inv(FP12_YYY *w,FP12_YYY *x)
 
 void FP12_YYY_pinpow(FP12_YYY *r,int e,int bts)
 {
-    int i,b;
+    int b;
     FP12_YYY R[2];
 
     FP12_YYY_one(&R[0]);
     FP12_YYY_copy(&R[1],r);
 
-    for (i=bts-1; i>=0; i--)
+    for (int i=bts-1; i>=0; i--)
     {
         b=(e>>i)&1;
         FP12_YYY_mul(&R[1-b],&R[b]);
@@ -639,12 +664,18 @@ void FP12_YYY_pinpow(FP12_YYY *r,int e,int bts)
 
 /* Compressed powering of unitary elements y=x^(e mod r) */
 
-void FP12_YYY_compow(FP4_YYY *c,FP12_YYY *x,BIG_XXX e,BIG_XXX r)
+void FP12_YYY_compow(FP4_YYY *c,const FP12_YYY *x,const BIG_XXX e,const BIG_XXX r)
 {
-    FP12_YYY g1,g2;
-    FP4_YYY cp,cpm1,cpm2;
+    FP12_YYY g1;
+    FP12_YYY g2;
+    FP4_YYY cp;
+    FP4_YYY cpm1;
+    FP4_YYY cpm2;
     FP2_YYY f;
-    BIG_XXX q,a,b,m;
+    BIG_XXX q;
+    BIG_XXX a;
+    BIG_XXX b;
+    BIG_XXX m;
 
     BIG_XXX_rcopy(a,Fra_YYY);
     BIG_XXX_rcopy(b,Frb_YYY);
@@ -689,11 +720,14 @@ void FP12_YYY_compow(FP4_YYY *c,FP12_YYY *x,BIG_XXX e,BIG_XXX r)
 /* set r=a^b */
 /* Note this is simple square and multiply, so not side-channel safe */
 
-void FP12_YYY_pow(FP12_YYY *r,FP12_YYY *a,BIG_XXX b)
+void FP12_YYY_pow(FP12_YYY *r,const FP12_YYY *a,const BIG_XXX b)
 {
-    FP12_YYY w,sf;
-    BIG_XXX b1,b3;
-    int i,nb,bt;
+    FP12_YYY w;
+    FP12_YYY sf;
+    BIG_XXX b1;
+    BIG_XXX b3;
+    int nb;
+    int bt;
     BIG_XXX_copy(b1,b);
     BIG_XXX_norm(b1);
     BIG_XXX_pmul(b3,b1,3);
@@ -705,7 +739,7 @@ void FP12_YYY_pow(FP12_YYY *r,FP12_YYY *a,BIG_XXX b)
 
 
     nb=BIG_XXX_nbits(b3);
-    for (i=nb-2; i>=1; i--)
+    for (int i=nb-2; i>=1; i--)
     {
         FP12_YYY_usqr(&w,&w);
         bt=BIG_XXX_bit(b3,i)-BIG_XXX_bit(b1,i);
@@ -728,17 +762,22 @@ void FP12_YYY_pow(FP12_YYY *r,FP12_YYY *a,BIG_XXX b)
 // Bos & Costello https://eprint.iacr.org/2013/458.pdf
 // Faz-Hernandez & Longa & Sanchez  https://eprint.iacr.org/2013/158.pdf
 
-void FP12_YYY_pow4(FP12_YYY *p,FP12_YYY *q,BIG_XXX u[4])
+void FP12_YYY_pow4(FP12_YYY *p,const FP12_YYY *q,const BIG_XXX u[4])
 {
-    int i,j,k,nb,pb,bt;
-    FP12_YYY g[8],r;
-    BIG_XXX t[4],mt;
-    sign8 w[NLEN_XXX*BASEBITS_XXX+1];
+    int i;
+    int k;
+    int nb;
+    int pb;
+    int bt;
+    FP12_YYY g[8];
+    FP12_YYY r;
+    BIG_XXX t[4];
+    BIG_XXX mt;
+    sign8 w[NLEN_XXX*BASEBITS_XXX+1] = {0};
     sign8 s[NLEN_XXX*BASEBITS_XXX+1];
 
     for (i=0; i<4; i++)
         BIG_XXX_copy(t[i],u[i]);
-
 
 // Precomputed table
     FP12_YYY_copy(&g[0],&q[0]); // q[0]
@@ -775,15 +814,14 @@ void FP12_YYY_pow4(FP12_YYY *p,FP12_YYY *q,BIG_XXX u[4])
     for (i=0; i<nb-1; i++)
     {
         BIG_XXX_fshr(t[0],1);
-        s[i]=2*BIG_XXX_parity(t[0])-1;
+        s[i]=(signed char)(2*BIG_XXX_parity(t[0])-1);
     }
 
 // Recoded exponent
     for (i=0; i<nb; i++)
     {
-        w[i]=0;
         k=1;
-        for (j=1; j<4; j++)
+        for (int j=1; j<4; j++)
         {
             bt=s[i]*BIG_XXX_parity(t[j]);
             BIG_XXX_fshr(t[j],1);
@@ -809,13 +847,18 @@ void FP12_YYY_pow4(FP12_YYY *p,FP12_YYY *q,BIG_XXX u[4])
     FP12_YYY_cmove(p,&r,pb);
 
     FP12_YYY_reduce(p);
+
+    // zeroization
+    for (i=0; i<4; i++)
+        BIG_XXX_zero(t[i]);
 }
 
 /* Set w=w^p using Frobenius */
 /* SU= 160 */
-void FP12_YYY_frob(FP12_YYY *w,FP2_YYY *f)
+void FP12_YYY_frob(FP12_YYY *w,const FP2_YYY *f)
 {
-    FP2_YYY f2,f3;
+    FP2_YYY f2;
+    FP2_YYY f3;
     FP2_YYY_sqr(&f2,f);     /* f2=f^2 */
     FP2_YYY_mul(&f3,&f2,f); /* f3=f^3 */
 
@@ -848,7 +891,7 @@ void FP12_YYY_reduce(FP12_YYY *w)
 
 /* trace function w=trace(x) */
 /* SU= 8 */
-void FP12_YYY_trace(FP4_YYY *w,FP12_YYY *x)
+void FP12_YYY_trace(FP4_YYY *w,const FP12_YYY *x)
 {
     FP4_YYY_imul(w,&(x->a),3);
     FP4_YYY_reduce(w);
@@ -869,7 +912,7 @@ void FP12_YYY_output(FP12_YYY *w)
 
 /* SU= 64 */
 /* Convert g to octet string w */
-void FP12_YYY_toOctet(octet *W,FP12_YYY *g)
+void FP12_YYY_toOctet(octet *W,const FP12_YYY *g)
 {
     BIG_XXX a;
     W->len=12*MODBYTES_XXX;
@@ -902,7 +945,7 @@ void FP12_YYY_toOctet(octet *W,FP12_YYY *g)
 
 /* SU= 24 */
 /* Restore g from octet string w */
-void FP12_YYY_fromOctet(FP12_YYY *g,octet *W)
+void FP12_YYY_fromOctet(FP12_YYY *g,const octet *W)
 {
     BIG_XXX b;
     BIG_XXX_fromBytes(b,&W->val[0]);
@@ -932,7 +975,7 @@ void FP12_YYY_fromOctet(FP12_YYY *g,octet *W)
 }
 
 /* Move b to a if d=1 */
-void FP12_YYY_cmove(FP12_YYY *f,FP12_YYY *g,int d)
+void FP12_YYY_cmove(FP12_YYY *f,const FP12_YYY *g,int d)
 {
     FP4_YYY_cmove(&(f->a),&(g->a),d);
     FP4_YYY_cmove(&(f->b),&(g->b),d);

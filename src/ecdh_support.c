@@ -19,20 +19,18 @@ under the License.
 
 /* Symmetric crypto support functions Functions  */
 
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#include <time.h>
-
 #include "ecdh_support.h"
 
 #define ROUNDUP(a,b) ((a)-1)/(b)+1
 
 /* general purpose hash function w=hash(p|n|x|y) */
-/* pad or truncate ouput to length pad if pad!=0 */
-void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad)
+/* pad or truncate output to length pad if pad!=0 */
+void ehashit(int sha,const octet *p,int n,const octet *x,octet *w,int pad)
 {
-    int i,c[4],hlen;
+    int i;
+    int c[4];
+    int hlen;
     hash256 sha256;
     hash512 sha512;
     char hh[64];
@@ -47,6 +45,8 @@ void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad)
         break;
     case SHA512:
         HASH512_init(&sha512);
+        break;
+    default:
         break;
     }
 
@@ -65,6 +65,8 @@ void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad)
         case SHA512:
             HASH512_process(&sha512,p->val[i]);
             break;
+        default:
+            break;
         }
     }
     if (n>0)
@@ -72,7 +74,7 @@ void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad)
         c[0]=(n>>24)&0xff;
         c[1]=(n>>16)&0xff;
         c[2]=(n>>8)&0xff;
-        c[3]=(n)&0xff;
+        c[3]=n&0xff;
         for (i=0; i<4; i++)
         {
             switch(sha)
@@ -85,6 +87,8 @@ void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad)
                 break;
             case SHA512:
                 HASH512_process(&sha512,c[i]);
+                break;
+            default:
                 break;
             }
         }
@@ -102,6 +106,8 @@ void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad)
             case SHA512:
                 HASH512_process(&sha512,x->val[i]);
                 break;
+            default:
+                break;
             }
         }
 
@@ -116,6 +122,8 @@ void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad)
     case SHA512:
         HASH512_hash(&sha512,hh);
         break;
+    default:
+        break;
     }
 
     OCT_empty(w);
@@ -129,28 +137,27 @@ void ehashit(int sha,octet *p,int n,octet *x,octet *w,int pad)
         {
             OCT_jbyte(w,0,pad-hlen);
             OCT_jbytes(w,hh,hlen);
-
-//            OCT_jbytes(w,hh,hlen);
-//            OCT_jbyte(w,0,pad-hlen);
         }
     }
     return;
 }
 
 /* Hash octet p to octet w */
-void HASH(int sha,octet *p,octet *w)
+void HASH(int sha,const octet *p,octet *w)
 {
     ehashit(sha,p,-1,NULL,w,0);
 }
 
 /* Calculate HMAC of m using key k. HMAC is tag of length olen */
-int HMAC(int sha,octet *m,octet *k,int olen,octet *tag)
+int HMAC(int sha,const octet *m,const octet *k,int olen,octet *tag)
 {
     /* Input is from an octet m        *
      * olen is requested output length in bytes. k is the key  *
      * The output is the calculated tag */
-    int hlen,b;
-    char h[128],k0[128];
+    int hlen;
+    int b;
+    char h[128];
+    char k0[128];
     octet H= {0,sizeof(h),h};
     octet K0= {0,sizeof(k0),k0};
 
@@ -179,19 +186,19 @@ int HMAC(int sha,octet *m,octet *k,int olen,octet *tag)
     return 1;
 }
 
-void KDF2(int sha,octet *z,octet *p,int olen,octet *key)
+void KDF2(int sha,const octet *z,const octet *p,int olen,octet *key)
 {
     /* NOTE: the parameter olen is the length of the output k in bytes */
     char h[64];
     octet H= {0,sizeof(h),h};
-    int counter,cthreshold;
+    int cthreshold;
     int hlen=sha;
 
     OCT_empty(key);
 
     cthreshold=ROUNDUP(olen,hlen);
 
-    for (counter=1; counter<=cthreshold; counter++)
+    for (int counter=1; counter<=cthreshold; counter++)
     {
         ehashit(sha,z,counter,p,&H,0);
         if (key->len+hlen>olen)  OCT_jbytes(key,H.val,olen%hlen);
@@ -203,15 +210,17 @@ void KDF2(int sha,octet *z,octet *p,int olen,octet *key)
 /* Password based Key Derivation Function */
 /* Input password p, salt s, and repeat count */
 /* Output key of length olen */
-void PBKDF2(int sha,octet *p,octet *s,int rep,int olen,octet *key)
+void PBKDF2(int sha,const octet *p,octet *s,int rep,int olen,octet *key)
 {
-    int i,j,len,d=ROUNDUP(olen,sha);
-    char f[64],u[64];
+    int len;
+    int d=ROUNDUP(olen,sha);
+    char f[64];
+    char u[64];
     octet F= {0,sizeof(f),f};
     octet U= {0,sizeof(u),u};
     OCT_empty(key);
 
-    for (i=1; i<=d; i++)
+    for (int i=1; i<=d; i++)
     {
         len=s->len;
         OCT_jint(s,i,4);
@@ -220,7 +229,7 @@ void PBKDF2(int sha,octet *p,octet *s,int rep,int olen,octet *key)
 
         s->len=len;
         OCT_copy(&U,&F);
-        for (j=2; j<=rep; j++)
+        for (int j=2; j<=rep; j++)
         {
             HMAC(sha,&U,p,sha,&U);
             OCT_xor(&F,&U);
@@ -233,14 +242,16 @@ void PBKDF2(int sha,octet *p,octet *s,int rep,int olen,octet *key)
 }
 
 /* AES encryption/decryption. Encrypt byte array M using key K and returns ciphertext */
-void AES_CBC_IV0_ENCRYPT(octet *k,octet *m,octet *c)
+void AES_CBC_IV0_ENCRYPT(octet *k,const octet *m,octet *c)
 {
     /* AES CBC encryption, with Null IV and key k */
     /* Input is from an octet string m, output is to an octet string c */
     /* Input is padded as necessary to make up a full final block */
     amcl_aes a;
     int fin;
-    int i,j,ipt,opt;
+    int i;
+    int ipt;
+    int opt;
     char buff[16];
     int padlen;
 
@@ -270,7 +281,7 @@ void AES_CBC_IV0_ENCRYPT(octet *k,octet *m,octet *c)
     /* last block, filled up to i-th index */
 
     padlen=16-i;
-    for (j=i; j<16; j++) buff[j]=padlen;
+    for (int j=i; j<16; j++) buff[j]=(char)padlen;
     AES_encrypt(&a,buff);
     for (i=0; i<16; i++)
         if (opt<c->max) c->val[opt++]=buff[i];
@@ -279,13 +290,17 @@ void AES_CBC_IV0_ENCRYPT(octet *k,octet *m,octet *c)
 }
 
 /* decrypts and returns TRUE if all consistent, else returns FALSE */
-int AES_CBC_IV0_DECRYPT(octet *k,octet *c,octet *m)
+int AES_CBC_IV0_DECRYPT(octet *k,const octet *c,octet *m)
 {
     /* padding is removed */
     amcl_aes a;
-    int i,ipt,opt,ch;
+    int i;
+    int ipt;
+    int opt;
+    int ch;
     char buff[16];
-    int fin,bad;
+    int fin;
+    int bad;
     int padlen;
     ipt=opt=0;
 
@@ -300,7 +315,7 @@ int AES_CBC_IV0_DECRYPT(octet *k,octet *c,octet *m)
     {
         for (i=0; i<16; i++)
         {
-            buff[i]=ch;
+            buff[i]=(char)ch;
             if (ipt>=c->len)
             {
                 fin=1;

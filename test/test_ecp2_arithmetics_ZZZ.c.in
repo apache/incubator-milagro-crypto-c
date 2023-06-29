@@ -34,24 +34,30 @@
 #define LINE_LEN 1000
 #define MAX_STRING 1000
 
-void read_BIG_XXX(BIG_XXX A, char* string)
+void read_BIG_XXX(BIG_XXX A, const char* string)
 {
-    int len;
+    unsigned long len;
     char bin[LINE_LEN];
     BIG_XXX_zero(A);
     len = strlen(string)+1;
     amcl_hex2bin(string,bin,len);
-    len = (len-1)/2;;
-    BIG_XXX_fromBytesLen(A,bin,len);
+    len = (len-1)/2;
+    BIG_XXX_fromBytesLen(A,bin,(int)len);
     BIG_XXX_norm(A);
 }
 
 
-int read_ECP2_ZZZ(ECP2_ZZZ *ecp2, char* stringx1)
+int read_ECP2_ZZZ(ECP2_ZZZ *ecp2, const char* stringx1)
 {
-    char *stringx2, *stringy1, *stringy2;
-    BIG_XXX x1,x2,y1,y2;
-    FP2_YYY x,y;
+    char *stringx2;
+    char *stringy1;
+    char *stringy2;
+    BIG_XXX x1;
+    BIG_XXX x2;
+    BIG_XXX y1;
+    BIG_XXX y2;
+    FP2_YYY x;
+    FP2_YYY y;
 
     stringx2 = strchr(stringx1,':');
     stringx2[0] = '\0';
@@ -82,13 +88,17 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    int i=0, len=0;
+    int i=0;
+    unsigned long len=0;
 
     char line[LINE_LEN];
-    char * linePtr = NULL;
+    const char * linePtr = NULL;
 
-    ECP2_ZZZ ECP2aux1, ECP2aux2, inf;
-    FP2_YYY FP2aux1,FP2aux2;
+    ECP2_ZZZ ECP2aux1;
+    ECP2_ZZZ ECP2aux2;
+    ECP2_ZZZ inf;
+    FP2_YYY FP2aux1;
+    FP2_YYY FP2aux2;
 
     char oct[LINE_LEN];
     octet OCTaux= {0,sizeof(oct),oct};

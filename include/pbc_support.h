@@ -39,7 +39,7 @@ under the License.
 	@param x octect involved in the h ash
 	@param w output
  */
-extern void mhashit(int sha,int n,octet *x,octet *w);
+extern void mhashit(int sha,int n,const octet *x,octet *w);
 
 /**	@brief Supply today's date as days from the epoch
  *
@@ -57,14 +57,14 @@ unsign32 today(void);
 	@param W is the server part response
 	@param H the output is the hash of all of the above that apply
 */
-void HASH_ALL(int h,octet *I,octet *U,octet *CU,octet *Y,octet *V,octet *R,octet *W,octet *H);
+void HASH_ALL(int h,const octet *I,const octet *U,const octet *CU,const octet *Y,const octet *V,const octet *R,const octet *W,octet *H);
 /**	@brief Hash an M-Pin Identity to an octet string
  *
  	@param h is the hash type
 	@param ID an octet containing the identity
 	@param HID an octet containing the hashed identity
  */
-void HASH_ID(int h,octet *ID,octet *HID);
+void HASH_ID(int h,const octet *ID,octet *HID);
 /**	@brief Get epoch time as unsigned integer
  *
 	@return current epoch time in seconds
@@ -79,7 +79,7 @@ unsign32 GET_TIME(void);
 	@param C Ciphertext
 	@param T Checksum
  */
-void AES_GCM_ENCRYPT(octet *K,octet *IV,octet *H,octet *P,octet *C,octet *T);
+void AES_GCM_ENCRYPT(octet *K,const octet *IV,const octet *H,const octet *P,octet *C,octet *T);
 
 /**	@brief AES-GCM Decryption
  *
@@ -90,7 +90,7 @@ void AES_GCM_ENCRYPT(octet *K,octet *IV,octet *H,octet *P,octet *C,octet *T);
 	@param C Ciphertext
 	@param T Checksum
  */
-void AES_GCM_DECRYPT(octet *K,octet *IV,octet *H,octet *C,octet *P,octet *T);
+void AES_GCM_DECRYPT(octet *K,const octet *IV,const octet *H,const octet *C,octet *P,octet *T);
 
 
 #endif

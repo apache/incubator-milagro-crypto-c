@@ -30,13 +30,15 @@
 #include "fp2_YYY.h"
 #include "config_curve_ZZZ.h"
 
+#define ERR_NULLPOINTER_ECP2 0x00000081
+
 /**
 	@brief ECP2 Structure - Elliptic Curve Point over quadratic extension field
 */
 
 typedef struct
 {
-//    int inf; /**< Infinity Flag */
+//    int inf;  //Infinity Flag
     FP2_YYY x;   /**< x-coordinate of point */
     FP2_YYY y;   /**< y-coordinate of point */
     FP2_YYY z;   /**< z-coordinate of point */
@@ -67,19 +69,27 @@ extern const BIG_XXX CURVE_Pxb_ZZZ; /**< imaginary part of x-coordinate of gener
 extern const BIG_XXX CURVE_Pya_ZZZ; /**< real part of y-coordinate of generator point in group G2 */
 extern const BIG_XXX CURVE_Pyb_ZZZ; /**< imaginary part of y-coordinate of generator point in group G2 */
 
+/* For SSWU with AB == 0 */
+extern const BIG_XXX SSWU_A2re_ZZZ; /**< Parameter A' (real part) of the Weierstrass curve for 3-isogeny for BLS12-381 G2 */
+extern const BIG_XXX SSWU_A2im_ZZZ; /**< Parameter A' (imaginary part) of the Weierstrass curve for 3-isogeny for BLS12-381 G2 */
+extern const BIG_XXX SSWU_B2re_ZZZ; /**< Parameter B' (real part) of the Weierstrass curve for 3-isogeny for BLS12-381 G2 */
+extern const BIG_XXX SSWU_B2im_ZZZ; /**< Parameter B' (imaginary part) of the Weierstrass curve for 3-isogeny for BLS12-381 G2 */
+extern const BIG_XXX SSWU_Z2re_ZZZ; /**< A non-zero element (real part) of finite field for EC mapping */
+extern const BIG_XXX SSWU_Z2im_ZZZ; /**< A non-zero element (imaginary part) of finite field for EC mapping */
+
 /* ECP2 E(Fp2) prototypes */
 /**	@brief Tests for ECP2 point equal to infinity
  *
 	@param P ECP2 point to be tested
 	@return 1 if infinity, else returns 0
  */
-extern int ECP2_ZZZ_isinf(ECP2_ZZZ *P);
+extern int ECP2_ZZZ_isinf(const ECP2_ZZZ *P);
 /**	@brief Copy ECP2 point to another ECP2 point
  *
 	@param P ECP2 instance, on exit = Q
 	@param Q ECP2 instance to be copied
  */
-extern void ECP2_ZZZ_copy(ECP2_ZZZ *P,ECP2_ZZZ *Q);
+extern void ECP2_ZZZ_copy(ECP2_ZZZ *P,const ECP2_ZZZ *Q);
 /**	@brief Set ECP2 to point-at-infinity
  *
 	@param P ECP2 instance to be set to infinity
@@ -105,17 +115,17 @@ extern void ECP2_ZZZ_affine(ECP2_ZZZ *P);
 	@param P ECP2 instance (x,y)
 	@return -1 if P is point-at-infinity, else 0
  */
-extern int ECP2_ZZZ_get(FP2_YYY *x,FP2_YYY *y,ECP2_ZZZ *P);
+extern int ECP2_ZZZ_get(FP2_YYY *x,FP2_YYY *y,const ECP2_ZZZ *P);
 /**	@brief Formats and outputs an ECP2 point to the console, converted to affine coordinates
  *
 	@param P ECP2 instance to be printed
  */
-extern void ECP2_ZZZ_output(ECP2_ZZZ *P);
+extern void ECP2_ZZZ_output(const ECP2_ZZZ *P);
 /**	@brief Formats and outputs an ECP2 point to the console, in projective coordinates
  *
 	@param P ECP2 instance to be printed
  */
-extern void ECP2_ZZZ_outputxyz(ECP2_ZZZ *P);
+extern void ECP2_ZZZ_outputxyz(const ECP2_ZZZ *P);
 /**	@brief Formats and outputs an ECP2 point to an octet string
  *
 	The octet string is created in the form x|y.
@@ -123,7 +133,7 @@ extern void ECP2_ZZZ_outputxyz(ECP2_ZZZ *P);
 	@param S output octet string
 	@param P ECP2 instance to be converted to an octet string
  */
-extern void ECP2_ZZZ_toOctet(octet *S,ECP2_ZZZ *P);
+extern void ECP2_ZZZ_toOctet(octet *S,const ECP2_ZZZ *P);
 /**	@brief Creates an ECP2 point from an octet string
  *
 	The octet string is in the form x|y
@@ -132,7 +142,7 @@ extern void ECP2_ZZZ_toOctet(octet *S,ECP2_ZZZ *P);
 	@param S input octet string
 	return 1 if octet string corresponds to a point on the curve, else 0
  */
-extern int ECP2_ZZZ_fromOctet(ECP2_ZZZ *P,octet *S);
+extern int ECP2_ZZZ_fromOctet(ECP2_ZZZ *P,const octet *S);
 /**	@brief Calculate Right Hand Side of curve equation y^2=f(x)
  *
 	Function f(x)=x^3+Ax+B
@@ -140,7 +150,7 @@ extern int ECP2_ZZZ_fromOctet(ECP2_ZZZ *P,octet *S);
 	@param r FP2 value of f(x)
 	@param x FP2 instance
  */
-extern void ECP2_ZZZ_rhs(FP2_YYY *r,FP2_YYY *x);
+extern void ECP2_ZZZ_rhs(FP2_YYY *r,const FP2_YYY *x);
 /**	@brief Set ECP2 to point(x,y) given x and y
  *
 	Point P set to infinity if no such point on the curve.
@@ -149,7 +159,7 @@ extern void ECP2_ZZZ_rhs(FP2_YYY *r,FP2_YYY *x);
 	@param y FP2 y coordinate of point
 	@return 1 if point exists, else 0
  */
-extern int ECP2_ZZZ_set(ECP2_ZZZ *P,FP2_YYY *x,FP2_YYY *y);
+extern int ECP2_ZZZ_set(ECP2_ZZZ *P,const FP2_YYY *x,const FP2_YYY *y);
 /**	@brief Set ECP to point(x,[y]) given x
  *
 	Point P set to infinity if no such point on the curve. Otherwise y coordinate is calculated from x.
@@ -157,7 +167,7 @@ extern int ECP2_ZZZ_set(ECP2_ZZZ *P,FP2_YYY *x,FP2_YYY *y);
 	@param x BIG x coordinate of point
 	@return 1 if point exists, else 0
  */
-extern int ECP2_ZZZ_setx(ECP2_ZZZ *P,FP2_YYY *x);
+extern int ECP2_ZZZ_setx(ECP2_ZZZ *P,const FP2_YYY *x);
 /**	@brief Negation of an ECP2 point
  *
 	@param P ECP2 instance, on exit = -P
@@ -173,13 +183,13 @@ extern int ECP2_ZZZ_dbl(ECP2_ZZZ *P);
 	@param P ECP2 instance, on exit =P+Q
 	@param Q ECP2 instance to be added to P
  */
-extern int ECP2_ZZZ_add(ECP2_ZZZ *P,ECP2_ZZZ *Q);
+extern int ECP2_ZZZ_add(ECP2_ZZZ *P,const ECP2_ZZZ *Q);
 /**	@brief Subtracts ECP instance Q from ECP2 instance P
  *
 	@param P ECP2 instance, on exit =P-Q
 	@param Q ECP2 instance to be subtracted from P
  */
-extern void ECP2_ZZZ_sub(ECP2_ZZZ *P,ECP2_ZZZ *Q);
+extern void ECP2_ZZZ_sub(ECP2_ZZZ *P,const ECP2_ZZZ *Q);
 /**	@brief Multiplies an ECP2 instance P by a BIG, side-channel resistant
  *
 	Uses fixed sized windows.
@@ -187,7 +197,7 @@ extern void ECP2_ZZZ_sub(ECP2_ZZZ *P,ECP2_ZZZ *Q);
 	@param b BIG number multiplier
 
  */
-extern void ECP2_ZZZ_mul(ECP2_ZZZ *P,BIG_XXX b);
+extern void ECP2_ZZZ_mul(ECP2_ZZZ *P,const BIG_XXX b);
 /**	@brief Multiplies an ECP2 instance P by the internal modulus p, using precalculated Frobenius constant f
  *
 	Fast point multiplication using Frobenius
@@ -202,19 +212,36 @@ extern void ECP2_ZZZ_frob(ECP2_ZZZ *P,FP2_YYY *f);
 	@param Q ECP2 array of 4 points
 	@param b BIG array of 4 multipliers
  */
-extern void ECP2_ZZZ_mul4(ECP2_ZZZ *P,ECP2_ZZZ *Q,BIG_XXX *b);
+extern void ECP2_ZZZ_mul4(ECP2_ZZZ *P,const ECP2_ZZZ Q[4],const BIG_XXX b[4]);
 
 /**	@brief Maps random BIG to curve point of correct order
  *
 	@param P ECP2 instance of correct order
 	@param w OCTET byte array to be mapped
  */
-extern void ECP2_ZZZ_mapit(ECP2_ZZZ *P,octet *w);
+extern void ECP2_ZZZ_mapit(ECP2_ZZZ *P,const octet *w);
 
 /**	@brief Get Group Generator from ROM
  *
 	@param G ECP2 instance
  */
 extern void ECP2_ZZZ_generator(ECP2_ZZZ *G);
+
+/**
+ * @brief Maps a quadratic extension field element to an ECP2 using Simplified Shallue-van de Woestijne-Ulas (SSWU) method as defined at
+ * https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#name-simplified-swu-for-ab-0.
+ * 
+ * @param x x-coordinate of output ECP2
+ * @param y y-coordinate of output ECP2
+ * @param u Input quadratic extension field element
+ */
+extern int ECP2_ZZZ_sswu(FP2_YYY *x, FP2_YYY *y, FP2_YYY u);
+
+/**
+ * @brief Cofactor clearing 
+ * 
+ * @param P Input/output point
+ */
+extern int ECP2_ZZZ_clearcofactor(ECP2_ZZZ *P);
 
 #endif

@@ -1,0 +1,439 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+*/
+
+/**
+ * @file bls_ietf_ZZZ.h
+ *
+ * @author Alexandre Adomnicai
+ *
+ * @date December 2022
+ *
+ * @brief BLS Header file IETF-compliant according to https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-05
+ *
+ */
+
+#ifndef BLS_IETF_ZZZ_H
+#define BLS_IETF_ZZZ_H
+
+#include "pair_ZZZ.h"
+
+#if CURVE_SECURITY_ZZZ == 128
+#define SK_LEN      32
+#else
+#error "IETF-compliant BLS currently only supports 128-bit security level (i.e. BLS12-381)"
+#endif
+
+/* Field size is assumed to be greater than or equal to group size */
+
+#define BGS_ZZZ MODBYTES_XXX  /**< BLS Group Size */
+#define BFS_ZZZ MODBYTES_XXX  /**< BLS Field Size */
+
+#define SUCCESS               0x00000000
+#define ERR_NULLPOINTER_BLS   0x00000201
+#define ERR_BADARGLEN_BLS     0x00000202
+#define ERR_BADENCODING_BLS   0x00000203
+#define ERR_NOTONCURVE_BLS    0x00000204
+#define ERR_BADSIGNATURE_BLS  0x00000205
+#define ERR_INVALIDPUBKEY_BLS 0x00000206
+#define ERR_BADPOP_BLS        0x00000207
+
+extern const BIG_XXX ISO11_XNUM_BLS381[12]; /**< constants used to compute x_num for the 11-isogeny map for BLS12-381 G1 */
+extern const BIG_XXX ISO11_XDEN_BLS381[11]; /**< constants used to compute x_den for the 11-isogeny map for BLS12-381 G1 */
+extern const BIG_XXX ISO11_YNUM_BLS381[16]; /**< constants used to compute y_num for the 11-isogeny map for BLS12-381 G1 */
+extern const BIG_XXX ISO11_YDEN_BLS381[16]; /**< constants used to compute y_den for the 11-isogeny map for BLS12-381 G1 */
+
+extern const BIG_XXX ISO3_XNUMre_BLS381[4]; /**< constants used to compute x_num for the 3-isogeny map for BLS12-381 G2 */
+extern const BIG_XXX ISO3_XNUMim_BLS381[4]; /**< constants used to compute x_num for the 3-isogeny map for BLS12-381 G2 */
+extern const BIG_XXX ISO3_XDENre_BLS381[2]; /**< constants used to compute x_den for the 3-isogeny map for BLS12-381 G2 */
+extern const BIG_XXX ISO3_XDENim_BLS381[2]; /**< constants used to compute x_den for the 3-isogeny map for BLS12-381 G2 */
+extern const BIG_XXX ISO3_YNUMre_BLS381[4]; /**< constants used to compute y_num for the 3-isogeny map for BLS12-381 G2 */
+extern const BIG_XXX ISO3_YNUMim_BLS381[4]; /**< constants used to compute y_num for the 3-isogeny map for BLS12-381 G2 */
+extern const BIG_XXX ISO3_YDENre_BLS381[3]; /**< constants used to compute y_den for the 3-isogeny map for BLS12-381 G2 */
+extern const BIG_XXX ISO3_YDENim_BLS381[3]; /**< constants used to compute y_den for the 3-isogeny map for BLS12-381 G2 */
+
+/* BLS API functions */
+
+/**
+ * @brief Generation of a BLS secret key according to the RFC draft (Section 2.3).
+ *
+ * @param sk      Output secret key
+ * @param ikm     Secret input keying material
+ * @param ikmlen  Input keying material length in bytes (>= 32)
+ * @param salt    Salt value
+ * @param saltlen Salt length in bytes (>= 0)
+ * @param info    Optional octet string (empty string if omitted)
+ * @param infolen Info length in bytes (>= 0)
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_keygen(char sk[SK_LEN],
+  const char *ikm,  unsigned int ikmlen,
+  const char *salt, unsigned int saltlen,
+  const char *info, unsigned int infolen);
+
+/**
+ * @brief Derivation of a BLS public key in G1 (i.e. minimal-pubkey-size setting)
+ * from a secret key according to the RFC draft (Section 2.4).
+ *
+ * @param pk Output public key
+ * @param sk Secret key
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_sk_to_pk_G1(ECP_ZZZ *pk, const char *sk);
+
+/**
+ * @brief Derivation of a BLS public key in G2 (i.e. minimal-sig-size setting)
+ * from a secret key according to the RFC draft (Section 2.4).
+ *
+ * @param pk Output public key
+ * @param sk Secret key
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_sk_to_pk_G2(ECP2_ZZZ *pk, const char *sk);
+
+/**
+ * @brief Serialization of a point in G1 into an octet string.
+ * Same as ECP_ZZZ_toOctet but the order differs to match the Zcash
+ * serialization format: FP elements are encoded in big-endian format
+ * (i.e. imaginary|real) while ECP2_ZZZ_toOctet uses little-endian
+ * (i.e. real|imaginary).
+ *
+ * @param bytes Output octet string
+ * @param point Point in G1
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_serialize_G1(octet *bytes, const ECP_ZZZ *point);
+
+/**
+ * @brief Serialization of a point in G2 into an octet string.
+ * Same as ECP_ZZZ_fromOctet but the order differs to match the Zcash
+ * serialization format: FP elements are encoded in big-endian format
+ * (i.e. imaginary|real) while ECP_ZZZ_fromOctet uses little-endian
+ * (i.e. real|imaginary).
+ *
+ * @param point Output Point in G1
+ * @param bytes octet string
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_deserialize_G1(ECP_ZZZ *point, const octet *bytes);
+
+/**
+ * @brief Serialization of a point in G2 into an octet string.
+ * Same as ECP2_ZZZ_toOctet but the order differs to match the Zcash
+ * serialization format: FP elements are encoded in big-endian format
+ * (i.e. imaginary|real) while ECP2_ZZZ_toOctet uses little-endian
+ * (i.e. real|imaginary).
+ *
+ * @param bytes Output octet string
+ * @param point Point in G2
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_serialize_G2(octet *bytes, const ECP2_ZZZ *point);
+
+/**
+ * @brief Deserialization of an octet string into a point in G2.
+ * Same as ECP2_ZZZ_fromOctet but the order differs to match the Zcash
+ * serialization format: FP elements are encoded in big-endian format
+ * (i.e. imaginary|real) while ECP2_ZZZ_fromOctet uses little-endian
+ * (i.e. real|imaginary).
+ *
+ * @param point Output Point in G2
+ * @param bytes octet string
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_deserialize_G2(ECP2_ZZZ *point, const octet *bytes);
+
+/**
+ * @brief Compression of a point in G1 into an octet string.
+ * The most-significant 3 bits are encoded according to ZCash serialization format:
+ * https://github.com/zkcrypto/pairing/blob/34aa52b0f7bef705917252ea63e5a13fa01af551/src/bls12_381/README.md#serialization
+ *
+ * @param bytes Output octet string
+ * @param point Point in G1
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_compress_G1(octet *bytes, const ECP_ZZZ *point);
+
+/**
+ * @brief Uncompression of a compressed point in G1.
+ *
+ * @param point Output uncompressed point in G1
+ * @param bytes Compressed point in G1
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_uncompress_G1(ECP_ZZZ *point, const octet *bytes);
+
+/**
+ * @brief Compression of a point in G2 into an octet string.
+ * The most-significant 3 bits are encoded according to ZCash serialization format:
+ * https://github.com/zkcrypto/pairing/blob/34aa52b0f7bef705917252ea63e5a13fa01af551/src/bls12_381/README.md#serialization
+ *
+ * @param bytes Output octet string
+ * @param point Point in G2
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_compress_G2(octet *bytes, const ECP2_ZZZ *point);
+
+/**
+ * @brief Uncompression of a compressed point in G2.
+ *
+ * @param point Output uncompressed point in G2
+ * @param bytes Compressed point in G2
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_uncompress_G2(ECP2_ZZZ *point, const octet *bytes);
+
+/**
+ * @brief Hash a byte string into an elliptic curve point on G1 using an uniform encoding type.
+ *
+ * @param P Output point
+ * @param msg Input byte string
+ * @param dst Domain separation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_hash2curve_G1(ECP_ZZZ *P, const octet* msg, const octet* dst);
+
+/**
+ * @brief Hash a byte string into an elliptic curve point on G1 using a non-uniform encoding type.
+ *
+ * @param P Output point
+ * @param msg Input byte string
+ * @param dst Domain seperation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_encode2curve_G1(ECP_ZZZ *P, const octet* msg, const octet* dst);
+
+/**
+ * @brief Hash a byte string into an elliptic curve point on G2 using an uniform encoding type.
+ *
+ * @param P Output point
+ * @param msg Input byte string
+ * @param dst Domain seperation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_hash2curve_G2(ECP2_ZZZ *P, const octet* msg, const octet* dst);
+
+/**
+ * @brief Hash a byte string into an elliptic curve point on G2 using a non-uniform encoding type.
+ *
+ * @param P Output point
+ * @param msg Input byte string
+ * @param dst Domain seperation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_encode2curve_G2(ECP2_ZZZ *P, const octet* msg, const octet* dst);
+
+/**
+ * @brief Generate a signature in the minimal-signature-size setting. Note that
+ * the output signature is in the compressed serialization formats as stated in
+ * https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#appendix-A.
+ *
+ * @param sig Output signature
+ * @param sk Private key
+ * @param msg Message to sign
+ * @param dst Domain separation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_core_sign_G1(octet *sig, const char *sk, const octet *msg, const octet *dst);
+
+/**
+ * @brief Generate a signature in the minimal-pubkey-size setting. Note that
+ * the output signature is in the compressed serialization formats as stated in
+ * https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#appendix-A.
+ *
+ * @param sig Output signature
+ * @param sk Private key
+ * @param msg Message to sign
+ * @param dst Domain separation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_core_sign_G2(octet *sig, const char *sk, const octet *msg, const octet *dst);
+
+/**
+ * @brief Verify a signature in the minimal-signature-size setting.
+ *
+ * @param sig Signature
+ * @param pk Public key in G2
+ * @param msg Signed message
+ * @param dst Domain separation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_core_verify_G1(const octet *sig, const ECP2_ZZZ *PK, const octet *msg, const octet *dst);
+
+/**
+ * @brief Verify a signature in the minimal-pubkey-size setting.
+ *
+ * @param sig Signature
+ * @param pk Public key in G1
+ * @param msg Signed message
+ * @param dst Domain separation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_core_verify_G2(const octet *sig, const ECP_ZZZ *PK, const octet *msg, const octet *dst);
+
+/**
+ * @brief Aggregate multiple signatures into a single one in the minimal-signature-size setting.
+ * Note that the output signature is in the compressed serialization formats as stated in
+ * https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#appendix-A.
+ *
+ * @param out Output signature
+ * @param in Input signatures to aggregate
+ * @param n Number of input signatures
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_aggregate_G1(octet *out, const octet *in, unsigned int n);
+
+/**
+ * @brief Aggregate multiple signatures into a single one in the minimal-pubkey-size setting.
+ * Note that the output signature is in the compressed serialization formats as stated in
+ * https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#appendix-A.
+ *
+ * @param out Output signature
+ * @param in Input signatures to aggregate
+ * @param n Number of input signatures
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_aggregate_G2(octet *out, const octet *in, unsigned int n);
+
+/**
+ * @brief Verify an aggregated signature in the minimal-signature-size setting.
+ *
+ * @param sig Aggregated signature
+ * @param pk Public keys in G2
+ * @param msg Signed messages
+ * @param n Number of public keys/messages
+ * @param dst Domain separation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_core_aggregate_verify_G1(const octet *sig, const ECP2_ZZZ PK[], const octet msg[], unsigned int n, const octet *dst);
+
+/**
+ * @brief Verify an aggregated signature in the minimal-pubkey-size setting.
+ *
+ * @param sig Aggregated signature
+ * @param pk Public keys in G1
+ * @param msg Signed messages
+ * @param n Number of public keys/messages
+ * @param dst Domain separation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_core_aggregate_verify_G2(const octet *sig, const ECP_ZZZ PK[], const octet msg[], unsigned int n, const octet *dst);
+
+/**
+ * @brief Generate a proof of possession (POP) for a given secret key in the
+ * minimal-sig-size setting.
+ *
+ * @param proof Output proof of possession
+ * @param sk Secret key
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_pop_prove_G1(octet *proof, const char *sk);
+
+/**
+ * @brief Generate a proof of possession (POP) for a given secret key in the
+ * minimal-pubkey-size setting.
+ *
+ * @param proof Output proof of possession
+ * @param sk Secret key
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_pop_prove_G2(octet *proof, const char *sk);
+
+/**
+ * @brief Verify a proof of possession and its corresponding public key in the
+ * minimal-sig-size setting.
+ *
+ * @param proof Proof of possession
+ * @param PK Public key associated to the proof of possession
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_pop_verify_G1(const octet *proof, const ECP2_ZZZ *PK);
+
+/**
+ * @brief Verify a proof of possession and its corresponding public key in the
+ * minimal-pubkey-size setting.
+ *
+ * @param proof Proof of possession
+ * @param PK Public key associated to the proof of possession
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_pop_verify_G2(const octet *proof, const ECP_ZZZ *PK);
+
+/**
+ * @brief Verify an aggregated signature of the same message under different
+ * public keys in the minimal-sig-size setting.
+ * Note it is the responsibility of the caller that all public keys passed as
+ * arguments to this algorithm MUST have a corresponding proof of possession,
+ * and the result of evaluating PopVerify on each public key and its proof MUST
+ * be VALID.
+ *
+ * @param sig Aggregated signature
+ * @param pk Public keys in G2
+ * @param msg Signed message
+ * @param n Number of public keys
+ * @param dst Domain separation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_fast_aggregate_verify_G1(const octet *sig, const ECP2_ZZZ PK[], const octet *msg, unsigned int n, const octet *dst);
+
+/**
+ * @brief Verify an aggregated signature of the same message under different
+ * public keys in the minimal-pubkey-size setting.
+ * Note it is the responsibility of the caller that all public keys passed as
+ * arguments to this algorithm MUST have a corresponding proof of possession,
+ * and the result of evaluating PopVerify on each public key and its proof MUST
+ * be VALID.
+ *
+ * @param sig Aggregated signature
+ * @param pk Public keys in G1
+ * @param msg Signed message
+ * @param n Number of public keys
+ * @param dst Domain separation tag
+ *
+ * @return 0 if successful, error code otherwise
+ */
+int BLS_IETF_ZZZ_fast_aggregate_verify_G2(const octet *sig, const ECP_ZZZ PK[], const octet *msg, unsigned int n, const octet *dst);
+
+#endif

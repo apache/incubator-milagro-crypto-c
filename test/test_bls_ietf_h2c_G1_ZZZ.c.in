@@ -1,0 +1,184 @@
+/*
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+*/
+
+#include "arch.h"
+#include "amcl.h"
+#include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "bls_ietf_ZZZ.h"
+
+#define LINE_LEN 1000
+//#define DEBUG
+
+int main(int argc, char** argv)
+{
+    if (argc != 2) {
+        printf("ERROR Not enough input arguments\n");
+        exit(EXIT_FAILURE);
+    }
+
+    BIG_XXX x;
+    BIG_XXX y;
+
+    ECP_ZZZ P1;
+    ECP_ZZZ P1_prime;
+
+    // Variables for file parsing
+    FILE *fp = NULL;
+    char line[LINE_LEN];
+    const char *linePtr = NULL;
+    unsigned int l1 = 0;
+    bool readLine = false;
+    int lineNo = 0;
+
+    const char *dst_str = "dst     = ";
+    const char *msg_str = "msg     = ";
+    const char *Px_str  = "P.x     = ";
+    const char *Py_str  = "P.y     = ";
+
+    char dst[50];
+    char *msg   = NULL;
+    char *Px    = NULL;
+    char *Py    = NULL;
+    
+    int dst_len   = 0;
+    int msg_len   = 0;
+    int Px_len    = 0;
+    int Py_len    = 0;
+
+    int ret = 0;
+
+    // Open file
+    fp = fopen(argv[1], "r");
+    if (fp == NULL) {
+        printf("ERROR opening test vector file\n");
+        exit(EXIT_FAILURE);
+    }
+
+    while (fgets(line, LINE_LEN, fp) != NULL) {
+        readLine = true;
+        // Read the Domain Separator Tag (DST) value
+        if (!strncmp(line, dst_str, strlen(dst_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            // Find hex value in string
+            linePtr = line + strlen(dst_str);
+            // Allocate memory
+            l1       = (unsigned int)strlen(linePtr) - 1;
+            dst_len  = l1;
+            for(int i = 0; i < dst_len; i++)
+                dst[i] = linePtr[i];
+        }
+
+        // Read the message
+        if (!strncmp(line, msg_str, strlen(msg_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            // Find hex value in string
+            linePtr = line + strlen(msg_str);
+            // Allocate memory
+            l1       = (unsigned int)strlen(linePtr) - 1;
+            msg_len  = l1;
+            msg      = (char*) malloc(msg_len);
+            if (msg == NULL)
+                exit(EXIT_FAILURE);
+            for(int i = 0; i < msg_len; i++)
+                msg[i] = linePtr[i];
+        }
+
+        // Read the expected output point x-coordinate
+        if (!strncmp(line, Px_str, strlen(Px_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            // Find hex value in string
+            linePtr = line + strlen(Px_str);
+            // Allocate memory
+            l1    = (unsigned int)strlen(linePtr) - 1;
+            Px_len = l1 / 2;
+            Px     = (char*) malloc(Px_len);
+            if (Px == NULL)
+                exit(EXIT_FAILURE);
+            amcl_hex2bin(linePtr, Px, l1);
+            BIG_XXX_fromBytes(x, Px);
+        }
+
+        // Read the expected output point y-coordinate
+        if (!strncmp(line, Py_str, strlen(Py_str))) {
+#ifdef DEBUG
+            printf("line %d %s\n", lineNo,line);
+#endif
+            // Find hex value in string
+            linePtr = line + strlen(Py_str);
+            // Allocate memory
+            l1    = (unsigned int)strlen(linePtr) - 1;
+            Py_len = l1 / 2;
+            Py     = (char*) malloc(Py_len);
+            if (Py == NULL)
+                exit(EXIT_FAILURE);
+            amcl_hex2bin(linePtr, Py, l1);
+            BIG_XXX_fromBytes(y, Py);
+            
+            ECP_ZZZ_set(&P1, x, y);
+
+            octet msg_oct = {msg_len, msg_len, msg};
+            octet dst_oct = {dst_len, dst_len, dst};
+            if (strncmp(dst, "QUUX-V01-CS02-with-BLS12381G1_XMD:SHA-256_SSWU_RO_", sizeof(dst)) == 0) {
+                ret = BLS_IETF_ZZZ_hash2curve_G1(&P1_prime, &msg_oct, &dst_oct);
+                if (ECP_ZZZ_equals(&P1, &P1_prime) == 0 || ret) { 
+                    printf("TEST BLS_IETF_ZZZ_hash2curve_G1 FAILED LINE %d\n",lineNo);
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else if (strncmp(dst, "QUUX-V01-CS02-with-BLS12381G1_XMD:SHA-256_SSWU_NU_", sizeof(dst)) == 0) {
+                ret = BLS_IETF_ZZZ_encode2curve_G1(&P1_prime, &msg_oct, &dst_oct);
+                if (ECP_ZZZ_equals(&P1, &P1_prime) == 0 || ret) { 
+                    printf("TEST BLS_IETF_ZZZ_encode2curve_G1 FAILED LINE %d\n",lineNo);
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else {
+                printf("WRONG DST - FAILED AT LINE %d\n",lineNo);
+                exit(EXIT_FAILURE);
+            }
+
+            free(msg);
+            free(Px);
+            free(Py);
+            msg = NULL;
+            Px  = NULL;
+            Py  = NULL;
+        }
+
+        lineNo++;
+    }
+    fclose(fp);
+    if (!readLine) {
+        printf("ERROR No test vectors\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("SUCCESS TEST BLS12-381_HASH2CURVE_G1 PASSED\n");
+    exit(EXIT_SUCCESS);
+}

@@ -35,19 +35,19 @@
 #define MAX_STRING 400
 #define PIN 1234
 
-void read_BIG_XXX(BIG_XXX A, char* string)
+void read_BIG_XXX(BIG_XXX A, const char* string)
 {
     int len;
     char support[LINE_LEN];
     BIG_XXX_zero(A);
-    len = strlen(string)+1;
+    len = (int)strlen(string)+1;
     amcl_hex2bin(string,support,len);
-    len = (len-1)/2;;
+    len = (len-1)/2;
     BIG_XXX_fromBytesLen(A,support,len);
     BIG_XXX_norm(A);
 }
 
-int read_ECP_ZZZ(ECP_ZZZ *ecp, char* string)
+int read_ECP_ZZZ(ECP_ZZZ *ecp, const char* string)
 {
     BIG_XXX x;
 #if CURVETYPE_ZZZ!=MONTGOMERY
@@ -73,19 +73,22 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    int i=0, len=0;
+    int i=0;
+    int len=0;
 
     char line[LINE_LEN];
-    char * linePtr = NULL;
+    const char * linePtr = NULL;
 
-    ECP_ZZZ inf, ECPaux1;
+    ECP_ZZZ inf;
+    ECP_ZZZ ECPaux1;
     BIG_XXX BIGaux1;
 
     char oct[LINE_LEN];
     octet OCTaux = {0,sizeof(oct),oct};
 #if CURVETYPE_ZZZ!=MONTGOMERY
     BIG_XXX BIGaux2;
-    FP_YYY FPaux1,FPaux2;
+    FP_YYY FPaux1;
+    FP_YYY FPaux2;
     ECP_ZZZ ECPaux2;
 #endif
     ECP_ZZZ ecp1;
@@ -148,7 +151,7 @@ int main(int argc, char** argv)
         i++;
         if (!strncmp(line,  ECP1line, strlen(ECP1line))) // get first test vector
         {
-            len = strlen(ECP1line);
+            len = (int)strlen(ECP1line);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecp1,linePtr) || ECP_ZZZ_isinf(&ecp1))
             {
@@ -182,7 +185,7 @@ int main(int argc, char** argv)
 #if CURVETYPE_ZZZ!=MONTGOMERY
         if (!strncmp(line,  ECP2line, strlen(ECP2line))) // get second test vector
         {
-            len = strlen(ECP2line);
+            len = (int)strlen(ECP2line);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecp2,linePtr) || ECP_ZZZ_isinf(&ecp2))
             {
@@ -192,7 +195,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  ECPsumline, strlen(ECPsumline)))
         {
-            len = strlen(ECPsumline);
+            len = (int)strlen(ECPsumline);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecpsum,linePtr) || ECP_ZZZ_isinf(&ecpsum))
             {
@@ -224,7 +227,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  ECPsubline, strlen(ECPsubline)))
         {
-            len = strlen(ECPsubline);
+            len = (int)strlen(ECPsubline);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecpsub,linePtr) || ECP_ZZZ_isinf(&ecpsub))
             {
@@ -242,7 +245,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  ECPnegline, strlen(ECPnegline)))
         {
-            len = strlen(ECPnegline);
+            len = (int)strlen(ECPnegline);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecpneg,linePtr) || ECP_ZZZ_isinf(&ecpneg))
             {
@@ -261,7 +264,7 @@ int main(int argc, char** argv)
 #endif
         if (!strncmp(line,  ECPdblline, strlen(ECPdblline)))
         {
-            len = strlen(ECPdblline);
+            len = (int)strlen(ECPdblline);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecpdbl,linePtr) || ECP_ZZZ_isinf(&ecpdbl))
             {
@@ -316,13 +319,13 @@ int main(int argc, char** argv)
 #endif
         if (!strncmp(line,  BIGscalar1line, strlen(BIGscalar1line)))
         {
-            len = strlen(BIGscalar1line);
+            len = (int)strlen(BIGscalar1line);
             linePtr = line + len;
             read_BIG_XXX(BIGscalar1,linePtr);
         }
         if (!strncmp(line,  ECPmulline, strlen(ECPmulline)))
         {
-            len = strlen(ECPmulline);
+            len = (int)strlen(ECPmulline);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecpmul,linePtr))
             {
@@ -346,7 +349,7 @@ int main(int argc, char** argv)
 #if CURVETYPE_ZZZ!=MONTGOMERY
         if (!strncmp(line,  ECPpinmulline, strlen(ECPpinmulline)))
         {
-            len = strlen(ECPpinmulline);
+            len = (int)strlen(ECPpinmulline);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecppinmul,linePtr))
             {
@@ -364,13 +367,13 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  BIGscalar2line, strlen(BIGscalar2line)))
         {
-            len = strlen(BIGscalar2line);
+            len = (int)strlen(BIGscalar2line);
             linePtr = line + len;
             read_BIG_XXX(BIGscalar2,linePtr);
         }
         if (!strncmp(line,  ECPmul2line, strlen(ECPmul2line)))
         {
-            len = strlen(ECPmul2line);
+            len = (int)strlen(ECPmul2line);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecpmul2,linePtr))
             {
@@ -390,7 +393,7 @@ int main(int argc, char** argv)
 #endif
         if (!strncmp(line,  ECPwrongline, strlen(ECPwrongline)))
         {
-            len = strlen(ECPwrongline);
+            len = (int)strlen(ECPwrongline);
             linePtr = line + len;
             if(read_ECP_ZZZ(&ecpwrong,linePtr) || !ECP_ZZZ_isinf(&ecpwrong) || !ECP_ZZZ_equals(&ecpwrong,&inf))
             {
@@ -401,7 +404,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  ECPinfline, strlen(ECPinfline)))
         {
-            len = strlen(ECPinfline);
+            len = (int)strlen(ECPinfline);
             linePtr = line + len;
             if(read_ECP_ZZZ(&ecpinf,linePtr) || !ECP_ZZZ_isinf(&ecpinf) || !ECP_ZZZ_equals(&ecpinf,&inf))
             {
@@ -413,7 +416,7 @@ int main(int argc, char** argv)
 #if CURVETYPE_ZZZ!=MONTGOMERY
         if (!strncmp(line,  ECPevenline, strlen(ECPevenline)))
         {
-            len = strlen(ECPevenline);
+            len = (int)strlen(ECPevenline);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecpeven,linePtr))
             {
@@ -431,7 +434,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  ECPoddline, strlen(ECPoddline)))
         {
-            len = strlen(ECPoddline);
+            len = (int)strlen(ECPoddline);
             linePtr = line + len;
             if(!read_ECP_ZZZ(&ecpodd,linePtr))
             {

@@ -54,8 +54,18 @@ int main()
     char oct[FS_WWW];
     octet OCT = {0,FS_WWW,oct};
 
-    BIG_XXX A[HFLEN_WWW], B[HFLEN_WWW], C[HFLEN_WWW], D[HFLEN_WWW];
-    BIG_XXX E[FFLEN_WWW], F[FFLEN_WWW], G[FFLEN_WWW], H[FFLEN_WWW], L[FFLEN_WWW], P[FFLEN_WWW], Q[FFLEN_WWW], N[FFLEN_WWW];
+    BIG_XXX A[HFLEN_WWW];
+    BIG_XXX B[HFLEN_WWW];
+    BIG_XXX C[HFLEN_WWW];
+    BIG_XXX D[HFLEN_WWW];
+    BIG_XXX E[FFLEN_WWW];
+    BIG_XXX F[FFLEN_WWW];
+    BIG_XXX G[FFLEN_WWW];
+    BIG_XXX H[FFLEN_WWW];
+    BIG_XXX L[FFLEN_WWW];
+    BIG_XXX P[FFLEN_WWW];
+    BIG_XXX Q[FFLEN_WWW];
+    BIG_XXX N[FFLEN_WWW];
 
     /* Fake random source */
     RAND_clean(&RNG);

@@ -33,9 +33,8 @@
 #define HFLEN_WWW (FFLEN_WWW/2) /**< Useful for half-size RSA private key operations */
 #define P_MBITS_WWW (MODBYTES_XXX*8) /**< Number of bits in modulus */
 #define P_TBITS_WWW (P_MBITS_WWW%BASEBITS_XXX) /**< TODO  */
-#define P_EXCESS_WWW(a) (((a[NLEN_XXX-1])>>(P_TBITS_WWW))+1) /**< TODO */
-#define P_FEXCESS_WWW ((chunk)1<<(BASEBITS_XXX*NLEN_XXX-P_MBITS_WWW-1)) /**< TODO */
-
+#define P_EXCESS_WWW(a) (((a[NLEN_XXX-1])>>(P_TBITS_WWW))+1) /**< TODO  */
+#define P_FEXCESS_WWW ((chunk)1<<(BASEBITS_XXX*NLEN_XXX-P_MBITS_WWW-1)) /**< TODO  */
 
 /* Finite Field Prototypes */
 /**	@brief Copy one FF element of given length to another
@@ -175,7 +174,7 @@ extern void FF_WWW_toOctet(octet *S,BIG_XXX *x,int n);
 	@param S input octet string
 	@param n size of FF in BIGs
  */
-extern void FF_WWW_fromOctet(BIG_XXX *x,octet *S,int n);
+extern void FF_WWW_fromOctet(BIG_XXX *x,const octet *S,int n);
 /**	@brief Multiplication of two FFs
  *
 	Uses Karatsuba method internally
@@ -341,7 +340,7 @@ extern void FF_WWW_ct_pow(BIG_XXX *r,BIG_XXX *x,BIG_XXX * e,BIG_XXX *p,int n, in
 	@param p FF modulus
 	@param n size of FF in BIGs
  */
-extern void FF_WWW_ct_pow_big(BIG_XXX *r,BIG_XXX *x,BIG_XXX e,BIG_XXX *p,int n);
+extern void FF_WWW_ct_pow_big(BIG_XXX *r,BIG_XXX *x,const BIG_XXX e,BIG_XXX *p,int n);
 /**	@brief Calculate r=x^e.y^f mod p for FF e and f, side channel resistant
  *
 	@param r  FF instance, on exit = x^e.y^f mod p

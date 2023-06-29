@@ -509,7 +509,7 @@ void ECP4_ZZZ_mul(ECP4_ZZZ *P,BIG_XXX e)
     ECP4_ZZZ_cmove(&Q,P,ns);
     ECP4_ZZZ_copy(&C,&Q);
 
-    nb=1+(BIG_XXX_nbits(t)+3)/4;
+    nb=1+(BIGBITS_XXX+3)/4;
 
     /* convert exponent to signed 4-bit window */
     for (i=0; i<nb; i++)
@@ -655,7 +655,7 @@ void ECP4_ZZZ_mul8(ECP4_ZZZ *P,ECP4_ZZZ Q[8],BIG_XXX u[8])
     {
         BIG_XXX_or(mt,mt,t[i]);
     }
-    nb=1+BIG_XXX_nbits(mt);
+    nb=1+BIGBITS_XXX;
 
 // Sign pivot
     s1[nb-1]=1;

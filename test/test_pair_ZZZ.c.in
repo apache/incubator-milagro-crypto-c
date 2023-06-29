@@ -81,18 +81,39 @@
 int main()
 {
     int i;
-    BIG_XXX s,r,x,y;
-    ECP_ZZZ G,P1,P2,P3;
+    BIG_XXX s;
+    BIG_XXX r;
+    BIG_XXX x;
+    BIG_XXX y;
+    ECP_ZZZ G;
+    ECP_ZZZ P1;
+    ECP_ZZZ P2;
+    ECP_ZZZ P3;
 
 #if CURVE_SECURITY_ZZZ == 128
-    ECP2_ZZZ W,Q1,Q2,Q3;
-    FP12_YYY g11,gs1,gs2;
+    ECP2_ZZZ W;
+    ECP2_ZZZ Q1;
+    ECP2_ZZZ Q2;
+    ECP2_ZZZ Q3;
+    FP12_YYY g11;
+    FP12_YYY gs1;
+    FP12_YYY gs2;
 #elif CURVE_SECURITY_ZZZ == 192
-    ECP4_ZZZ W,Q1,Q2,Q3;
-    FP24_YYY g11,gs1,gs2;
+    ECP4_ZZZ W;
+    ECP4_ZZZ Q1;
+    ECP4_ZZZ Q2;
+    ECP4_ZZZ Q3;
+    FP24_YYY g11;
+    FP24_YYY gs1;
+    FP24_YYY gs2;
 #elif CURVE_SECURITY_ZZZ == 256
-    ECP8_ZZZ W,Q1,Q2,Q3;
-    FP48_YYY g11,gs1,gs2;
+    ECP8_ZZZ W;
+    ECP8_ZZZ Q1;
+    ECP8_ZZZ Q2;
+    ECP8_ZZZQ3;
+    FP48_YYY g11;
+    FP48_YYY gs1;
+    FP48_YYY gs2;
 #endif
 
     char seed[100] = {0};
@@ -101,7 +122,7 @@ int main()
 
     /* non random seed value! */
     SEED.len=100;
-    for (i=0; i<100; i++) SEED.val[i]=i+1;
+    for (i=0; i<100; i++) SEED.val[i]=(char)(i+1);
 
     /* initialise random number generator */
     CREATE_CSPRNG(&RNG,&SEED);

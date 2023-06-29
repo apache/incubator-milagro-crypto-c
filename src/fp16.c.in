@@ -173,7 +173,7 @@ void FP16_YYY_qmul(FP16_YYY *w,FP16_YYY *x,FP2_YYY *s)
 }
 
 /* Set w=s*x, where s is int */
-void FP16_YYY_imul(FP16_YYY *w,FP16_YYY *x,int s)
+void FP16_YYY_imul(FP16_YYY *w,const FP16_YYY *x,int s)
 {
     FP8_YYY_imul(&(w->a),&(x->a),s);
     FP8_YYY_imul(&(w->b),&(x->b),s);

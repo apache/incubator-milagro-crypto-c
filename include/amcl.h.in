@@ -98,6 +98,7 @@ typedef struct
     int len;           /**< Hash length in bytes */
 } sha3;
 
+
 #define SHA256 32 /**< SHA-256 hashing */
 #define SHA384 48 /**< SHA-384 hashing */
 #define SHA512 64 /**< SHA-512 hashing */
@@ -109,6 +110,21 @@ typedef struct
 
 #define SHAKE128 16 /**< SHAKE128   hash */
 #define SHAKE256 32 /**< SHAKE256 hash */
+
+#define SHA256_HASH_SIZE  32
+#define SHA256_BLOCK_SIZE 64
+// Return codes for HMAC
+#define SUCCESS                 0x00000000
+#define ERR_NULLPOINTER_HMAC    0x00000001
+#define ERR_KEYSIZE_HMAC        0x00000002
+#define ERR_BADARGLEN_HMAC      0x00000003
+/**
+ * @brief HMAC-SHA256 function instance.
+ */
+typedef struct {
+    hash256 sha256_ctx; 			/**< SHA-256 function instance */
+    char 	k0[SHA256_BLOCK_SIZE]; 	/**< The key after any required pre-processing */
+} hmac_sha256;
 
 
 /* NewHope parameters */
@@ -139,7 +155,7 @@ typedef struct
 #define CTR8  37 /**< Counter Mode - 8 bytes */
 #define CTR16 45 /**< Counter Mode - 16 bytes */
 
-#define uchar unsigned char  /**<  Unsigned char */
+typedef unsigned char uchar;  /**<  Unsigned char */
 
 /**
 	@brief AES instance
@@ -219,12 +235,12 @@ typedef struct
  *
 	@param O Octet to be output
  */
-extern void OCT_output(octet *O);
+extern void OCT_output(const octet *O);
 /**	@brief Formats and outputs an octet to the console as a character string
  *
 	@param O Octet to be output
  */
-extern void OCT_output_string(octet *O);
+extern void OCT_output_string(const octet *O);
 /**	@brief Wipe clean an octet
  *
 	@param O Octet to be cleaned
@@ -237,7 +253,7 @@ extern void OCT_clear(octet *O);
 	@param P second Octet to be compared
 	@return 1 if equal, else 0
  */
-extern int  OCT_comp(octet *O,octet *P);
+extern int  OCT_comp(const octet *O,const octet *P);
 /**	@brief Compare first n bytes of two octets
  *
     Terminates early if O.len > n or P.len > n
@@ -246,14 +262,14 @@ extern int  OCT_comp(octet *O,octet *P);
 	@param n number of bytes to compare
 	@return 1 if equal, else 0
  */
-extern int  OCT_ncomp(octet *O,octet *P,int n);
+extern int  OCT_ncomp(const octet *O,const octet *P,int n);
 /**	@brief Join from a C string to end of an octet
  *
 	Truncates if there is no room
 	@param O Octet to be written to
 	@param s zero terminated string to be joined to octet
  */
-extern void OCT_jstring(octet *O,char *s);
+extern void OCT_jstring(octet *O,const char *s);
 /**	@brief Join bytes to end of an octet
  *
 	Truncates if there is no room
@@ -261,7 +277,7 @@ extern void OCT_jstring(octet *O,char *s);
 	@param s bytes to be joined to end of octet
 	@param n number of bytes to join
  */
-extern void OCT_jbytes(octet *O,char *s,int n);
+extern void OCT_jbytes(octet *O,const char *s,int n);
 /**	@brief Join single byte to end of an octet, repeated n times
  *
 	Truncates if there is no room
@@ -276,13 +292,13 @@ extern void OCT_jbyte(octet *O,int b,int n);
 	@param O Octet to be written to
 	@param P Octet to be joined to the end of O
  */
-extern void OCT_joctet(octet *O,octet *P);
+extern void OCT_joctet(octet *O,const octet *P);
 /**	@brief XOR common bytes of a pair of Octets
  *
 	@param O Octet - on exit = O xor P
 	@param P Octet to be xored into O
  */
-extern void OCT_xor(octet *O,octet *P);
+extern void OCT_xor(octet *O,const octet *P);
 /**	@brief reset Octet to zero length
  *
 	@param O Octet to be emptied
@@ -300,21 +316,21 @@ extern int OCT_pad(octet *O,int n);
 	@param b zero terminated byte array to take base64 conversion
 	@param O Octet to be converted
  */
-extern void OCT_tobase64(char *b,octet *O);
+extern void OCT_tobase64(char *b,const octet *O);
 /**	@brief Populate an Octet from base64 number
  *
  	@param O Octet to be populated
 	@param b zero terminated base64 string
 
  */
-extern void OCT_frombase64(octet *O,char *b);
+extern void OCT_frombase64(octet *O,const char *b);
 /**	@brief Copy one Octet into another
  *
  	@param O Octet to be copied to
 	@param P Octet to be copied from
 
  */
-extern void OCT_copy(octet *O,octet *P);
+extern void OCT_copy(octet *O,const octet *P);
 /**	@brief XOR every byte of an octet with input m
  *
  	@param O Octet
@@ -361,21 +377,20 @@ extern void OCT_shl(octet *O,int n);
 	@param dst Octet
 	@param src Hex string to be converted
  */
-extern void OCT_fromHex(octet *dst,char *src);
+extern void OCT_fromHex(octet *dst,const char *src);
 /**	@brief Convert an Octet to printable hex number
  *
     Truncates if there is no room
 	@param dst hex value
 	@param src Octet to be converted
  */
-extern void OCT_toHex(octet *src,char *dst);
+extern void OCT_toHex(const octet *src,char *dst);
 /**	@brief Convert an Octet to string
  *
 	@param dst string value
 	@param src Octet to be converted
  */
-extern void OCT_toStr(octet *src,char *dst);
-
+extern void OCT_toStr(const octet *src,char *dst);
 
 
 /* Hash function */
@@ -396,6 +411,91 @@ extern void HASH256_process(hash256 *H,int b);
 	@param h is the output 32-byte hash
  */
 extern void HASH256_hash(hash256 *H,char *h);
+/**
+ * @brief One-shot API for SHA-256
+ * 
+ * @param digest The output 32-byte hash
+ * @param in     The input to hash
+ * @param inlen  The input length (in bytes)
+ */
+extern void HASH256_oneshot(char *digest,
+                    const char *in, int inlen);
+
+/* HMAC functions */
+/**	@brief Initialise an instance of HMAC-SHA256
+ *
+ * @param  hmac_sha256_ctx An instance of HMAC-SHA256
+ * @param  key             Secret key
+ * @param  keylen          Key length in bytes
+ * 
+ * @return	0 if success, error code otherwise
+ */
+extern int HMAC_SHA256_init(hmac_sha256 *hmac_sha256_ctx,
+                    		const char* key,    int keylen);
+/**	@brief Update an instance of HMAC-SHA256 by adding data to authenticate
+ *
+ * @param  sha256_ctx An instance of SHA256
+ * @param  in         Input data to authenticate
+ * @param  inlen      Input length in bytes
+ * 
+ * @return	0 if success, error code otherwise
+ */
+extern int HMAC_SHA256_update(hash256 *sha256_ctx,
+                        	const char* in,     int inlen);
+/**	@brief Finalize an instance of HMAC-SHA256 by producing the output tag
+ *
+ * @param  hmac_sha256_ctx  An instance of HMAC-SHA256
+ * @param  out              MAC
+ * @param  outlen           MAC length in bytes (fixed at 32) 
+ * 
+ * @return	0 if success, error code otherwise
+ */
+extern int HMAC_SHA256_final(hmac_sha256 *hmac_sha256_ctx,
+							char* out, int outlen);
+/**	@brief Generate message authentication code using HMAC-SHA256 (one-shot)
+ *
+ * @param  out      MAC
+ * @param  outlen   MAC length in bytes (fixed at 32) 
+ * @param  key      Secret key
+ * @param  keylen   Key length in bytes
+ * @param  in       Input data to authenticate
+ * @param  inlen    Input length in bytes
+ * 
+ * @return	0 if success, error code otherwise
+ */
+extern int HMAC_SHA256_oneshot(char* out, 			int outlen,
+                				const char* key, 	int keylen,
+                				const char* in, 	int inlen);
+
+/* HKDf functions */
+/**	@brief Takes the input keying material and extracts from it a fixed-length
+ * pseudorandom key K as defined in RFC5869.
+ *
+ * @param  prk      Output pseudorandom key
+ * @param  salt     Optional salt value (set to HashLen zeros if omitted)
+ * @param  saltlen  Salt length in bytes
+ * @param  ikm      Input Keying Material
+ * @param  ikmlen   IKM length in bytes
+ * 
+ * @return	0 if success, error code otherwise
+ */
+extern int HKDF_SHA256_extract(char prk[SHA256_HASH_SIZE],
+                        const char *salt, unsigned int saltlen,
+                        const char *ikm,  unsigned int ikmlen);
+/**	@brief Expands the pseudorandom key to the desired length as defined in
+ * RFC 5869.
+ *
+ * @param  okm      Output Keying Material
+ * @param  okmlen   OKM length in bytes (should be <= 255 according to the RFC)
+ * @param  prk      Pseudorandom key
+ * @param  info     Optional context and application specific information
+ * @param  infolen  Info length in bytes
+ * 
+ * @return	0 if success, error code otherwise
+ */
+extern int HKDF_SHA256_expand(char *okm, unsigned int okmlen,
+                        const char *prk, unsigned int prklen,
+                        const char *info, unsigned int infolen);
 
 
 /**	@brief Initialise an instance of SHA384
@@ -478,13 +578,13 @@ extern void  SHA3_squeeze(sha3 *H,char *h,int len);
 	@param m is the new active mode of operation (ECB, CBC, OFB, CFB etc)
 	@param iv the new Initialisation Vector
  */
-extern void AES_reset(amcl_aes *A,int m,char *iv);
+extern void AES_reset(amcl_aes *A,int m,const char *iv);
 /**	@brief Extract chaining vector from AMCL_AES instance
  *
 	@param A an instance of the AMCL_AES
 	@param f the extracted chaining vector
  */
-extern void AES_getreg(amcl_aes *A,char * f);
+extern void AES_getreg(const amcl_aes *A,char * f);
 /**	@brief Initialise an instance of AMCL_AES and its mode of operation
  *
 	@param A an instance AMCL_AES
@@ -494,19 +594,19 @@ extern void AES_getreg(amcl_aes *A,char * f);
 	@param iv the Initialisation Vector
 	@return 0 for invalid n
  */
-extern int AES_init(amcl_aes *A,int m,int n,char *k,char *iv);
+extern int AES_init(amcl_aes *A,int m,int n,char *k,const char *iv);
 /**	@brief Encrypt a single 16 byte block in ECB mode
  *
 	@param A an instance of the AMCL_AES
 	@param b is an array of 16 plaintext bytes, on exit becomes ciphertext
  */
-extern void AES_ecb_encrypt(amcl_aes *A,uchar * b);
+extern void AES_ecb_encrypt(const amcl_aes *A,uchar * b);
 /**	@brief Decrypt a single 16 byte block in ECB mode
  *
 	@param A an instance of the AMCL_AES
 	@param b is an array of 16 cipherext bytes, on exit becomes plaintext
  */
-extern void AES_ecb_decrypt(amcl_aes *A,uchar * b);
+extern void AES_ecb_decrypt(const amcl_aes *A,uchar * b);
 /**	@brief Encrypt a single 16 byte block in active mode
  *
 	@param A an instance of the AMCL_AES
@@ -537,7 +637,7 @@ extern void AES_end(amcl_aes *A);
 	@param n the number of bytes in the Initialisation Vector (IV)
 	@param iv the IV
  */
-extern void GCM_init(gcm *G,int nk,char *k,int n,char *iv);
+extern void GCM_init(gcm *G,int nk,char *k,int n,const char *iv);
 /**	@brief Add header (material to be authenticated but not encrypted)
  *
 	Note that this function can be called any number of times with n a multiple of 16, and then one last time with any value for n
@@ -545,7 +645,7 @@ extern void GCM_init(gcm *G,int nk,char *k,int n,char *iv);
 	@param b is the header material to be added
 	@param n the number of bytes in the header
  */
-extern int GCM_add_header(gcm *G,char *b,int n);
+extern int GCM_add_header(gcm *G,const char *b,int n);
 /**	@brief Add plaintext and extract ciphertext
  *
 	Note that this function can be called any number of times with n a multiple of 16, and then one last time with any value for n
@@ -554,7 +654,7 @@ extern int GCM_add_header(gcm *G,char *b,int n);
 	@param p is the plaintext material to be added
 	@param n the number of bytes in the plaintext
  */
-extern int GCM_add_plain(gcm *G,char *c,char *p,int n);
+extern int GCM_add_plain(gcm *G,char *c,const char *p,int n);
 /**	@brief Add ciphertext and extract plaintext
  *
 	Note that this function can be called any number of times with n a multiple of 16, and then one last time with any value for n
@@ -563,7 +663,7 @@ extern int GCM_add_plain(gcm *G,char *c,char *p,int n);
 	@param c is the ciphertext material to be added
 	@param n the number of bytes in the ciphertext
  */
-extern int GCM_add_cipher(gcm *G,char *p,char *c,int n);
+extern int GCM_add_cipher(gcm *G,char *p,const char *c,int n);
 /**	@brief Finish off and extract authentication tag (HMAC)
  *
 	@param G is an active instance AES-GCM
@@ -582,7 +682,7 @@ extern void GCM_finish(gcm *G,char *t);
 	@param b an array of seed bytes
 
  */
-extern void RAND_seed(csprng *R,int n,char *b);
+extern void RAND_seed(csprng *R,int n,const char *b);
 /**	@brief Delete all internal state of a random number generator
  *
 	@param R an instance of a Cryptographically Secure Random Number Generator

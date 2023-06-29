@@ -29,7 +29,7 @@
 
 void read_OCTET(octet* OCT, char* string)
 {
-    int len = strlen(string);
+    int len = (int)strlen(string);
     char buff[len];
     memcpy(buff,string,len);
     char *end = strchr(buff,',');
@@ -44,7 +44,7 @@ void read_OCTET(octet* OCT, char* string)
 
 void read_FF_2048(BIG_1024_58 *x, char* string, int n)
 {
-    int len = strlen(string);
+    int len = (int)strlen(string);
     char oct[len/2];
     octet OCT = {0, len/2, oct};
 
@@ -54,7 +54,7 @@ void read_FF_2048(BIG_1024_58 *x, char* string, int n)
 
 void read_FF_4096(BIG_512_60 *x, char* string, int n)
 {
-    int len = strlen(string);
+    int len = (int)strlen(string);
     char oct[len/2];
     octet OCT = {0, len/2, oct};
 
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
         // Read TEST Number
         if (!strncmp(line,TESTline, strlen(TESTline)))
         {
-            len = strlen(TESTline);
+            len = (int)strlen(TESTline);
             linePtr = line + len;
             sscanf(linePtr,"%d\n",&testNo);
         }
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
         // Read SEED
         if (!strncmp(line,SEEDline, strlen(SEEDline)))
         {
-            len = strlen(SEEDline);
+            len = (int)strlen(SEEDline);
             linePtr = line + len;
             read_OCTET(&SEEDGOLDEN,linePtr);
             testSeed = 1;
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
         // Read N
         if (!strncmp(line, Nline, strlen(Nline)))
         {
-            len = strlen(Nline);
+            len = (int)strlen(Nline);
             linePtr = line + len;
 
             read_FF_4096(PUBGOLDEN.n, linePtr, HFLEN_4096);
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
         // Read P
         if (!strncmp(line, Pline, strlen(Pline)))
         {
-            len = strlen(Pline);
+            len = (int)strlen(Pline);
             linePtr = line + len;
             read_OCTET(&PGOLDEN, linePtr);
             read_FF_2048(PRIVGOLDEN.p, linePtr, HFLEN_2048);
@@ -187,7 +187,7 @@ int main(int argc, char** argv)
         // Read Q
         if (!strncmp(line, Qline, strlen(Qline)))
         {
-            len = strlen(Qline);
+            len = (int)strlen(Qline);
             linePtr = line + len;
             read_OCTET(&QGOLDEN, linePtr);
             read_FF_2048(PRIVGOLDEN.q, linePtr, HFLEN_2048);
@@ -200,7 +200,7 @@ int main(int argc, char** argv)
         // Read LP
         if (!strncmp(line, LPline, strlen(LPline)))
         {
-            len = strlen(LPline);
+            len = (int)strlen(LPline);
             linePtr = line + len;
             read_FF_2048(PRIVGOLDEN.lp, linePtr, HFLEN_2048);
         }
@@ -208,7 +208,7 @@ int main(int argc, char** argv)
         // Read LQ
         if (!strncmp(line, LQline, strlen(LQline)))
         {
-            len = strlen(LQline);
+            len = (int)strlen(LQline);
             linePtr = line + len;
             read_FF_2048(PRIVGOLDEN.lq, linePtr, HFLEN_2048);
         }
@@ -216,7 +216,7 @@ int main(int argc, char** argv)
         // Read MP
         if (!strncmp(line, MPline, strlen(MPline)))
         {
-            len = strlen(MPline);
+            len = (int)strlen(MPline);
             linePtr = line + len;
             read_FF_2048(PRIVGOLDEN.mp, linePtr, HFLEN_2048);
         }
@@ -224,7 +224,7 @@ int main(int argc, char** argv)
         // Read MQ and process test vector
         if (!strncmp(line, MQline, strlen(MQline)))
         {
-            len = strlen(MQline);
+            len = (int)strlen(MQline);
             linePtr = line + len;
             read_FF_2048(PRIVGOLDEN.mq, linePtr, HFLEN_2048);
 

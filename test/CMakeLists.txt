@@ -68,6 +68,16 @@ amcl_test(test_hash_384 test_hash.c amcl_core "SUCCESS" "sha/384/SHA384ShortMsg.
 amcl_test(test_hash_512 test_hash.c amcl_core "SUCCESS" "sha/512/SHA512ShortMsg.rsp" "sha512")
 
 ################################################
+# HMAC Tests
+################################################
+amcl_test(test_hmac_sha256 test_hmac.c amcl_core "SUCCESS" "hmac/HMAC_SHA256.rsp" "")
+
+################################################
+# HKDF Tests
+################################################
+amcl_test(test_hkdf_sha256 test_hkdf.c amcl_core "SUCCESS" "hkdf/HKDF_SHA256.rsp" "")
+
+################################################
 # AES-GCM Tests
 ################################################
 amcl_test(test_gcm_encrypt_128      test_gcm_encrypt.c amcl_core "SUCCESS" "gcm/gcmEncryptExtIV128.rsp" "")
@@ -213,6 +223,16 @@ foreach(curve ${AMCL_CURVE})
       amcl_curve_test(${curve} test_bls_${TC} test_bls_ZZZ.c.in amcl_bls_${TC} "SUCCESS")
       amcl_curve_test(${curve} test_bls_sss_${TC} test_bls_sss_ZZZ.c.in amcl_bls_${TC} "SUCCESS")      
     endif()
+
+    ################################################
+    # BLS_IETF Tests
+    ################################################
+    if(BUILD_BLS_IETF)
+      amcl_curve_test(${curve} test_bls_ietf_${TC}        test_bls_ietf_ZZZ.c.in amcl_bls_ietf_${TC}        "SUCCESS" "bls/bls12-381/bls12_381.rsp")
+      amcl_curve_test(${curve} test_bls_ietf_h2c_G1_${TC} test_bls_ietf_h2c_G1_ZZZ.c.in amcl_bls_ietf_${TC} "SUCCESS" "bls/bls12-381/hash2curve_G1.rsp") 
+      amcl_curve_test(${curve} test_bls_ietf_h2c_G2_${TC} test_bls_ietf_h2c_G2_ZZZ.c.in amcl_bls_ietf_${TC} "SUCCESS" "bls/bls12-381/hash2curve_G2.rsp") 
+    endif()
+    
     
   endif()
 endforeach()

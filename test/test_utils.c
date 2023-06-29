@@ -50,7 +50,8 @@ char bintemp[16+1];
 
 int main()
 {
-    int i,otp;
+    int i;
+    int otp;
     char x[32];
     octet X= {sizeof(x),sizeof(x),x};
 
@@ -64,7 +65,7 @@ int main()
     /* non random seed value! */
     SEED.len=32;
     for (i=0; i<32; i++)
-        SEED.val[i]=i+1;
+        SEED.val[i]=(char)(i+1);
 
     /* initialise random number generator */
     CREATE_CSPRNG(&RNG,&SEED);

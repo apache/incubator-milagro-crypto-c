@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include "amcl.h"
 #include "utils.h"
 
@@ -39,7 +38,8 @@
 /** Decode hex value */
 void amcl_hex2bin(const char *src, char *dst, size_t src_len)
 {
-    char v,c;
+    char v;
+    char c;
     for (size_t i = 0; i < src_len/2; i++)
     {
         c = src[2*i];
@@ -82,7 +82,7 @@ void amcl_hex2bin(const char *src, char *dst, size_t src_len)
 }
 
 /* Encode binary string */
-void amcl_bin2hex(char *src, char *dst, size_t src_len, size_t dst_len)
+void amcl_bin2hex(const char *src, char *dst, size_t src_len, size_t dst_len)
 {
     const char * hexadecimals = "0123456789abcdef";
     unsigned char ch;
@@ -97,7 +97,7 @@ void amcl_bin2hex(char *src, char *dst, size_t src_len, size_t dst_len)
 }
 
 /* Print encoded binary string in hex */
-void amcl_print_hex(char *src, size_t src_len)
+void amcl_print_hex(const char *src, size_t src_len)
 {
     for (size_t i = 0; i < src_len; i++)
     {
@@ -111,16 +111,15 @@ int generateOTP(csprng* RNG)
 {
     int OTP=0;
 
-    int i = 0;
     int val = 0;
-    unsigned char byte[6] = {0};
+    unsigned char bytes[6] = {0};
     int mult=1;
 
     // Generate random 6 digit random value
-    for (i=0; i<6; i++)
+    for (int i=0; i<6; i++)
     {
-        byte[i]=RAND_byte(RNG);
-        val = byte[i];
+        bytes[i]=(unsigned char)RAND_byte(RNG);
+        val = bytes[i];
         OTP = ((abs(val) % 10) * mult) + OTP;
         mult = mult * 10;
     }
@@ -131,9 +130,8 @@ int generateOTP(csprng* RNG)
 /* Generate a random Octet */
 void generateRandom(csprng *RNG,octet *randomValue)
 {
-    int i;
-    for (i=0; i<randomValue->len; i++)
+    for (int i=0; i<randomValue->len; i++)
     {
-        randomValue->val[i] = RAND_byte(RNG);
+        randomValue->val[i] = (char)RAND_byte(RNG);
     }
 }

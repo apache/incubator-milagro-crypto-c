@@ -70,12 +70,12 @@ extern int fileno(FILE *stream);
  */
 char* skip_cb(char* str, int n)
 {
-    int i;
     char* next=str;
 
-    for(i=0; i<n; i++)
+    for(int i=0; i<n; i++)
     {
-        next = strchr(++next,']');
+        next++;
+        next = strchr(next,']');
         if (next == NULL)
         {
             printf("ERROR unexpected test vector\n");
@@ -84,15 +84,15 @@ char* skip_cb(char* str, int n)
     }
     *(++next) = '\0';
 
-    return next++;
+    return next;
 }
 
-void read_BIG_XXX(BIG_XXX A, char* string)
+void read_BIG_XXX(BIG_XXX A, const char* string)
 {
     int len;
     char support[LINE_LEN];
     BIG_XXX_zero(A);
-    len = strlen(string)+1;
+    len = (int)strlen(string)+1;
     amcl_hex2bin(string,support,len);
     len = (len-1)/2;
     BIG_XXX_fromBytesLen(A,support,len);
@@ -106,7 +106,7 @@ void read_DBIG_XXX(DBIG_XXX A, char* string)
     BIG_XXX_dzero(A);
 
     // replace eventual line feed
-    len=strlen(string);
+    len=(int)strlen(string);
     if(string[len-1] == '\x0a')
     {
         string[len-1]='\0';
@@ -118,25 +118,28 @@ void read_DBIG_XXX(DBIG_XXX A, char* string)
         support[0]='\0';
     strcat(support,string);
 
-    len = strlen(support);
+    len = (int)strlen(support);
     amcl_hex2bin(support,support,len);
     BIG_XXX_dfromBytesLen(A,support,len/2);
     BIG_XXX_dnorm(A);
 }
 
-void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
+void read_FP2_YYY(FP2_YYY *fp2, const char* stringx)
 {
     char *stringy;
-    BIG_XXX x,y;
+    BIG_XXX x;
+    BIG_XXX y;
 
-    stringy = strchr(++stringx,',');
+    stringx++;
+    stringy = strchr(stringx,',');
     if (stringy == NULL)
     {
         printf("ERROR unexpected test vector\n");
         exit(EXIT_FAILURE);
     }
-    *(stringy)=0;
-    skip_cb(stringy++,1);
+    *stringy=0;
+    skip_cb(stringy,1);
+    stringy++;
 
     read_BIG_XXX(x,stringx);
     read_BIG_XXX(y,stringy);
@@ -147,10 +150,13 @@ void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
 void read_FP4_YYY(FP4_YYY *fp4, char* stringx)
 {
     char *stringy;
-    FP2_YYY x,y;
+    FP2_YYY x;
+    FP2_YYY y;
 
-    stringy = skip_cb(stringx++,1);
-    skip_cb(stringy++,1);
+    stringy = skip_cb(stringx,1);
+    stringx++;
+    skip_cb(stringy,1);
+    stringy++;
 
     read_FP2_YYY(&x,stringx);
     read_FP2_YYY(&y,stringy);
@@ -158,7 +164,7 @@ void read_FP4_YYY(FP4_YYY *fp4, char* stringx)
     FP4_YYY_from_FP2s(fp4,&x,&y);
 }
 
-int read_ECP_ZZZ(ECP_ZZZ *ecp, char* string)
+int read_ECP_ZZZ(ECP_ZZZ *ecp, const char* string)
 {
     BIG_XXX x;
     char *end;
@@ -188,12 +194,18 @@ int read_ECP_ZZZ(ECP_ZZZ *ecp, char* string)
 #if CURVE_SECURITY_ZZZ == 128
 void read_FP12_YYY(FP12_YYY *fp12, char *stringx)
 {
-    char *stringy, *stringz;
-    FP4_YYY x,y,z;
+    char *stringy;
+    char *stringz;
+    FP4_YYY x;
+    FP4_YYY y;
+    FP4_YYY z;
 
-    stringy = skip_cb(stringx++,3);
-    stringz = skip_cb(stringy++,3);
-    skip_cb(stringz++,3);
+    stringy = skip_cb(stringx,3);
+    stringx++;
+    stringz = skip_cb(stringy,3);
+    stringy++;
+    skip_cb(stringz,3);
+    stringz++;
 
     read_FP4_YYY(&x,stringx);
     read_FP4_YYY(&y,stringy);
@@ -204,10 +216,13 @@ void read_FP12_YYY(FP12_YYY *fp12, char *stringx)
 int read_ECP2_ZZZ(ECP2_ZZZ *ecp2, char* stringx)
 {
     char *stringy;
-    FP2_YYY x,y;
+    FP2_YYY x;
+    FP2_YYY y;
 
-    stringy = skip_cb(stringx++,1);
-    skip_cb(stringy++,1);
+    stringy = skip_cb(stringx,1);
+    stringx++;
+    skip_cb(stringy,1);
+    stringy++;
 
     read_FP2_YYY(&x,stringx);
     read_FP2_YYY(&y,stringy);
@@ -302,7 +317,7 @@ int read_ECP8_ZZZ(ECP8_ZZZ *ecp8, char* stringx)
 #endif
 #endif
 
-void read_OCT(octet *oct, char* string, int len)
+void read_OCT(octet *oct, const char* string, int len)
 {
     char buff[len];
     strncpy(buff,string,len-1);
@@ -318,14 +333,22 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    int fd, len, ch1 = 0, ch2 = 0, i=0, done;
+    int fd;
+    int len;
+    int ch1 = 0;
+    int ch2 = 0;
+    int i=0;
+    int done;
     fpos_t pos;
-    FILE *testVectFile, *writtenFile;
+    FILE *testVectFile;
+    FILE *writtenFile;
 
     char line[LINE_LEN];
     char * linePtr = NULL;
 
-    BIG_XXX big, bigaux1, bigaux2;
+    BIG_XXX big;
+    BIG_XXX bigaux1;
+    BIG_XXX bigaux2;
     const char* BIGline = "BIG = ";
     const char* BIGrawline = "BIGraw = ";
     DBIG_XXX dbig;
@@ -385,7 +408,6 @@ int main(int argc, char** argv)
     char octbuf[LINE_LEN];
     octet oct = {0,sizeof(octbuf),octbuf};
     const char* OCTline = "OCT = ";
-    //const char* OCTstringline = "OCTstring = ";
     char bin[32];
     const char* HEXline = "HEX = ";
 
@@ -411,7 +433,7 @@ int main(int argc, char** argv)
         done=0;
         if (!strncmp(line,  BIGline, strlen(BIGline)))
         {
-            len = strlen(BIGline);
+            len = (int)strlen(BIGline);
             linePtr = line + len;
             read_BIG_XXX(big, linePtr);
             printf("%s",BIGline);
@@ -424,7 +446,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  DBIGline, strlen(DBIGline)))
         {
-            len = strlen(DBIGline);
+            len = (int)strlen(DBIGline);
             linePtr = line + len;
             read_DBIG_XXX(dbig, linePtr);
             printf("%s",DBIGline);
@@ -434,7 +456,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  FPline, strlen(FPline)))
         {
-            len = strlen(FPline);
+            len = (int)strlen(FPline);
             linePtr = line + len;
             read_BIG_XXX(big,linePtr);
             FP_YYY_nres(&fp,big);
@@ -448,7 +470,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  FP2line, strlen(FP2line)))
         {
-            len = strlen(FP2line);
+            len = (int)strlen(FP2line);
             linePtr = line + len;
             read_FP2_YYY(&fp2,linePtr);
             printf("%s",FP2line);
@@ -461,7 +483,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  FP4line, strlen(FP4line)))
         {
-            len = strlen(FP4line);
+            len = (int)strlen(FP4line);
             linePtr = line + len;
             read_FP4_YYY(&fp4,linePtr);
             printf("%s",FP4line);
@@ -474,7 +496,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  ECPline, strlen(ECPline)))
         {
-            len = strlen(ECPline);
+            len = (int)strlen(ECPline);
             linePtr = line + len;
             read_ECP_ZZZ(&ecp,linePtr);
             printf("%s",ECPline);
@@ -498,7 +520,7 @@ int main(int argc, char** argv)
 #if CURVE_SECURITY_ZZZ == 128
         if (!strncmp(line,  FP12line, strlen(FP12line)))
         {
-            len = strlen(FP12line);
+            len = (int)strlen(FP12line);
             linePtr = line + len;
             read_FP12_YYY(&fp12,linePtr);
             printf("%s",FP12line);
@@ -508,7 +530,7 @@ int main(int argc, char** argv)
         }
         if (!strncmp(line,  ECP2line, strlen(ECP2line)))
         {
-            len = strlen(ECP2line);
+            len = (int)strlen(ECP2line);
             linePtr = line + len;
             read_ECP2_ZZZ(&ecp2,linePtr);
             printf("%s",ECP2line);
@@ -526,7 +548,7 @@ int main(int argc, char** argv)
 #else
         if (!strncmp(line,  FP8line, strlen(FP8line)))
         {
-            len = strlen(FP8line);
+            len = (int)strlen(FP8line);
             linePtr = line + len;
             read_FP8_YYY(&fp8,linePtr);
             printf("%s",FP8line);
@@ -602,16 +624,16 @@ int main(int argc, char** argv)
 #endif
         if (!strncmp(line,  OCTline, strlen(OCTline)))
         {
-            len = strlen(OCTline);
+            len = (int)strlen(OCTline);
             linePtr = line + len;
-            read_OCT(&oct,linePtr,strlen(linePtr));
+            read_OCT(&oct,linePtr,(int)strlen(linePtr));
             printf("%s",OCTline);
             OCT_output(&oct);
             done = 1;
         }
         if (!strncmp(line,  HEXline, strlen(HEXline)))
         {
-            len = strlen(HEXline);
+            len = (int)strlen(HEXline);
             linePtr = line + len;
             amcl_hex2bin(linePtr, bin, 64);
             printf("%s", HEXline);

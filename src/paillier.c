@@ -28,7 +28,7 @@ under the License.
 #include "paillier.h"
 
 // generate a Paillier key pair
-void PAILLIER_KEY_PAIR(csprng *RNG, octet *P, octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV)
+void PAILLIER_KEY_PAIR(csprng *RNG, const octet *P, const octet* Q, PAILLIER_public_key *PUB, PAILLIER_private_key *PRIV)
 {
     char oct[FS_2048];
     octet OCT = {0, FS_2048, oct};
@@ -133,7 +133,7 @@ void PAILLIER_PRIVATE_KEY_KILL(PAILLIER_private_key *PRIV)
 }
 
 // Paillier encryption
-void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* CT, octet* R)
+void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, const octet* PT, octet* CT, octet* R)
 {
     // plaintext
     BIG_512_60 pt[HFLEN_4096];
@@ -182,7 +182,7 @@ void PAILLIER_ENCRYPT(csprng *RNG, PAILLIER_public_key *PUB, octet* PT, octet* C
 }
 
 // Paillier decryption
-void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
+void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, const octet* CT, octet* PT)
 {
     // Chiphertext
     BIG_1024_58 ct[2 * FFLEN_2048];
@@ -245,7 +245,7 @@ void PAILLIER_DECRYPT(PAILLIER_private_key *PRIV, octet* CT, octet* PT)
 }
 
 // Homomorphic addition of plaintexts
-void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT)
+void PAILLIER_ADD(PAILLIER_public_key *PUB, const octet* CT1, const octet* CT2, octet* CT)
 {
     // ciphertext
     BIG_512_60 ct1[FFLEN_4096];
@@ -264,7 +264,7 @@ void PAILLIER_ADD(PAILLIER_public_key *PUB, octet* CT1, octet* CT2, octet* CT)
 }
 
 // Homomorphic multiplication of plaintext
-void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT)
+void PAILLIER_MULT(PAILLIER_public_key *PUB, const octet* CT1, const octet* PT, octet* CT)
 {
     // Ciphertext
     BIG_512_60 ct1[FFLEN_4096];
@@ -289,7 +289,7 @@ void PAILLIER_MULT(PAILLIER_public_key *PUB, octet* CT1, octet* PT, octet* CT)
 }
 
 // Read a public key from its octet representation
-void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, octet *PK)
+void PAILLIER_PK_fromOctet(PAILLIER_public_key *PUB, const octet *PK)
 {
     FF_4096_fromOctet(PUB->n, PK, HFLEN_4096);
 

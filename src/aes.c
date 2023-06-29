@@ -256,7 +256,8 @@ static unsign32 SubByte(unsign32 a)
 static uchar product(unsign32 x,unsign32 y)
 {
     /* dot product of two 4-byte arrays */
-    uchar xb[4],yb[4];
+    uchar xb[4];
+    uchar yb[4];
     unpack(x,xb);
     unpack(y,yb);
     return bmul(xb[0],yb[0])^bmul(xb[1],yb[1])^bmul(xb[2],yb[2])^bmul(xb[3],yb[3]);
@@ -265,7 +266,8 @@ static uchar product(unsign32 x,unsign32 y)
 static unsign32 InvMixCol(unsign32 x)
 {
     /* matrix Multiplication */
-    unsign32 y,m;
+    unsign32 y;
+    unsign32 m;
     uchar b[4];
 
     m=pack(InCo);
@@ -282,7 +284,7 @@ static unsign32 InvMixCol(unsign32 x)
 
 /* SU= 8 */
 /* reset cipher */
-void AES_reset(amcl_aes *a,int mode,char *iv)
+void AES_reset(amcl_aes *a,int mode,const char *iv)
 {
     /* reset mode, or reset iv */
     int i;
@@ -296,19 +298,22 @@ void AES_reset(amcl_aes *a,int mode,char *iv)
     }
 }
 
-void AES_getreg(amcl_aes *a,char *ir)
+void AES_getreg(const amcl_aes *a,char *ir)
 {
-    int i;
-    for (i=0; i<4*NB; i++) ir[i]=a->f[i];
+    for (int i=0; i<4*NB; i++) ir[i]=a->f[i];
 }
 
 /* SU= 72 */
 /* Initialise cipher */
-int AES_init(amcl_aes* a,int mode,int nk,char *key,char *iv)
+int AES_init(amcl_aes* a,int mode,int nk,char *key,const char *iv)
 {
     /* Key length Nk=16, 24 or 32 bytes */
     /* Key Scheduler. Create expanded encryption key */
-    int i,j,k,N,nr;
+    int i;
+    int j;
+    int k;
+    int N;
+    int nr;
     unsign32 CipherKey[8];
 
     nk/=4;
@@ -327,8 +332,8 @@ int AES_init(amcl_aes* a,int mode,int nk,char *key,char *iv)
     for (i=j=0; i<nk; i++,j+=4)
     {
         CipherKey[i]=pack((uchar *)&key[j]);
+        a->fkey[i]=CipherKey[i];
     }
-    for (i=0; i<nk; i++) a->fkey[i]=CipherKey[i];
     for (j=nk,k=0; j<N; j+=nk,k++)
     {
         a->fkey[j]=a->fkey[j-nk]^SubByte(ROTL24(a->fkey[j-1]))^rco[k];
@@ -361,14 +366,20 @@ int AES_init(amcl_aes* a,int mode,int nk,char *key,char *iv)
 
 /* SU= 80 */
 /* Encrypt a single block */
-void AES_ecb_encrypt(amcl_aes *a,uchar *buff)
+void AES_ecb_encrypt(const amcl_aes *a,uchar *buff)
 {
-    int i,j,k;
-    unsign32 p[4],q[4],*x,*y,*t;
+    int i;
+    int j;
+    int k;
+    unsign32 p[4];
+    unsign32 q[4];
+    unsign32 *x;
+    unsign32 *y;
+    unsign32 *t;
 
     for (i=j=0; i<NB; i++,j+=4)
     {
-        p[i]=pack((uchar *)&buff[j]);
+        p[i]=pack(&buff[j]);
         p[i]^=a->fkey[i];
     }
 
@@ -424,21 +435,27 @@ void AES_ecb_encrypt(amcl_aes *a,uchar *buff)
 
     for (i=j=0; i<NB; i++,j+=4)
     {
-        unpack(y[i],(uchar *)&buff[j]);
+        unpack(y[i],&buff[j]);
         x[i]=y[i]=0;   /* clean up stack */
     }
 }
 
 /* SU= 80 */
 /* Decrypt a single block */
-void AES_ecb_decrypt(amcl_aes *a,uchar *buff)
+void AES_ecb_decrypt(const amcl_aes *a,uchar *buff)
 {
-    int i,j,k;
-    unsign32 p[4],q[4],*x,*y,*t;
+    int i;
+    int j;
+    int k;
+    unsign32 p[4];
+    unsign32 q[4];
+    unsign32 *x;
+    unsign32 *y;
+    unsign32 *t;
 
     for (i=j=0; i<NB; i++,j+=4)
     {
-        p[i]=pack((uchar *)&buff[j]);
+        p[i]=pack(&buff[j]);
         p[i]^=a->rkey[i];
     }
 
@@ -495,7 +512,7 @@ void AES_ecb_decrypt(amcl_aes *a,uchar *buff)
 
     for (i=j=0; i<NB; i++,j+=4)
     {
-        unpack(y[i],(uchar *)&buff[j]);
+        unpack(y[i],&buff[j]);
         x[i]=y[i]=0;   /* clean up stack */
     }
 
@@ -504,8 +521,7 @@ void AES_ecb_decrypt(amcl_aes *a,uchar *buff)
 /* simple default increment function */
 static void increment(char *f)
 {
-    int i;
-    for (i=0; i<16; i++)
+    for (int i=0; i<16; i++)
     {
         f[i]++;
         if (f[i]!=0) break;
@@ -516,7 +532,8 @@ static void increment(char *f)
 /* Encrypt using selected mode of operation */
 unsign32 AES_encrypt(amcl_aes* a,char *buff)
 {
-    int j,bytes;
+    int j;
+    int bytes;
     char st[16];
     unsign32 fell_off;
 
@@ -582,7 +599,8 @@ unsign32 AES_encrypt(amcl_aes* a,char *buff)
 /* Decrypt using selected mode of operation */
 unsign32 AES_decrypt(amcl_aes *a,char *buff)
 {
-    int j,bytes;
+    int j;
+    int bytes;
     char st[16];
     unsign32 fell_off;
 
@@ -658,47 +676,3 @@ void AES_end(amcl_aes *a)
     for (i=0; i<4*NB; i++)
         a->f[i]=0;
 }
-
-
-/*
-#include <stdio.h>
-
-#define KK 32
-
-int main()
-{
-    int i;
-    amcl_aes a;
-	unsign32 t;
-	uchar x,y;
-
-    char key[KK];
-    char block[16];
-    char iv[16];
-    for (i=0;i<KK;i++) key[i]=5;
-    key[0]=1;
-    for (i=0;i<16;i++) iv[i]=i;
-    for (i=0;i<16;i++) block[i]=i;
-
-    AES_init(&a,CTR16,KK,key,iv);
-
-    printf("Plain=   ");
-    for (i=0;i<16;i++) printf("%02x",block[i]);
-    printf("\n");
-    AES_encrypt(&a,block);
-    printf("Encrypt= ");
-    for (i=0;i<16;i++) printf("%02x",(uchar)block[i]);
-    printf("\n");
-    AES_reset(&a,CTR16,iv);
-    AES_decrypt(&a,block);
-    printf("Decrypt= ");
-    for (i=0;i<16;i++) printf("%02x",(uchar)block[i]);
-    printf("\n");
-
-    AES_end(&a);
-
-    return 0;
-}
-
-*/
-

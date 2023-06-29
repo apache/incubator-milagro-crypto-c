@@ -37,27 +37,30 @@ int main()
 {
     csprng RNG;
 
-    int i,iterations;
+    int i;
+    int iterations;
     clock_t start;
     double elapsed;
     char pr[10];
 
-    unsigned long ran;
+    time_t ran;
     rsa_public_key_WWW pub;
     rsa_private_key_WWW priv;
-    char m[RFS_WWW],d[RFS_WWW],c[RFS_WWW];
+    char m[RFS_WWW];
+    char d[RFS_WWW];
+    char c[RFS_WWW];
     octet M= {0,sizeof(m),m};
     octet D= {0,sizeof(d),d};
     octet C= {0,sizeof(c),c};
 
     print_system_info();
 
-    time((time_t *)&ran);
-    pr[0]=ran;
-    pr[1]=ran>>8;
-    pr[2]=ran>>16;
-    pr[3]=ran>>24;
-    for (i=4; i<10; i++) pr[i]=i;
+    time(&ran);
+    pr[0]=(char)ran;
+    pr[1]=(char)(ran>>4);
+    pr[2]=(char)(ran>>12);
+    pr[3]=(char)(ran>>16);
+    for (i=4; i<10; i++) pr[i]=(char)i;
     RAND_seed(&RNG,10,pr);
 
     printf("Generating %d-bit RSA public/private key pair\n",FFLEN_WWW*BIGBITS_XXX);
@@ -68,17 +71,15 @@ int main()
     {
         RSA_WWW_KEY_PAIR(&RNG,65537,&priv,&pub,NULL,NULL);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
     printf("RSA gen - %8d iterations  ",iterations);
     printf(" %8.2lf ms per iteration\n",elapsed);
 
-    //FF_randomnum(plain,pub.n,&RNG,FFLEN);
-
     M.len=RFS_WWW;
-    for (i=0; i<RFS_WWW; i++) M.val[i]=i%128;
+    for (i=0; i<RFS_WWW; i++) M.val[i]=(char)(i%128);
 
     iterations=0;
     start=clock();
@@ -86,7 +87,7 @@ int main()
     {
         RSA_WWW_ENCRYPT(&pub,&M,&C);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;
@@ -99,7 +100,7 @@ int main()
     {
         RSA_WWW_DECRYPT(&priv,&C,&D);
         iterations++;
-        elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
+        elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
     }
     while (elapsed<MIN_TIME || iterations<MIN_ITERS);
     elapsed=1000.0*elapsed/iterations;

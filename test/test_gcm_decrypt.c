@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
     FILE * fp = NULL;
     char line[LINE_LEN];
-    char * linePtr = NULL;
+    const char * linePtr = NULL;
     int l1=0;
 
     char * Key = NULL;
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(KeyStr);
 
             // Allocate memory
-            l1 = strlen(linePtr)-1;
+            l1 = (int)strlen(linePtr)-1;
             KeyLen = l1/2;
             Key = (char*) malloc (KeyLen);
             if (Key==NULL)
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(IVStr);
 
             // Allocate memory
-            l1 = strlen(linePtr)-1;
+            l1 = (int)strlen(linePtr)-1;
             IVLen = l1/2;
             IV = (char*) malloc (IVLen);
             if (IV==NULL)
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(CTStr);
 
             // Allocate memory
-            l1 = strlen(linePtr);
+            l1 = (int)strlen(linePtr);
             CTLen = l1/2;
             CT = (char*) malloc (CTLen);
             if (CT==NULL)
@@ -167,7 +167,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(AADStr);
 
             // Allocate memory
-            l1 = strlen(linePtr)-1;
+            l1 = (int)strlen(linePtr)-1;
             AADLen = l1/2;
             AAD = (char*) malloc (AADLen);
             if (AAD==NULL)
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
             linePtr = line + strlen(TagStr);
 
             // Allocate memory
-            l1 = strlen(linePtr);
+            l1 = (int)strlen(linePtr);
             TagLen = l1/2;
             Tag1 = (char*) malloc (TagLen);
             if (Tag1==NULL)
@@ -212,9 +212,10 @@ int main(int argc, char** argv)
                 linePtr = line + strlen(PTStr);
 
                 // Allocate memory
-                l1 = strlen(linePtr)-1;
-                PT1 = (char*) malloc (CTLen);
-                if (PT1==NULL)
+                l1 = (int)strlen(linePtr)-1;
+                if (CTLen >0)
+                    PT1 = (char*) malloc (CTLen);
+                if (PT1==NULL && CTLen>0)
                     exit(EXIT_FAILURE);
 
                 // Golden PT value

@@ -34,10 +34,18 @@
 
 int main()
 {
-    int i,j,len=100;
-    int len64 = ((len/3) + 2)*4+1, lenHex = 28*len;
-    char raw[256], bytes[len+1], bytes64[len64+1], bytesHex[lenHex+1], v[len], w[len];
-    octet V= {0,sizeof(v),v}, W= {0,sizeof(w),w};
+    int i;
+    int len=100;
+    int len64 = ((len/3) + 2)*4+1;
+    int lenHex = 28*len;
+    char raw[256];
+    char bytes[len+1];
+    char bytes64[len64+1];
+    char bytesHex[lenHex+1];
+    char v[len];
+    char w[len];
+    octet V= {0,(int)sizeof(v),v};
+    octet W= {0,(int)sizeof(w),w};
     csprng rng;
     char originByteHex[lenHex+1];
     /* Fake random source */
@@ -89,7 +97,7 @@ int main()
         W.max = len;
         V.max = len;
         /* test conversion to and from base64 */
-        for (j = 0; j < 10; ++j)
+        for (int j = 0; j < 10; ++j)
         {
             OCT_rand(&W,&rng,len);
             OCT_copy(&V,&W);

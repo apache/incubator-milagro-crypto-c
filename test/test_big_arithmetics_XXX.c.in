@@ -34,24 +34,24 @@
 #define LINE_LEN 10000
 #define MAX_STRING 300
 
-void read_BIG_XXX(BIG_XXX A, char* string)
+void read_BIG_XXX(BIG_XXX A, const char* string)
 {
     int len;
     char support[LINE_LEN];
     BIG_XXX_zero(A);
-    len = strlen(string)+1;
+    len = (int) strlen(string)+1;
     amcl_hex2bin(string,support,len);
-    len = (len-1)/2;;
+    len = (len-1)/2;
     BIG_XXX_fromBytesLen(A,support,len);
     BIG_XXX_norm(A);
 }
 
-void read_DBIG_XXX(DBIG_XXX A, char* string)
+void read_DBIG_XXX(DBIG_XXX A, const char* string)
 {
     int len;
     char support[LINE_LEN];
     BIG_XXX_dzero(A);
-    len = strlen(string)+1;
+    len = (int)strlen(string)+1;
     amcl_hex2bin(string,support,len);
     len = (len-1)/2;
     BIG_XXX_dfromBytesLen(A,support,len);
@@ -66,14 +66,18 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    int i=0, len=0, bitlen=0;
+    int i=0;
+    unsigned long len=0;
+    int bitlen=0;
 
     FILE *fp;
 
     char line[LINE_LEN];
-    char * linePtr = NULL;
+    const char * linePtr = NULL;
 
-    BIG_XXX supp,mod,div;
+    BIG_XXX supp;
+    BIG_XXX mod;
+    BIG_XXX div;
     DBIG_XXX dsupp;
 
     BIG_XXX BIG1;

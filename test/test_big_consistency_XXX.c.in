@@ -34,12 +34,18 @@
 int main()
 {
 
-    int i,j;
-    char raw[256], bytes[MODBYTES_XXX];
+    int i;
+    char raw[256];
+    char bytes[MODBYTES_XXX];
     csprng rng;
 
-    BIG_XXX F,G,H,I,Z;
-    DBIG_XXX DF,DG;
+    BIG_XXX F;
+    BIG_XXX G;
+    BIG_XXX H;
+    BIG_XXX I;
+    BIG_XXX Z;
+    DBIG_XXX DF;
+    DBIG_XXX DG;
 
     /* Fake random source */
     RAND_clean(&rng);
@@ -112,7 +118,7 @@ int main()
 
     /* Testing small multiplication and addition */
     BIG_XXX_random(F,&rng);
-    for (j = 1; j <= NEXCESS_XXX; ++j)
+    for (int j = 1; j <= NEXCESS_XXX; ++j)
     {
         BIG_XXX_imul(H,F,j);
         BIG_XXX_copy(G,F);
