@@ -988,8 +988,14 @@ void FF_WWW_bi_pow(BIG_XXX r[], BIG_XXX *T[], BIG_XXX *E[], int k, int w, BIG_XX
             // is selected
             if (w_handle[j] < 0 && (BIG_XXX_bit(E[j][i/BIGBITS_XXX], i%BIGBITS_XXX) == 1))
             {
+				// Ensure that the starting position in the following loop is non-negative
+				int tpos;
+				tpos = i - w + 1;
+				if ( tpos < 0 )
+					tpos = 0;
+
                 // Skip position until the exponent is odd
-                for(pos = i - w + 1; BIG_XXX_bit(E[j][pos/BIGBITS_XXX], pos%BIGBITS_XXX) == 0; pos++);
+                for(pos = tpos; BIG_XXX_bit(E[j][pos/BIGBITS_XXX], pos%BIGBITS_XXX) == 0; pos++);
 
                 // Save exponent for multiplication step
                 e[j] = 0;

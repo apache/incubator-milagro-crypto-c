@@ -54,7 +54,6 @@ log(PROJECT_VERSION)
 log(CMAKE_GENERATOR)
 
 add_definitions(-DCMAKE)
-
 set(AMCL_VERSION       ${PROJECT_VERSION})
 set(AMCL_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(AMCL_VERSION_MINOR ${PROJECT_VERSION_MINOR})
@@ -67,12 +66,12 @@ if(CMAKE_COMPILER_IS_GNUCC)
                     OUTPUT_VARIABLE GCC_VERSION)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -static-libgcc -Wall -Wextra -Wno-strict-prototypes -Wunused-value -Wcast-align -Wunused-variable -Wundef -Wformat-security")
 
-    if (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wshadow")
-        set(CMAKE_C_FLAGS_ASAN    "-O0 -g3 -fsanitize=address")
-    else (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
+    if (GCC_VERSION VERSION_GREATER_EQUAL 4.8)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-overflow -Wshadow")
+        set(CMAKE_C_FLAGS_ASAN    "-O0 -g3 -fsanitize=address -fsanitize=undefined -fno-sanitize-recover")
+    else (GCC_VERSION VERSION_GREATER_EQUAL 4.8)
         message(STATUS "GCC 4.8 required to run address sanitizer - please upgrade your installation")
-    endif(GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
+    endif(GCC_VERSION VERSION_GREATER_EQUAL 4.8)
 
     set(CMAKE_C_FLAGS_RELEASE     "-O2")
     set(CMAKE_C_FLAGS_DEBUG       "-O0 -g3")
@@ -208,6 +207,9 @@ set_target_properties(amcl_core PROPERTIES
   SOVERSION ${AMCL_SOVERSION}
 )
 
+target_compile_options(amcl_core PUBLIC
+  "$<$<CONFIG:DEBUG>:-DDEBUG>"
+)
 target_include_directories(amcl_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
